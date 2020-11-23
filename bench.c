@@ -25,7 +25,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-/* Return byte from blarrg test ROM */
+/* Return byte from Blarrg test ROM, written by Shay Green <gblargg@gmail.com>
+ * https://github.com/retrio/gb-test-roms/tree/master/cpu_instrs
+ */
 uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr)
 {
     /* Import the test ROM */

@@ -48,6 +48,10 @@ ROM files.
 Frameskip and Interlaced modes are both off by default. The Frameskip toggles
 between 60 FPS and 30 FPS.
 
+## Reference
+* [Gameboy CPU (LR35902) instruction set](https://pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
+* [Blargg's Gameboy hardware test ROMs](https://github.com/retrio/gb-test-roms)
+
 ## License
 
 `gameboy-emu` is licensed under the MIT License.
