@@ -26,9 +26,10 @@ OBJS = \
 	apu.o \
  	sdl.o	
 
+OBJS := $(addprefix $(OUT)/, $(OBJS))
 deps := $(OBJS:%.o=%.o.d)
 
-%.o: %.c
+$(OUT)/%.o: %.c
 	$(VECHO) "  CC\t$@\n"
 	$(Q)$(CC) -o $@ $(CFLAGS) -c -MMD -MF $@.d $<
 
@@ -36,9 +37,9 @@ $(OUT)/emu: $(OBJS)
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) -o $@ $^ $(LDFLAGS)
 
-$(OUT)/bench: bench.c
+$(OUT)/bench: bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"
-	$(Q)$(CC) -o $@ -MMD -MF $@.d bench.c
+	$(Q)$(CC) -o $@ bench.c
 
 clean:
 	$(RM) $(BIN) $(OBJS) $(deps)
