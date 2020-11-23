@@ -38,12 +38,19 @@ $(OUT)/emu: $(OBJS)
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) -o $@ $^ $(LDFLAGS)
 
-$(OUT)/bench: bench.c gameboy.h
+prof.h:
+	$(VECHO) "  Downloading the latest cyrus-and/prof ...\n"
+	@wget -q https://raw.githubusercontent.com/cyrus-and/prof/master/prof.h
+
+
+$(OUT)/bench: prof.h bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"
 	$(Q)$(CC) -o $@ bench.c
 
 clean:
 	$(RM) $(BIN) $(OBJS) $(deps)
+distclean: clean
+	$(RM) prof.h
 
 -include $(deps)
 

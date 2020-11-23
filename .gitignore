@@ -2,3 +2,4 @@ build/
 *.o
 *.o.d
 tags
+prof.h
