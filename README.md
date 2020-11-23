@@ -6,6 +6,19 @@ Only the original Game Boy (DMG) is supported at this time.
 The performance is the major consideration, and please look for an
 alternative emulator if accuracy is important to you.
 
+## Build
+
+`gameboy-emu` relies on some 3rd party packages to be fully usable and to
+provide you full access to all of its features. You need to have a working
+[SDL2 library](https://www.libsdl.org/) on your target system.
+* macOS: `brew install sdl2`
+* Ubuntu Linux / Debian: `sudo apt install libsdl2-dev`
+
+Build the emulator.
+```shell
+make
+```
+
 ## Key Controls
 
 | Action            | Keyboard   | Joypad |
@@ -32,4 +45,4 @@ between 60 FPS and 30 FPS.
 
 ## License
 
-This project is licensed under the MIT License.
+`gameboy-emu` is licensed under the MIT License.
