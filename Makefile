@@ -56,8 +56,8 @@ $(OUT)/bench: $(OUT)/cpu_instrs.h prof.h bench.c gameboy.h
 # Download Game Boy ROMs with full source
 download_rom:
 	mkdir -p roms
-	wget -O roms/HungryBirds.gb https://github.com/oshf/hungry_birds/blob/master/bin/HungryBirds.gb
-	wget -O roms/Snake.gb https://github.com/brovador/GBsnake/blob/master/dist/gbsnake.gb
+	wget -O roms/HungryBirds.gb https://github.com/oshf/hungry_birds/blob/master/bin/HungryBirds.gb?raw=true
+	wget -O roms/Snake.gb https://github.com/brovador/GBsnake/blob/master/dist/gbsnake.gb?raw=true
 
 clean:
 	$(RM) $(BIN) $(OBJS) $(deps)
