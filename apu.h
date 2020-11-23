@@ -1,6 +1,6 @@
 /**
  * Emulate the audio processing unit (APU) of the Game Boy.
- * Based on MiniGBS by Alex Baines: https://github.com/baines/MiniGBS
+ * Based on MiniGBS: https://github.com/baines/MiniGBS
  */
 
 #pragma once
@@ -32,6 +32,6 @@ uint8_t audio_read(const uint16_t addr);
 void audio_write(const uint16_t addr, const uint8_t val);
 
 /**
- * Initialise audio driver.
+ * Initialize audio driver.
  */
 void audio_init(void);

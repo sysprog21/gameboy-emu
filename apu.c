@@ -1,6 +1,6 @@
 /**
  * emulate the audio processing unit (APU) of the Game Boy.
- * Based on MiniGBS by Alex Baines: https://github.com/baines/MiniGBS
+ * Based on MiniGBS: https://github.com/baines/MiniGBS
  */
 
 #include <math.h>
@@ -11,6 +11,7 @@
 
 #include "apu.h"
 
+/* Enable high-pass filter */
 #define ENABLE_HIPASS 1
 
 #define AUDIO_NSAMPLES ((unsigned) (AUDIO_SAMPLE_RATE / VERTICAL_SYNC) * 2)
@@ -21,9 +22,7 @@
 #define MAX(a, b) (a > b ? a : b)
 #define MIN(a, b) (a <= b ? a : b)
 
-/**
- * Memory holding audio registers between 0xFF10 and 0xFF3F inclusive.
- */
+/* Memory holding audio registers between 0xFF10 and 0xFF3F inclusive */
 static uint8_t audio_mem[AUDIO_MEM_SIZE];
 
 struct chan_len_ctr {
@@ -69,16 +68,16 @@ static struct chan {
     struct chan_vol_env env;
     struct chan_freq_sweep sweep;
 
-    // square
+    /* square */
     uint8_t duty;
     uint8_t duty_counter;
 
-    // noise
+    /* noise */
     uint16_t lfsr_reg;
     bool lfsr_wide;
     int lfsr_div;
 
-    // wave
+    /* wave */
     uint8_t sample;
 
 #if ENABLE_HIPASS
@@ -324,9 +323,7 @@ static void update_noise(float *restrict samples)
     }
 }
 
-/**
- * SDL2 style audio callback function.
- */
+/* SDL2 style audio callback function */
 void audio_callback(void *userdata, uint8_t *restrict stream, int len)
 {
     float *samples = (float *) stream;
@@ -349,7 +346,7 @@ static void chan_trigger(uint_fast8_t i)
     chan_enable(i, 1);
     c->volume = c->volume_init;
 
-    // volume envelope
+    /* volume envelope */
     {
         uint8_t val = audio_mem[(0xFF12 + (i * 5)) - AUDIO_ADDR_COMPENSATION];
 
@@ -361,7 +358,7 @@ static void chan_trigger(uint_fast8_t i)
         c->env.counter = 0.0f;
     }
 
-    // freq sweep
+    /* freq sweep */
     if (i == 0) {
         uint8_t val = audio_mem[0xFF10 - AUDIO_ADDR_COMPENSATION];
 
@@ -377,10 +374,10 @@ static void chan_trigger(uint_fast8_t i)
 
     int len_max = 64;
 
-    if (i == 2) {  // wave
+    if (i == 2) { /* wave */
         len_max = 256;
         c->val = 0;
-    } else if (i == 3) {  // noise
+    } else if (i == 3) { /* noise */
         c->lfsr_reg = 0xFFFF;
         c->val = -1;
     }
@@ -389,11 +386,10 @@ static void chan_trigger(uint_fast8_t i)
     c->len.counter = 0.0f;
 }
 
-/**
- * Read audio register.
- * \param addr	Address of audio register. Must be 0xFF10 <= addr <= 0xFF3F.
- *				This is not checked in this function.
- * \return		Byte at address.
+/* Read audio register.
+ * \param addr  Address of audio register. Must be 0xFF10 <= addr <= 0xFF3F.
+ *              This is not checked in this function.
+ * \return      Byte at address.
  */
 uint8_t audio_read(const uint16_t addr)
 {
@@ -407,11 +403,10 @@ uint8_t audio_read(const uint16_t addr)
     return audio_mem[addr - AUDIO_ADDR_COMPENSATION] | ortab[addr - 0xFF10];
 }
 
-/**
- * Write audio register.
- * \param addr	Address of audio register. Must be 0xFF10 <= addr <= 0xFF3F.
- *				This is not checked in this function.
- * \param val	Byte to write at address.
+/* Write audio register.
+ * \param addr  Address of audio register. Must be 0xFF10 <= addr <= 0xFF3F.
+ *              This is not checked in this function.
+ * \param val   Byte to write at address.
  */
 void audio_write(const uint16_t addr, const uint8_t val)
 {
@@ -426,8 +421,7 @@ void audio_write(const uint16_t addr, const uint8_t val)
         chans[i].volume_init = val >> 4;
         chans[i].powered = (val >> 3) != 0;
 
-        // "zombie mode" stuff, needed for Prehistorik Man and probably
-        // others
+        /* "zombie mode" stuff, needed for Prehistorik Man and similar */
         if (chans[i].powered && chans[i].enabled) {
             if ((chans[i].env.step == 0 && chans[i].env.inc != 0)) {
                 if (val & 0x08) {
@@ -478,7 +472,7 @@ void audio_write(const uint16_t addr, const uint8_t val)
     case 0xFF1E:
         chans[i].freq &= 0x00FF;
         chans[i].freq |= ((val & 0x07) << 8);
-        /* Intentional fall-through. */
+        /* Intentional fall-through */
     case 0xFF23:
         chans[i].len.enabled = val & 0x40 ? 1 : 0;
         if (val & 0x80)
@@ -508,11 +502,11 @@ void audio_write(const uint16_t addr, const uint8_t val)
 
 void audio_init(void)
 {
-    /* Initialise channels and samples. */
+    /* Initialize channels and samples */
     memset(chans, 0, sizeof(chans));
     chans[0].val = chans[1].val = -1;
 
-    /* Initialise IO registers. */
+    /* Initialize IO registers */
     {
         const uint8_t regs_init[] = {0x80, 0xBF, 0xF3, 0xFF, 0x3F, 0xFF,
                                      0x3F, 0x00, 0xFF, 0x3F, 0x7F, 0xFF,
@@ -523,7 +517,7 @@ void audio_init(void)
             audio_write(0xFF10 + i, regs_init[i]);
     }
 
-    /* Initialise Wave Pattern RAM. */
+    /* Initialize Wave Pattern RAM */
     {
         const uint8_t wave_init[] = {0xac, 0xdd, 0xda, 0x48, 0x36, 0x02,
                                      0xcf, 0x16, 0x2c, 0x04, 0xe5, 0x2c,
