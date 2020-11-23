@@ -38,10 +38,11 @@ $(OUT)/emu: $(OBJS)
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) -o $@ $^ $(LDFLAGS)
 
+# Self-contained C/C++ profiler library for Linux
+# https://github.com/cyrus-and/prof
 prof.h:
-	$(VECHO) "  Downloading the latest cyrus-and/prof ...\n"
+	$(VECHO) "  Downloading the latest $@ ...\n"
 	@wget -q https://raw.githubusercontent.com/cyrus-and/prof/master/prof.h
-
 
 $(OUT)/bench: prof.h bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"
