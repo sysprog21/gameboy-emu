@@ -31,7 +31,7 @@
 uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr)
 {
     /* Import the test ROM */
-#include "tests/cpu_instrs.h"
+#include "build/cpu_instrs.h"
     (void) gb;
     return cpu_instrs_gb[addr];
 }

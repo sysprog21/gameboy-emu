@@ -44,7 +44,12 @@ prof.h:
 	$(VECHO) "  Downloading the latest $@ ...\n"
 	@wget -q https://raw.githubusercontent.com/cyrus-and/prof/master/prof.h
 
-$(OUT)/bench: prof.h bench.c gameboy.h
+$(OUT)/cpu_instrs.h: tests/cpu_instrs.gb tests/rom2h.c
+	$(VECHO) " Generating C header from Blargg's Gameboy test ROM...\n"
+	$(Q)$(CC) -o $(OUT)/rom2h tests/rom2h.c
+	@$(OUT)/rom2h
+
+$(OUT)/bench: $(OUT)/cpu_instrs.h prof.h bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"
 	$(Q)$(CC) -o $@ bench.c
 
@@ -58,7 +63,8 @@ clean:
 	$(RM) $(BIN) $(OBJS) $(deps)
 distclean: clean
 	$(RM) prof.h
-	$(RM) roms
+	$(RM) -r roms
+	$(RM) $(OUT)/rom2h $(OUT)/cpu_instrs.h
 
 -include $(deps)
 
