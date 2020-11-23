@@ -4,9 +4,21 @@
 
 #if defined(__linux__)
 #include "prof.h"
+#elif defined(__MACH__)
+#include <mach/mach_time.h>
+#include <math.h>
+#define PROF_START(...)                                    \
+    static mach_timebase_info_data_t timebase;             \
+    mach_timebase_info(&timebase);                         \
+    double conversion_factor =                             \
+        (double) timebase.numer / (double) timebase.denom; \
+    uint64_t start = mach_absolute_time()
+#define PROF_STDOUT(...)                                                 \
+    uint64_t elapsed = mach_absolute_time() - start;                     \
+    double duration = (double) elapsed * conversion_factor / __exp10(9); \
+    printf("elapsed time: %lf s\n", duration)
 #else
-#define PROF_START(...)
-#define PROF_STDOUT(...)
+#error "Unsupported platform"
 #endif
 
 #include <stdio.h>
