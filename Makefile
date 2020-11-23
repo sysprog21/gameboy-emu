@@ -1,4 +1,5 @@
 CFLAGS = -std=gnu99 -O2 -Wall -Wextra
+LDFLAGS = -lm
 
 # SDL
 CFLAGS += -D ENABLE_LCD
