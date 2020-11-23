@@ -19,6 +19,9 @@ Build the emulator.
 make
 ```
 
+`build/emu` is the built executable file, and you can use it to load Game Boy
+ROM files.
+
 ## Key Controls
 
 | Action            | Keyboard   | Joypad |
