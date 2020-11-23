@@ -45,7 +45,7 @@ prof.h:
 	@wget -q https://raw.githubusercontent.com/cyrus-and/prof/master/prof.h
 
 $(OUT)/cpu_instrs.h: tests/cpu_instrs.gb tests/rom2h.c
-	$(VECHO) " Generating C header from Blargg's Gameboy test ROM...\n"
+	$(VECHO) "  Generating C header from Blargg's Gameboy test ROM...\n"
 	$(Q)$(CC) -o $(OUT)/rom2h tests/rom2h.c
 	@$(OUT)/rom2h
 

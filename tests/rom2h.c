@@ -17,16 +17,15 @@ int main()
 
     file = fopen("build/cpu_instrs.h", "wb");
     if (!file) {
-        perror("failed to open cpu_instrs.h\n");
+        perror("failed to open build/cpu_instrs.h for generating.\n");
         return -1;
     }
 
     fputs("#ifndef CPU_INSTRS_ROM_H\n#define CPU_INSTRS_ROM_H\n", file);
     fputs("\nstatic unsigned char cpu_instrs_gb[] = {", file);
     for (int i = 0; i < sizeof(buffer); i++) {
-        if ((i % 0x10) == 0) {
+        if ((i % 0x10) == 0)
             fputs("\n\t", file);
-        }
         fprintf(file, "0x%02X,", buffer[i]);
     }
     fputs("\n};\n", file);
