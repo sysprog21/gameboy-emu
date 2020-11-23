@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 struct priv_t {
     /* Pointer to allocated memory holding GB file. */
@@ -112,11 +114,12 @@ int main(int argc, char **argv)
         bench_fps = frames / ((double) bench_ticks / CLOCKS_PER_SEC);
         benchmark_fps_total += bench_fps;
 
-        printf("Benchmark %i: %ld\tFPS: %ld\n", i, bench_ticks, bench_fps);
+        printf("Benchmark %i: %" PRIu64 "\tFPS: %" PRIu64 "\n", i, bench_ticks,
+               bench_fps);
     }
 
-    printf("Average    : %ld\tFPS: %ld\n", benchmark_ticks_total / 5,
-           benchmark_fps_total / 5);
+    printf("Average    : %" PRIu32 "\tFPS: %" PRIu32 "\n",
+           benchmark_ticks_total / 5, benchmark_fps_total / 5);
 
     return 0;
 }

@@ -36,7 +36,7 @@ $(OUT)/emu: $(OBJS)
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) -o $@ $^ $(LDFLAGS)
 
-$(OUT)/bench:
+$(OUT)/bench: bench.c
 	$(VECHO) "  CC+LD\t$@\n"
 	$(Q)$(CC) -o $@ -MMD -MF $@.d bench.c
 
