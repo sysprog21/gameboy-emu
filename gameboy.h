@@ -77,7 +77,8 @@
 #define VRAM_BANK_SIZE 0x2000
 
 /* DIV Register is incremented at rate of 16384Hz.
- * 4194304 / 16384 = 256 clock cycles for one increment. */
+ * 4194304 / 16384 = 256 clock cycles for one increment.
+ */
 #define DIV_CYCLES 256
 
 /* Serial clock locked to 8192Hz on DMG.
@@ -159,10 +160,10 @@ struct cpu_registers_s {
             union {
                 struct {
                     unsigned unused : 4;
-                    unsigned c : 1; /* Carry flag. */
-                    unsigned h : 1; /* Half carry flag. */
-                    unsigned n : 1; /* Add/sub flag. */
-                    unsigned z : 1; /* Zero flag. */
+                    unsigned c : 1; /* Carry flag */
+                    unsigned h : 1; /* Half carry flag */
+                    unsigned n : 1; /* Add/sub flag */
+                    unsigned z : 1; /* Zero flag */
                 } f_bits;
                 uint8_t f;
             };
@@ -266,9 +267,7 @@ struct gb_registers_s {
 #define LCD_PALETTE_ALL 0x30
 #endif
 
-/**
- * Errors that may occur during emulation.
- */
+/* Errors that may occur during emulation. */
 enum gb_error_e {
     GB_UNKNOWN_ERROR,
     GB_INVALID_OPCODE,
@@ -278,27 +277,23 @@ enum gb_error_e {
     GB_INVALID_MAX
 };
 
-/**
- * Errors that may occur during library initialization.
- */
+/* Errors that may occur during initialization. */
 enum gb_init_error_e {
     GB_INIT_NO_ERROR,
     GB_INIT_CARTRIDGE_UNSUPPORTED,
     GB_INIT_INVALID_CHECKSUM
 };
 
-/**
- * Return codes for serial receive function, mainly for clarity.
- */
+/* Return codes for serial receive function, mainly for clarity. */
 enum gb_serial_rx_ret_e {
     GB_SERIAL_RX_SUCCESS = 0,
     GB_SERIAL_RX_NO_CONNECTION = 1
 };
 
-/**
+/*
  * Emulator context.
  *
- * Only values within the `direct` struct may be modified directly by the
+ * Only values within the "direct" struct may be modified directly by the
  * front-end implementation. Other variables must not be modified.
  */
 struct gb_s {
@@ -375,7 +370,7 @@ struct gb_s {
     uint8_t oam[OAM_SIZE];
 
     struct {
-        /**
+        /*
          * Draw line on screen.
          *
          * \param gb_s		emulator context
@@ -410,7 +405,7 @@ struct gb_s {
         unsigned interlace_count : 1;
     } display;
 
-    /**
+    /*
      * Variables that may be modified directly by the front-end.
      * This method seems to be easier and possibly less overhead than
      * calling a function to modify these variables each time.
@@ -443,9 +438,7 @@ struct gb_s {
     } direct;
 };
 
-/**
- * Tick the internal RTC by one second.
- */
+/* Tick the internal RTC by one second. */
 void gb_tick_rtc(struct gb_s *gb)
 {
     /* is timer running? */
@@ -472,8 +465,7 @@ void gb_tick_rtc(struct gb_s *gb)
     }
 }
 
-/**
- * Set initial values in RTC.
+/* Set initial values in RTC.
  * Should be called after gb_init().
  */
 void gb_set_rtc(struct gb_s *gb, const struct tm *const time)
@@ -485,9 +477,7 @@ void gb_set_rtc(struct gb_s *gb, const struct tm *const time)
     gb->cart_rtc[4] = time->tm_yday >> 8;   /* High 1 bit of day counter. */
 }
 
-/**
- * Internal function used to read bytes.
- */
+/* Internal function used to read bytes. */
 static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 {
     switch (addr >> 12) {
@@ -640,9 +630,7 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
     return 0xFF;
 }
 
-/**
- * Internal function used to write bytes.
- */
+/* Internal function used to write bytes. */
 static void __gb_write(struct gb_s *gb,
                        const uint_fast16_t addr,
                        const uint8_t val)
@@ -972,8 +960,8 @@ static uint8_t __gb_execute_cb(struct gb_s *gb)
         cbop = (cbop >> 4) & 0x3;
 
         switch (cbop) {
-        case 0x0:  /* RdC R */
-        case 0x1:  /* Rd R */
+        case 0x0:    /* RdC R */
+        case 0x1:    /* Rd R */
             if (d) { /* RRC R / RR R */
                 uint8_t temp = val;
                 val = (val >> 1);
@@ -1088,7 +1076,7 @@ static void __gb_draw_line(struct gb_s *gb)
 {
     uint8_t pixels[160] = {0};
 
-    /* If LCD not initialised by front-end, don't render anything. */
+    /* If LCD not initialized by front-end, don't render anything. */
     if (gb->display.lcd_draw_line == NULL)
         return;
 
@@ -1096,7 +1084,8 @@ static void __gb_draw_line(struct gb_s *gb)
         return;
 
     /* If interlaced mode is activated, check if we need to draw the current
-     * line. */
+     * line.
+     */
     if (gb->direct.interlace) {
         if ((gb->display.interlace_count == 0 && (gb->gb_reg.LY & 1) == 0) ||
             (gb->display.interlace_count == 1 && (gb->gb_reg.LY & 1) == 1)) {
@@ -1182,7 +1171,7 @@ static void __gb_draw_line(struct gb_s *gb)
     /* draw window */
     if (gb->gb_reg.LCDC & LCDC_WINDOW_ENABLE &&
         gb->gb_reg.LY >= gb->display.WY && gb->gb_reg.WX <= 166) {
-        /* Calculate Window Map Address. */
+        /* calculate window map address */
         uint16_t win_line =
             (gb->gb_reg.LCDC & LCDC_WINDOW_MAP) ? VRAM_BMAP_2 : VRAM_BMAP_1;
         win_line += (gb->display.window_clear >> 3) * 0x20;
@@ -1190,7 +1179,7 @@ static void __gb_draw_line(struct gb_s *gb)
         uint8_t disp_x = LCD_WIDTH - 1;
         uint8_t win_x = disp_x - gb->gb_reg.WX + 7;
 
-        // look up tile
+        /* look up tile */
         uint8_t py = gb->display.window_clear & 0x07;
         uint8_t px = 7 - (win_x & 0x07);
         uint8_t idx = gb->vram[win_line + (win_x >> 3)];
@@ -1204,16 +1193,16 @@ static void __gb_draw_line(struct gb_s *gb)
 
         tile += 2 * py;
 
-        // fetch first tile
+        /* fetch first tile */
         uint8_t t1 = gb->vram[tile] >> px;
         uint8_t t2 = gb->vram[tile + 1] >> px;
 
-        // loop & copy window
+        /* loop & copy window */
         uint8_t end = (gb->gb_reg.WX < 7 ? 0 : gb->gb_reg.WX - 7) - 1;
 
         for (; disp_x != end; disp_x--) {
             if (px == 8) {
-                // fetch next tile
+                /* fetch next tile */
                 px = 0;
                 win_x = disp_x - gb->gb_reg.WX + 7;
                 idx = gb->vram[win_line + (win_x >> 3)];
@@ -1228,7 +1217,7 @@ static void __gb_draw_line(struct gb_s *gb)
                 t2 = gb->vram[tile + 1];
             }
 
-            // copy window
+            /* copy window */
             uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
             pixels[disp_x] = gb->display.bg_palette[c];
             pixels[disp_x] |= LCD_PALETTE_BG;
@@ -1237,23 +1226,23 @@ static void __gb_draw_line(struct gb_s *gb)
             px++;
         }
 
-        gb->display.window_clear++;  // advance window line
+        gb->display.window_clear++; /* advance window line */
     }
 
-    // draw sprites
+    /* draw sprites */
     if (gb->gb_reg.LCDC & LCDC_OBJ_ENABLE) {
         uint8_t count = 0;
 
         for (uint8_t s = NUM_SPRITES - 1;
              s != 0xFF /* && count < MAX_SPRITES_LINE */; s--) {
-            /* Sprite Y position. */
+            /* Sprite Y position */
             uint8_t OY = gb->oam[4 * s + 0];
-            /* Sprite X position. */
+            /* Sprite X position */
             uint8_t OX = gb->oam[4 * s + 1];
-            /* Sprite Tile/Pattern Number. */
+            /* Sprite Tile/Pattern Number */
             uint8_t OT = gb->oam[4 * s + 2] &
                          (gb->gb_reg.LCDC & LCDC_OBJ_SIZE ? 0xFE : 0xFF);
-            /* Additional attributes. */
+            /* Additional attributes */
             uint8_t OF = gb->oam[4 * s + 3];
 
             /* If sprite isn't on this line, continue. */
@@ -1268,17 +1257,17 @@ static void __gb_draw_line(struct gb_s *gb)
             if (OX == 0 || OX >= 168)
                 continue;
 
-            // y flip
+            /* y flip */
             uint8_t py = gb->gb_reg.LY - OY + 16;
 
             if (OF & OBJ_FLIP_Y)
                 py = (gb->gb_reg.LCDC & LCDC_OBJ_SIZE ? 15 : 7) - py;
 
-            // fetch the tile
+            /* fetch the tile */
             uint8_t t1 = gb->vram[VRAM_TILES_1 + OT * 0x10 + 2 * py];
             uint8_t t2 = gb->vram[VRAM_TILES_1 + OT * 0x10 + 2 * py + 1];
 
-            // handle x flip
+            /* handle x flip */
             uint8_t dir, start, end, shift;
 
             if (OF & OBJ_FLIP_X) {
@@ -1293,9 +1282,8 @@ static void __gb_draw_line(struct gb_s *gb)
                 shift = OX - (start + 1);
             }
 
-            // copy tile
-            t1 >>= shift;
-            t2 >>= shift;
+            /* copy tile */
+            t1 >>= shift, t2 >>= shift;
 
             for (uint8_t disp_x = start; disp_x != end; disp_x += dir) {
                 uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
@@ -1312,8 +1300,7 @@ static void __gb_draw_line(struct gb_s *gb)
                     pixels[disp_x] &= ~LCD_PALETTE_BG;
                 }
 
-                t1 = t1 >> 1;
-                t2 = t2 >> 1;
+                t1 = t1 >> 1, t2 = t2 >> 1;
             }
         }
     }
@@ -1322,9 +1309,7 @@ static void __gb_draw_line(struct gb_s *gb)
 }
 #endif
 
-/**
- * Internal function used to step the CPU.
- */
+/* Internal function used to step the CPU */
 static void __gb_step_cpu(struct gb_s *gb)
 {
     uint8_t opcode, inst_cycles;
@@ -3249,18 +3234,7 @@ void gb_run_frame(struct gb_s *gb)
         __gb_step_cpu(gb);
 }
 
-/**
- * Gets the size of the save file required for the ROM.
- */
-uint_fast32_t gb_get_save_size(struct gb_s *gb)
-{
-    const uint_fast16_t ram_size_location = 0x0149;
-    const uint_fast32_t ram_sizes[] = {0x00, 0x800, 0x2000, 0x8000, 0x20000};
-    uint8_t ram_size = gb->gb_rom_read(gb, ram_size_location);
-    return ram_sizes[ram_size];
-}
-
-/**
+/*
  * Set the function used to handle serial transfer in the front-end. This is
  * optional.
  * gb_serial_transfer takes a byte to transmit and returns the received byte. If
@@ -3288,9 +3262,7 @@ uint8_t gb_color_hash(struct gb_s *gb)
     return x;
 }
 
-/**
- * Resets the context, and initialises startup values.
- */
+/* Resets the context, and initializes startup values. */
 void gb_reset(struct gb_s *gb)
 {
     gb->gb_halt = 0;
@@ -3298,13 +3270,13 @@ void gb_reset(struct gb_s *gb)
     gb->gb_bios_enable = 0;
     gb->lcd_mode = LCD_HBLANK;
 
-    /* Initialise MBC values. */
+    /* Initialize MBC values. */
     gb->selected_rom_bank = 1;
     gb->cart_ram_bank = 0;
     gb->enable_cart_ram = 0;
     gb->cart_mode_select = 0;
 
-    /* Initialise CPU registers as though a DMG. */
+    /* Initialize CPU registers as though a DMG. */
     gb->cpu_reg.af = 0x01B0;
     gb->cpu_reg.bc = 0x0013;
     gb->cpu_reg.de = 0x00D8;
@@ -3346,8 +3318,7 @@ void gb_reset(struct gb_s *gb)
     gb->gb_reg.P1 = 0xCF;
 }
 
-/**
- * Initialise the emulator context. gb_reset() is also called to initialise
+/* Initialize the emulator context. gb_reset() is also called to initialize
  * the CPU.
  */
 enum gb_init_error_e gb_init(
@@ -3386,9 +3357,10 @@ enum gb_init_error_e gb_init(
     gb->gb_error = gb_error;
     gb->direct.priv = priv;
 
-    /* Initialise serial transfer function to NULL. If the front-end does
-     * not provide serial support, Peanut-GB will emulate no cable connected
-     * automatically. */
+    /* Initialize serial transfer function to NULL. If the front-end does
+     * not provide serial support, it will emulate no cable connected
+     * automatically.
+     */
     gb->gb_serial_tx = NULL;
     gb->gb_serial_rx = NULL;
 
@@ -3423,10 +3395,9 @@ enum gb_init_error_e gb_init(
     return GB_INIT_NO_ERROR;
 }
 
-/**
- * Returns the title of ROM.
+/* Return the title of ROM.
  *
- * \param gb		Initialised context.
+ * \param gb		Initialized context.
  * \param title_str	Allocated string at least 16 characters.
  * \returns		Pointer to start of string, null terminated.
  */
