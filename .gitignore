@@ -1,4 +1,5 @@
 build/
+roms/
 *.o
 *.o.d
 tags

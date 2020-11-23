@@ -48,10 +48,17 @@ $(OUT)/bench: prof.h bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"
 	$(Q)$(CC) -o $@ bench.c
 
+# Download Game Boy ROMs with full source
+download_rom:
+	mkdir -p roms
+	wget -O roms/HungryBirds.gb https://github.com/oshf/hungry_birds/blob/master/bin/HungryBirds.gb
+	wget -O roms/Snake.gb https://github.com/brovador/GBsnake/blob/master/dist/gbsnake.gb
+
 clean:
 	$(RM) $(BIN) $(OBJS) $(deps)
 distclean: clean
 	$(RM) prof.h
+	$(RM) roms
 
 -include $(deps)
 
