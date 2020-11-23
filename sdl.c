@@ -401,6 +401,14 @@ int main(int argc, char **argv)
     char *rom_file_name = NULL;
     int ret = EXIT_SUCCESS;
 
+    if (argc == 2) { /* ROM file was specified */
+        rom_file_name = argv[1];
+    } else {
+        printf("Usage: %s ROM\n", argv[0]);
+        ret = EXIT_FAILURE;
+        goto out;
+    }
+
     /* Initialize frontend implementation, in this case, SDL2. */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) <
         0) {
@@ -419,42 +427,6 @@ int main(int argc, char **argv)
 
     if (window == NULL) {
         printf("Could not create window: %s\n", SDL_GetError());
-        ret = EXIT_FAILURE;
-        goto out;
-    }
-
-    switch (argc) {
-    case 1:
-        SDL_SetWindowTitle(window, "Drag and drop ROM");
-        do {
-            SDL_Delay(10);
-            SDL_PollEvent(&event);
-
-            switch (event.type) {
-            case SDL_DROPFILE:
-                rom_file_name = event.drop.file;
-                break;
-
-            case SDL_QUIT:
-                ret = EXIT_FAILURE;
-                goto out;
-
-            default:
-                break;
-            }
-        } while (rom_file_name == NULL);
-
-        break;
-
-    case 2:
-    case 3:
-        /* Apply file name to rom_file_name */
-        rom_file_name = argv[1];
-        break;
-
-    default:
-        printf("Usage: %s ROM\n", argv[0]);
-        puts("SAVE is set by default if not provided.");
         ret = EXIT_FAILURE;
         goto out;
     }
