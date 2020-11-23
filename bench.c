@@ -24,7 +24,7 @@ uint8_t gb_rom_read(struct gb_s *gb, const uint32_t addr)
 }
 
 /* Ignore all errors */
-void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const uint16_t val)
+void gb_error(struct gb_s *gb, const gb_error_t gb_err, const uint16_t val)
 {
     (void) gb;
     (void) gb_err;

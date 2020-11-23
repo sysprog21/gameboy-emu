@@ -268,27 +268,27 @@ struct gb_registers_s {
 #endif
 
 /* Errors that may occur during emulation. */
-enum gb_error_e {
+typedef enum {
     GB_UNKNOWN_ERROR,
     GB_INVALID_OPCODE,
     GB_INVALID_READ,
     GB_INVALID_WRITE,
 
     GB_INVALID_MAX
-};
+} gb_error_t;
 
 /* Errors that may occur during initialization. */
-enum gb_init_error_e {
+typedef enum {
     GB_INIT_NO_ERROR,
     GB_INIT_CARTRIDGE_UNSUPPORTED,
     GB_INIT_INVALID_CHECKSUM
-};
+} gb_init_error_t;
 
 /* Return codes for serial receive function, mainly for clarity. */
-enum gb_serial_rx_ret_e {
+typedef enum {
     GB_SERIAL_RX_SUCCESS = 0,
     GB_SERIAL_RX_NO_CONNECTION = 1
-};
+} gb_serial_rx_ret_t;
 
 /*
  * Emulator context.
@@ -313,11 +313,11 @@ struct gb_s {
      * \param gb_error_e	error code
      * \param val			arbitrary value related to error
      */
-    void (*gb_error)(struct gb_s *, const enum gb_error_e, const uint16_t val);
+    void (*gb_error)(struct gb_s *, const gb_error_t, const uint16_t val);
 
     /* Transmit one byte and return the received byte. */
     void (*gb_serial_tx)(struct gb_s *, const uint8_t tx);
-    enum gb_serial_rx_ret_e (*gb_serial_rx)(struct gb_s *, uint8_t *rx);
+    gb_serial_rx_ret_t (*gb_serial_rx)(struct gb_s *, uint8_t *rx);
 
     struct {
         unsigned gb_halt : 1;
@@ -370,8 +370,7 @@ struct gb_s {
     uint8_t oam[OAM_SIZE];
 
     struct {
-        /*
-         * Draw line on screen.
+        /* Draw line on screen.
          *
          * \param gb_s		emulator context
          * \param pixels	The 160 pixels to draw.
@@ -483,7 +482,7 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
     switch (addr >> 12) {
     case 0x0:
 
-    /* TODO: BIOS support. */
+    /* TODO: BIOS support */
     case 0x1:
     case 0x2:
     case 0x3:
@@ -3242,8 +3241,8 @@ void gb_run_frame(struct gb_s *gb)
  */
 void gb_init_serial(struct gb_s *gb,
                     void (*gb_serial_tx)(struct gb_s *, const uint8_t),
-                    enum gb_serial_rx_ret_e (*gb_serial_rx)(struct gb_s *,
-                                                            uint8_t *))
+                    gb_serial_rx_ret_t (*gb_serial_rx)(struct gb_s *,
+                                                       uint8_t *))
 {
     gb->gb_serial_tx = gb_serial_tx;
     gb->gb_serial_rx = gb_serial_rx;
@@ -3321,10 +3320,10 @@ void gb_reset(struct gb_s *gb)
 /* Initialize the emulator context. gb_reset() is also called to initialize
  * the CPU.
  */
-enum gb_init_error_e gb_init(
+gb_init_error_t gb_init(
     struct gb_s *gb,
     uint8_t (*gb_rom_read)(struct gb_s *, const uint_fast32_t),
-    void (*gb_error)(struct gb_s *, const enum gb_error_e, const uint16_t),
+    void (*gb_error)(struct gb_s *, const gb_error_t, const uint16_t),
     void *priv)
 {
     const uint16_t mbc_location = 0x0147;

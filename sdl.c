@@ -57,7 +57,7 @@ uint8_t *read_rom_to_ram(const char *file_name)
 /* Handles an error reported by the emulator. The emulator context may be used
  * to better understand why the error given in gb_err was reported.
  */
-void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const uint16_t val)
+void gb_error(struct gb_s *gb, const gb_error_t gb_err, const uint16_t val)
 {
     struct priv_t *priv = gb->direct.priv;
 
@@ -394,7 +394,7 @@ int main(int argc, char **argv)
     SDL_Event event;
     SDL_GameController *controller = NULL;
     uint_fast32_t new_ticks, old_ticks;
-    enum gb_init_error_e gb_ret;
+    gb_init_error_t gb_ret;
     unsigned int fast_mode = 1;
     unsigned int fast_mode_timer = 1;
     /* Must be freed */
