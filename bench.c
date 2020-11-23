@@ -17,7 +17,7 @@ struct priv_t {
 };
 
 /* Return byte from blarrg test ROM */
-uint8_t gb_rom_read(struct gb_s *gb, const uint32_t addr)
+uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr)
 {
     const struct priv_t *const p = gb->direct.priv;
     return p->rom[addr];
