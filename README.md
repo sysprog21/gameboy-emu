@@ -22,6 +22,8 @@ make
 `build/emu` is the built executable file, and you can use it to load Game Boy
 ROM files.
 
+`build/bench` profiles the emulation of GBZ80 CPU.
+
 ## Key Controls
 
 | Action            | Keyboard   | Joypad |
