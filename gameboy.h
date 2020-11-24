@@ -300,14 +300,31 @@ typedef enum {
  * front-end implementation. Other variables must not be modified.
  */
 struct gb_s {
-    /**
-     * Return byte from ROM at given address.
+    /* Return byte from ROM at given address.
      *
-     * \param gb_s	emulator context
-     * \param addr	address
-     * \return		byte at address in ROM
+     * \param gb_s  emulator context
+     * \param addr  address
+     * \return      byte at address in ROM
      */
     uint8_t (*gb_rom_read)(struct gb_s *, const uint_fast32_t addr);
+
+    /* Return byte from cart RAM at given address.
+     *
+     * \param gb_s  emulator context
+     * \param addr  address
+     * \return      byte at address in RAM
+     */
+    uint8_t (*gb_cart_ram_read)(struct gb_s *, const uint_fast32_t addr);
+
+    /* Write byte to cart RAM at given address.
+     *
+     * \param gb_s  emulator context
+     * \param addr  address
+     * \param val   value to write to address in RAM
+     */
+    void (*gb_cart_ram_write)(struct gb_s *,
+                              const uint_fast32_t addr,
+                              const uint8_t val);
 
     /**
      * Notify front-end of error.
@@ -499,9 +516,8 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
             return gb->gb_rom_read(
                 gb,
                 addr + ((gb->selected_rom_bank & 0x1F) - 1) * ROM_BANK_SIZE);
-        else
-            return gb->gb_rom_read(
-                gb, addr + (gb->selected_rom_bank - 1) * ROM_BANK_SIZE);
+        return gb->gb_rom_read(
+            gb, addr + (gb->selected_rom_bank - 1) * ROM_BANK_SIZE);
 
     case 0x8:
     case 0x9:
@@ -512,6 +528,12 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
         if (gb->cart_ram && gb->enable_cart_ram) {
             if (gb->mbc == 3 && gb->cart_ram_bank >= 0x08)
                 return gb->cart_rtc[gb->cart_ram_bank - 0x08];
+            if ((gb->cart_mode_select || gb->mbc != 1) &&
+                gb->cart_ram_bank < gb->num_ram_banks)
+                return gb->gb_cart_ram_read(
+                    gb, addr - CART_RAM_ADDR +
+                            (gb->cart_ram_bank * CRAM_BANK_SIZE));
+            return gb->gb_cart_ram_read(gb, addr - CART_RAM_ADDR);
         }
 
         return 0;
@@ -710,6 +732,14 @@ static void __gb_write(struct gb_s *gb,
         if (gb->cart_ram && gb->enable_cart_ram) {
             if (gb->mbc == 3 && gb->cart_ram_bank >= 0x08)
                 gb->cart_rtc[gb->cart_ram_bank - 0x08] = val;
+            else if (gb->cart_mode_select &&
+                     gb->cart_ram_bank < gb->num_ram_banks) {
+                gb->gb_cart_ram_write(
+                    gb,
+                    addr - CART_RAM_ADDR + (gb->cart_ram_bank * CRAM_BANK_SIZE),
+                    val);
+            } else if (gb->num_ram_banks)
+                gb->gb_cart_ram_write(gb, addr - CART_RAM_ADDR, val);
         }
 
         return;
@@ -3236,8 +3266,16 @@ void gb_run_frame(struct gb_s *gb)
         __gb_step_cpu(gb);
 }
 
-/*
- * Set the function used to handle serial transfer in the front-end. This is
+/* Gets the size of the save file required for the ROM. */
+uint_fast32_t gb_get_save_size(struct gb_s *gb)
+{
+    const uint_fast16_t ram_size_location = 0x0149;
+    const uint_fast32_t ram_sizes[] = {0x00, 0x800, 0x2000, 0x8000, 0x20000};
+    uint8_t ram_size = gb->gb_rom_read(gb, ram_size_location);
+    return ram_sizes[ram_size];
+}
+
+/* Set the function used to handle serial transfer in the front-end. This is
  * optional.
  * gb_serial_transfer takes a byte to transmit and returns the received byte. If
  * no cable is connected to the console, return 0xFF.
@@ -3326,6 +3364,10 @@ void gb_reset(struct gb_s *gb)
 gb_init_error_t gb_init(
     struct gb_s *gb,
     uint8_t (*gb_rom_read)(struct gb_s *, const uint_fast32_t),
+    uint8_t (*gb_cart_ram_read)(struct gb_s *, const uint_fast32_t),
+    void (*gb_cart_ram_write)(struct gb_s *,
+                              const uint_fast32_t,
+                              const uint8_t),
     void (*gb_error)(struct gb_s *, const gb_error_t, const uint16_t),
     void *priv)
 {
@@ -3356,6 +3398,8 @@ gb_init_error_t gb_init(
     const uint8_t num_ram_banks[] = {0, 1, 1, 4, 16, 8};
 
     gb->gb_rom_read = gb_rom_read;
+    gb->gb_cart_ram_read = gb_cart_ram_read;
+    gb->gb_cart_ram_write = gb_cart_ram_write;
     gb->gb_error = gb_error;
     gb->direct.priv = priv;
 

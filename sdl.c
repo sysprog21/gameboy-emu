@@ -16,6 +16,8 @@
 struct priv_t {
     /* Pointer to allocated memory holding GB file */
     uint8_t *rom;
+    /* Pointer to allocated memory holding save file. */
+    uint8_t *cart_ram;
 
     /* Color palette for each BG, OBJ0, and OBJ1 */
     uint16_t selected_palette[3][4];
@@ -27,6 +29,22 @@ uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr)
 {
     const struct priv_t *const p = gb->direct.priv;
     return p->rom[addr];
+}
+
+/* Returns a byte from the cartridge RAM at the given address */
+uint8_t gb_cart_ram_read(struct gb_s *gb, const uint_fast32_t addr)
+{
+    const struct priv_t *const p = gb->direct.priv;
+    return p->cart_ram[addr];
+}
+
+/* Writes a given byte to the cartridge RAM at the given address */
+void gb_cart_ram_write(struct gb_s *gb,
+                       const uint_fast32_t addr,
+                       const uint8_t val)
+{
+    const struct priv_t *const p = gb->direct.priv;
+    p->cart_ram[addr] = val;
 }
 
 /* Return a pointer to allocated space containing the ROM. Must be freed */
@@ -52,6 +70,54 @@ uint8_t *read_rom_to_ram(const char *file_name)
 
     fclose(rom_file);
     return rom;
+}
+
+void read_cart_ram_file(const char *save_file_name,
+                        uint8_t **dest,
+                        const size_t len)
+{
+    /* If save file not required. */
+    if (len == 0) {
+        *dest = NULL;
+        return;
+    }
+
+    /* Allocate enough memory to hold save file */
+    if ((*dest = malloc(len)) == NULL) {
+        printf("Fail to allocate memory: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *f = fopen(save_file_name, "rb");
+    /* It does not matter if the save file does not exist. We initialize the
+     * save memory allocated above. The save file will be created on exit.
+     */
+    if (!f) {
+        memset(*dest, 0xFF, len);
+        return;
+    }
+
+    /* Read save file to allocated memory. */
+    fread(*dest, sizeof(uint8_t), len, f);
+    fclose(f);
+}
+
+void write_cart_ram_file(const char *save_file_name,
+                         uint8_t **dest,
+                         const size_t len)
+{
+    if (!len || !*dest)
+        return;
+
+    FILE *f = fopen(save_file_name, "wb");
+    if (!f) {
+        printf("Unable to open save file: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    /* Record save file. */
+    fwrite(*dest, 1, len, f);
+    fclose(f);
 }
 
 /* Handles an error reported by the emulator. The emulator context may be used
@@ -397,12 +463,16 @@ int main(int argc, char **argv)
     gb_init_error_t gb_ret;
     unsigned int fast_mode = 1;
     unsigned int fast_mode_timer = 1;
+    /* Record save file every 60 seconds */
+    int save_timer = 60;
     /* Must be freed */
     char *rom_file_name = NULL;
+    char *save_file_name = NULL;
     int ret = EXIT_SUCCESS;
 
     if (argc == 2) { /* ROM file was specified */
         rom_file_name = argv[1];
+        /* FIXME: save_file_name is set to NULL. Make it configurable. */
     } else {
         printf("Usage: %s ROM\n", argv[0]);
         ret = EXIT_FAILURE;
@@ -413,7 +483,7 @@ int main(int argc, char **argv)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) <
         0) {
         char buf[128];
-        snprintf(buf, sizeof(buf), "Unable to initialise SDL2: %s\n",
+        snprintf(buf, sizeof(buf), "Unable to initialize SDL2: %s\n",
                  SDL_GetError());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", buf, NULL);
         ret = EXIT_FAILURE;
@@ -433,15 +503,49 @@ int main(int argc, char **argv)
 
     /* Copy input ROM file to allocated memory. */
     if ((priv.rom = read_rom_to_ram(rom_file_name)) == NULL) {
-        printf("%d: %s\n", __LINE__, strerror(errno));
+        printf("Fail to read ROM: %s\n", strerror(errno));
         ret = EXIT_FAILURE;
         goto out;
+    }
+
+    /* If no save file is specified, copy save file (with specific name) to
+     * allocated memory.
+     */
+    if (save_file_name == NULL) {
+        char *str_replace;
+        const char extension[] = ".sav";
+
+        /* Allocate enough space for the ROM file name, for the "sav"
+         * extension and for the null terminator.
+         */
+        save_file_name = malloc(strlen(rom_file_name) + strlen(extension) + 1);
+        if (save_file_name == NULL) {
+            printf("Fail to allocate memory: %s\n", strerror(errno));
+            ret = EXIT_FAILURE;
+            goto out;
+        }
+
+        /* Copy the ROM file name to allocated space. */
+        strcpy(save_file_name, rom_file_name);
+
+        /* If the file name does not have a dot, or the only dot is at
+         * the start of the file name, set the pointer to begin
+         * replacing the string to the end of the file name, otherwise
+         * set it to the dot. */
+        if ((str_replace = strrchr(save_file_name, '.')) == NULL ||
+            str_replace == save_file_name)
+            str_replace = save_file_name + strlen(save_file_name);
+
+        /* Copy extension to string including terminating null byte. */
+        for (unsigned int i = 0; i <= strlen(extension); i++)
+            *(str_replace++) = extension[i];
     }
 
     /* TODO: Sanity check input GB file. */
 
     /* Initialize emulator context */
-    gb_ret = gb_init(&gb, &gb_rom_read, &gb_error, &priv);
+    gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write,
+                     &gb_error, &priv);
 
     switch (gb_ret) {
     case GB_INIT_NO_ERROR:
@@ -462,6 +566,9 @@ int main(int argc, char **argv)
         ret = EXIT_FAILURE;
         goto out;
     }
+
+    /* Load save file */
+    read_cart_ram_file(save_file_name, &priv.cart_ram, gb_get_save_size(&gb));
 
     /* Set the RTC of the game cartridge. Only used by games that support it. */
     {
@@ -855,11 +962,21 @@ int main(int argc, char **argv)
             if (rtc_timer >= 1000) {
                 rtc_timer -= 1000;
                 gb_tick_rtc(&gb);
+
+                /* If 60 seconds has passed, record save file. It is required
+                 * for the sake of unexpected abort by external library.
+                 */
+                --save_timer;
+                if (!save_timer) {
+                    write_cart_ram_file(save_file_name, &priv.cart_ram,
+                                        gb_get_save_size(&gb));
+                    save_timer = 60;
+                }
             }
 
-            /* This will delay for at least the number of
-             * milliseconds requested, so we have to compensate for
-             * error here too. */
+            /* This will delay for at least the number of milliseconds
+             * requested, so we have to compensate for error here too.
+             */
             SDL_Delay(delay);
 
             after_delay_ticks = SDL_GetTicks();

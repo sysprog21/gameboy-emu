@@ -36,6 +36,25 @@ uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr)
     return cpu_instrs_gb[addr];
 }
 
+/* Ignore cart RAM writes */
+void gb_cart_ram_write(struct gb_s *gb,
+                       const uint_fast32_t addr,
+                       const uint8_t val)
+{
+    (void) gb;
+    (void) addr;
+    (void) val;
+    return;
+}
+
+/* Ignore cart RAM reads */
+uint8_t gb_cart_ram_read(struct gb_s *gb, const uint_fast32_t addr)
+{
+    (void) gb;
+    (void) addr;
+    return 0xFF;
+}
+
 /* Ignore all errors */
 void gb_error(struct gb_s *gb, const gb_error_t gb_err, const uint16_t val)
 {
@@ -53,7 +72,8 @@ int main(void)
 
     PROF_START();
 
-    ret = gb_init(&gb, &gb_rom_read, &gb_error, NULL);
+    ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write,
+                  &gb_error, NULL);
 
     if (ret != GB_INIT_NO_ERROR) {
         printf("Error: %d\n", ret);
