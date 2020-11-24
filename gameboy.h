@@ -22,7 +22,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-
+// contributed by Rsysz
 #pragma once
 
 #include <stdint.h> /* Required for int types */
