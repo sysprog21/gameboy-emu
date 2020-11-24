@@ -23,6 +23,21 @@ make
 ROM files.
 
 `build/bench` profiles the emulation of GBZ80 CPU.
+Since the GNU/Linux build of `bench` uses `perf_event_open`, make sure to have
+the permission to access the performance counters: either run the program as
+superuser (discouraged) or set the value of `perf_event_paranoid` appropriately,
+for example:
+```shell
+echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
+```
+
+Optionally make it permanent with:
+```shell
+echo 'kernel.perf_event_paranoid=1' | sudo tee /etc/sysctl.d/local.conf
+```
+
+`build/bench` would print the rough number of CPU clock cycles spent in executing
+the code during Game Boy emulation with [Blargg's test ROMs](https://github.com/retrio/gb-test-roms).
 
 ## Key Controls
 
