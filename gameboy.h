@@ -955,6 +955,7 @@ static uint8_t __gb_execute_cb(struct gb_s *gb)
     }
 
     /* TODO: Find out WTF this is doing. */
+    // 0xCB prefixed opcodes, e.g. CB '00' << RLC B
     switch (cbop >> 6) {
     case 0x0:
         cbop = (cbop >> 4) & 0x3;
