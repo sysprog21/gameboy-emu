@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include <stdint.h> /* Required for int types */
-#include <time.h>   /* Required for tm struct */
+#include <stdint.h>
+#include <time.h>
 
 /**
  * When audio_read() and audio_write() functions are provided, define this
@@ -37,7 +37,7 @@
 #define ENABLE_SOUND 0
 #endif
 
-/* Enable LCD drawing. On by default. May be turned off for testing purposes. */
+/* Enable LCD drawing. On by default. May be turned off for testing. */
 #ifndef ENABLE_LCD
 #define ENABLE_LCD 1
 #endif
@@ -156,10 +156,10 @@
 #endif
 
 struct cpu_registers_s {
-    /* Combine A and F registers. */
+    /* Combine A and F registers */
     union {
         struct {
-            /* Define specific bits of Flag register. */
+            /* Define specific bits of Flag register */
             union {
                 struct {
                     unsigned unused : 4;
@@ -260,8 +260,7 @@ struct gb_registers_s {
  */
 #define LCD_PALETTE_OBJ 0x10
 #define LCD_PALETTE_BG 0x20
-/**
- * Bit mask for the two bits listed above.
+/* Bit mask for the two bits listed above.
  * LCD_PALETTE_ALL == 0b00 --> OBJ0
  * LCD_PALETTE_ALL == 0b01 --> OBJ1
  * LCD_PALETTE_ALL == 0b10 --> BG
@@ -270,31 +269,28 @@ struct gb_registers_s {
 #define LCD_PALETTE_ALL 0x30
 #endif
 
-/* Errors that may occur during emulation. */
+/* Errors that may occur during emulation */
 typedef enum {
     GB_UNKNOWN_ERROR,
     GB_INVALID_OPCODE,
     GB_INVALID_READ,
-    GB_INVALID_WRITE,
-
-    GB_INVALID_MAX
+    GB_INVALID_WRITE
 } gb_error_t;
 
-/* Errors that may occur during initialization. */
+/* Errors that may occur during initialization */
 typedef enum {
     GB_INIT_NO_ERROR,
     GB_INIT_CARTRIDGE_UNSUPPORTED,
     GB_INIT_INVALID_CHECKSUM
 } gb_init_error_t;
 
-/* Return codes for serial receive function, mainly for clarity. */
+/* Return codes for serial receive function, mainly for clarity */
 typedef enum {
     GB_SERIAL_RX_SUCCESS = 0,
     GB_SERIAL_RX_NO_CONNECTION = 1
 } gb_serial_rx_ret_t;
 
-/*
- * Emulator context.
+/* Emulator context.
  *
  * Only values within the "direct" struct may be modified directly by the
  * front-end implementation. Other variables must not be modified.
@@ -326,12 +322,11 @@ struct gb_s {
                               const uint_fast32_t addr,
                               const uint8_t val);
 
-    /**
-     * Notify front-end of error.
+    /* Notify front-end of error.
      *
-     * \param gb_s			emulator context
-     * \param gb_error_e	error code
-     * \param val			arbitrary value related to error
+     * \param gb_s        emulator context
+     * \param gb_error_e  error code
+     * \param val         arbitrary value related to error
      */
     void (*gb_error)(struct gb_s *, const gb_error_t, const uint16_t val);
 
@@ -353,20 +348,20 @@ struct gb_s {
     };
 
     /* Cartridge information:
-     * Memory Bank Controller (MBC) type. */
+     * Memory Bank Controller (MBC) type */
     uint8_t mbc;
-    /* Whether the MBC has internal RAM. */
+    /* Whether the MBC has internal RAM */
     uint8_t cart_ram;
-    /* Number of ROM banks in cartridge. */
+    /* Number of ROM banks in cartridge */
     uint16_t num_rom_banks;
-    /* Number of RAM banks in cartridge. */
+    /* Number of RAM banks in cartridge */
     uint8_t num_ram_banks;
 
     uint16_t selected_rom_bank;
-    /* WRAM and VRAM bank selection not available. */
+    /* WRAM and VRAM bank selection not available */
     uint8_t cart_ram_bank;
     uint8_t enable_cart_ram;
-    /* Cartridge ROM/RAM mode select. */
+    /* Cartridge ROM/RAM mode select */
     uint8_t cart_mode_select;
     union {
         struct {
@@ -383,7 +378,7 @@ struct gb_s {
     struct gb_registers_s gb_reg;
     struct count_s counter;
 
-    /* TODO: Allow implementation to allocate WRAM, VRAM and Frame Buffer. */
+    /* TODO: Allow implementation to allocate WRAM, VRAM and Frame Buffer */
     uint8_t wram[WRAM_SIZE];
     uint8_t vram[VRAM_SIZE];
     uint8_t hram[HRAM_SIZE];
@@ -392,20 +387,19 @@ struct gb_s {
     struct {
         /* Draw line on screen.
          *
-         * \param gb_s		emulator context
-         * \param pixels	The 160 pixels to draw.
-         * 			Bits 1-0 are the color to draw.
-         * 			Bits 5-4 are the palette, where:
-         * 				OBJ0 = 0b00,
-         * 				OBJ1 = 0b01,
-         * 				BG = 0b10
-         * 			Other bits are undefined.
-         * 			Bits 5-4 are only required by front-ends
-         * 			which want to use a different color for
-         * 			different object palettes. This is what
-         * 			the Game Boy Color (CGB) does to DMG
-         * 			games.
-         * \param line		Line to draw pixels on. This is
+         * \param gb_s    emulator context
+         * \param pixels  The 160 pixels to draw.
+         *                Bits 1-0 are the color to draw.
+         *                Bits 5-4 are the palette, where:
+         *                OBJ0 = 0b00,
+         *                OBJ1 = 0b01,
+         *                BG = 0b10
+         *                Other bits are undefined.
+         *                Bits 5-4 are only required by front-ends which want
+         *                to use a different color for different object
+         *                palettes. This is what the Game Boy Color (CGB) does
+         *                to DMG games.
+         * \param line    Line to draw pixels on. This is
          * guaranteed to be between 0-144 inclusive.
          */
         void (*lcd_draw_line)(struct gb_s *gb,
@@ -419,15 +413,14 @@ struct gb_s {
         uint8_t window_clear;
         uint8_t WY;
 
-        /* Only support 30fps frame skip. */
+        /* Only support 30fps frame skip */
         unsigned frame_skip_count : 1;
         unsigned interlace_count : 1;
     } display;
 
-    /*
-     * Variables that may be modified directly by the front-end.
-     * This method seems to be easier and possibly less overhead than
-     * calling a function to modify these variables each time.
+    /* Variables that may be modified directly by the front-end.
+     * This method seems to be easier and possibly less overhead than calling
+     * a function to modify these variables each time.
      *
      * None of this is thread-safe.
      */
@@ -457,7 +450,7 @@ struct gb_s {
     } direct;
 };
 
-/* Tick the internal RTC by one second. */
+/* Tick the internal RTC by one second */
 void gb_tick_rtc(struct gb_s *gb)
 {
     /* is timer running? */
@@ -472,9 +465,8 @@ void gb_tick_rtc(struct gb_s *gb)
                     gb->rtc_bits.hour = 0;
 
                     if (++gb->rtc_bits.yday == 0) {
-                        if (gb->rtc_bits.high & 1) {   /* Bit 8 of days*/
+                        if (gb->rtc_bits.high & 1)     /* Bit 8 of days */
                             gb->rtc_bits.high |= 0x80; /* Overflow bit */
-                        }
 
                         gb->rtc_bits.high ^= 1;
                     }
@@ -492,8 +484,8 @@ void gb_set_rtc(struct gb_s *gb, const struct tm *const time)
     gb->cart_rtc[0] = time->tm_sec;
     gb->cart_rtc[1] = time->tm_min;
     gb->cart_rtc[2] = time->tm_hour;
-    gb->cart_rtc[3] = time->tm_yday & 0xFF; /* Low 8 bits of day counter. */
-    gb->cart_rtc[4] = time->tm_yday >> 8;   /* High 1 bit of day counter. */
+    gb->cart_rtc[3] = time->tm_yday & 0xFF; /* Low 8 bits of day counter */
+    gb->cart_rtc[4] = time->tm_yday >> 8;   /* High 1 bit of day counter */
 }
 
 /* Internal function used to read bytes. */
@@ -554,7 +546,7 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
         if (addr < UNUSED_ADDR)
             return gb->oam[addr - OAM_ADDR];
 
-        /* Unusable memory area. Reading from this area returns 0.*/
+        /* Unusable memory area. Reading from this area returns 0. */
         if (addr < IO_ADDR)
             return 0xFF;
 
@@ -570,7 +562,7 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 #endif
         }
 
-        /* IO and Interrupts. */
+        /* IO and Interrupts */
         switch (addr & 0xFF) {
         /* IO Registers */
         case 0x00:
@@ -654,7 +646,7 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
     return 0xFF;
 }
 
-/* Internal function used to write bytes. */
+/* Internal function used to write bytes */
 static void __gb_write(struct gb_s *gb,
                        const uint_fast16_t addr,
                        const uint8_t val)
@@ -676,8 +668,7 @@ static void __gb_write(struct gb_s *gb,
             return;
         }
 
-        /* Intentional fall through. */
-
+    /* Intentional fall through */
     case 0x3:
         if (gb->mbc == 1) {
             // selected_rom_bank = val & 0x7;
@@ -838,8 +829,9 @@ static void __gb_write(struct gb_s *gb,
 
             /* LY fixed to 0 when LCD turned off. */
             if ((gb->gb_reg.LCDC & LCDC_ENABLE) == 0) {
-                /* Do not turn off LCD outside of VBLANK. This may
-                 * happen due to poor timing in this emulator. */
+                /* Do not turn off LCD outside of VBLANK. This may happen due
+                 * to poor timing in this emulator.
+                 */
                 if (gb->lcd_mode != LCD_VBLANK) {
                     gb->gb_reg.LCDC |= LCDC_ENABLE;
                     return;
@@ -864,7 +856,7 @@ static void __gb_write(struct gb_s *gb,
             gb->gb_reg.SCX = val;
             return;
 
-        /* LY (0xFF44) is read only. */
+        /* LY (0xFF44) is read only */
         case 0x45:
             gb->gb_reg.LYC = val;
             return;
@@ -1320,15 +1312,16 @@ static void __gb_draw_line(struct gb_s *gb)
             for (uint8_t disp_x = start; disp_x != end; disp_x += dir) {
                 uint8_t c = (t1 & 0x1) | ((t2 & 0x1) << 1);
                 /* TODO: check transparency / sprite overlap / background
-                 * overlap */
+                 * overlap.
+                 */
                 if (c && !(OF & OBJ_PRIORITY && pixels[disp_x] & 0x3)) {
                     /* Set pixel color. */
                     pixels[disp_x] = (OF & OBJ_PALETTE)
                                          ? gb->display.sp_palette[c + 4]
                                          : gb->display.sp_palette[c];
-                    /* Set pixel palette (OBJ0 or OBJ1). */
+                    /* Set pixel palette (OBJ0 or OBJ1) */
                     pixels[disp_x] |= (OF & OBJ_PALETTE);
-                    /* Deselect BG palette. */
+                    /* Deselect BG palette */
                     pixels[disp_x] &= ~LCD_PALETTE_BG;
                 }
 
@@ -1376,7 +1369,7 @@ static void __gb_step_cpu(struct gb_s *gb)
             /* Disable interrupts */
             gb->gb_ime = 0;
 
-            /* Push Program Counter */
+            /* Push program counter */
             __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
             __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
 
@@ -2983,7 +2976,7 @@ static void __gb_step_cpu(struct gb_s *gb)
 
     case 0xE8: { /* ADD SP, imm */
         int8_t offset = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-        /* TODO: Move flag assignments for optimisation. */
+        /* TODO: Move flag assignments for optimization */
         gb->cpu_reg.f_bits.z = 0;
         gb->cpu_reg.f_bits.n = 0;
         gb->cpu_reg.f_bits.h =
@@ -3118,7 +3111,7 @@ static void __gb_step_cpu(struct gb_s *gb)
         gb->counter.div_count -= DIV_CYCLES;
     }
 
-    /* Check serial transmission. */
+    /* Check serial transmission */
     if (gb->gb_reg.SC & SERIAL_SC_TX_START) {
         /* If new transfer, call TX function. */
         if (gb->counter.serial_count == 0 && gb->gb_serial_tx != NULL)
@@ -3178,7 +3171,8 @@ static void __gb_step_cpu(struct gb_s *gb)
     }
 
     /* TODO Check behaviour of LCD during LCD power off state. */
-    /* If LCD is off, don't update LCD state. */
+    /* If LCD is off, don't update LCD state.
+     */
     if ((gb->gb_reg.LCDC & LCDC_ENABLE) == 0)
         return;
 
@@ -3347,9 +3341,9 @@ void gb_reset(struct gb_s *gb)
     gb->gb_reg.STAT = 0;
     gb->gb_reg.LY = 0;
 
-    __gb_write(gb, 0xFF47, 0xFC);  // BGP
-    __gb_write(gb, 0xFF48, 0xFF);  // OBJP0
-    __gb_write(gb, 0xFF49, 0x0F);  // OBJP1
+    __gb_write(gb, 0xFF47, 0xFC); /* BGP */
+    __gb_write(gb, 0xFF48, 0xFF); /* OBJP0 */
+    __gb_write(gb, 0xFF49, 0x0F); /* OBJP1 */
     gb->gb_reg.WY = 0x00;
     gb->gb_reg.WX = 0x00;
     gb->gb_reg.IE = 0x00;
@@ -3374,8 +3368,8 @@ gb_init_error_t gb_init(
     const uint16_t mbc_location = 0x0147;
     const uint16_t bank_count_location = 0x0148;
     const uint16_t ram_size_location = 0x0149;
-    /**
-     * Table for cartridge type (MBC). -1 if invalid.
+
+    /* Table for cartridge type (MBC). -1 if invalid.
      * TODO: MMM01 is untested.
      * TODO: MBC6 is untested.
      * TODO: MBC7 is unsupported.

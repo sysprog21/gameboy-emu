@@ -16,7 +16,7 @@
 struct priv_t {
     /* Pointer to allocated memory holding GB file */
     uint8_t *rom;
-    /* Pointer to allocated memory holding save file. */
+    /* Pointer to allocated memory holding save file */
     uint8_t *cart_ram;
 
     /* Color palette for each BG, OBJ0, and OBJ1 */
@@ -31,14 +31,14 @@ uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr)
     return p->rom[addr];
 }
 
-/* Returns a byte from the cartridge RAM at the given address */
+/* Return a byte from the cartridge RAM at the given address */
 uint8_t gb_cart_ram_read(struct gb_s *gb, const uint_fast32_t addr)
 {
     const struct priv_t *const p = gb->direct.priv;
     return p->cart_ram[addr];
 }
 
-/* Writes a given byte to the cartridge RAM at the given address */
+/* Write a given byte to the cartridge RAM at the given address */
 void gb_cart_ram_write(struct gb_s *gb,
                        const uint_fast32_t addr,
                        const uint8_t val)
@@ -47,20 +47,17 @@ void gb_cart_ram_write(struct gb_s *gb,
     p->cart_ram[addr] = val;
 }
 
-/* Return a pointer to allocated space containing the ROM. Must be freed */
+/* Return a pointer to allocated space containing the ROM. Must be freed. */
 uint8_t *read_rom_to_ram(const char *file_name)
 {
     FILE *rom_file = fopen(file_name, "rb");
-    size_t rom_size;
-    uint8_t *rom = NULL;
-
-    if (rom_file == NULL)
+    if (!rom_file)
         return NULL;
 
     fseek(rom_file, 0, SEEK_END);
-    rom_size = ftell(rom_file);
+    size_t rom_size = ftell(rom_file);
     rewind(rom_file);
-    rom = malloc(rom_size);
+    uint8_t *rom = malloc(rom_size);
 
     if (fread(rom, sizeof(uint8_t), rom_size, rom_file) != rom_size) {
         free(rom);
@@ -76,7 +73,7 @@ void read_cart_ram_file(const char *save_file_name,
                         uint8_t **dest,
                         const size_t len)
 {
-    /* If save file not required. */
+    /* If save file is not required */
     if (len == 0) {
         *dest = NULL;
         return;
@@ -97,7 +94,7 @@ void read_cart_ram_file(const char *save_file_name,
         return;
     }
 
-    /* Read save file to allocated memory. */
+    /* Read save file to allocated memory */
     fread(*dest, sizeof(uint8_t), len, f);
     fclose(f);
 }
@@ -120,7 +117,7 @@ void write_cart_ram_file(const char *save_file_name,
     fclose(f);
 }
 
-/* Handles an error reported by the emulator. The emulator context may be used
+/* Handle an error reported by the emulator. The emulator context may be used
  * to better understand why the error given in gb_err was reported.
  */
 void gb_error(struct gb_s *gb, const gb_error_t gb_err, const uint16_t val)
@@ -281,7 +278,7 @@ void auto_assign_palette(struct priv_t *priv, uint8_t game_checksum)
         break;
     }
 
-    /* Mega Man [1/2/3] & others I don't care about. */
+    /* Mega Man [1/2/3] & others */
     case 0x01:
     case 0x10:
     case 0x29:
@@ -309,8 +306,7 @@ void auto_assign_palette(struct priv_t *priv, uint8_t game_checksum)
     }
 }
 
-/**
- * Assigns a palette. This is used to allow the user to manually select a
+/* Assign a palette. This is used to allow the user to manually select a
  * different color palette if one was not found automatically, or if the user
  * prefers a different color palette.
  * selection is the requestion color palette. This should be a maximum of
@@ -435,7 +431,7 @@ void manual_assign_palette(struct priv_t *priv, uint8_t selection)
     return;
 }
 
-/* Draws scanline into framebuffer */
+/* Draw scanline into framebuffer */
 static void lcd_draw_line(struct gb_s *gb,
                           const uint8_t pixels[160],
                           const uint_least8_t line)
@@ -495,7 +491,7 @@ int main(int argc, char **argv)
                          SDL_WINDOWPOS_CENTERED, LCD_WIDTH * 2, LCD_HEIGHT * 2,
                          SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS);
 
-    if (window == NULL) {
+    if (!window) {
         printf("Could not create window: %s\n", SDL_GetError());
         ret = EXIT_FAILURE;
         goto out;
@@ -511,7 +507,7 @@ int main(int argc, char **argv)
     /* If no save file is specified, copy save file (with specific name) to
      * allocated memory.
      */
-    if (save_file_name == NULL) {
+    if (!save_file_name) {
         char *str_replace;
         const char extension[] = ".sav";
 
@@ -519,7 +515,7 @@ int main(int argc, char **argv)
          * extension and for the null terminator.
          */
         save_file_name = malloc(strlen(rom_file_name) + strlen(extension) + 1);
-        if (save_file_name == NULL) {
+        if (!save_file_name) {
             printf("Fail to allocate memory: %s\n", strerror(errno));
             ret = EXIT_FAILURE;
             goto out;
@@ -666,7 +662,7 @@ int main(int argc, char **argv)
     renderer = SDL_CreateRenderer(
         window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
-    if (renderer == NULL) {
+    if (!renderer) {
         printf("Could not create renderer: %s\n", SDL_GetError());
         ret = EXIT_FAILURE;
         goto out;
@@ -694,7 +690,7 @@ int main(int argc, char **argv)
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB555,
                           SDL_TEXTUREACCESS_STREAMING, LCD_WIDTH, LCD_HEIGHT);
 
-    if (texture == NULL) {
+    if (!texture) {
         printf("Texture could not be created: %s\n", SDL_GetError());
         ret = EXIT_FAILURE;
         goto out;
