@@ -19,7 +19,9 @@
 #define AUDIO_MEM_SIZE (0xFF3F - 0xFF10 + 1)
 #define AUDIO_ADDR_COMPENSATION 0xFF10
 
-/* Assume neither a nor b is a statement expression of increment, decrement, or assignment */
+/* Assume neither a nor b is a statement expression of increment, decrement, or
+ * assignment.
+ */
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) <= (b) ? (a) : (b))
 

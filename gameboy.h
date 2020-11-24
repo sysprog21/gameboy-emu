@@ -149,7 +149,9 @@
 #define ROM_HEADER_CHECKSUM_LOC 0x014D
 
 #ifndef MIN
-/* Assume neither a nor b is a statement expression of increment, decrement, or assignment */
+/* Assume neither a nor b is a statement expression of increment, decrement, or
+ * assignment.
+ */
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
