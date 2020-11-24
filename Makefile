@@ -25,7 +25,7 @@ all: $(BIN)
 
 OBJS = \
 	apu.o \
- 	sdl.o	
+	main.o
 
 OBJS := $(addprefix $(OUT)/, $(OBJS))
 deps := $(OBJS:%.o=%.o.d)
