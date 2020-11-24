@@ -4,9 +4,9 @@
 Only the original Game Boy (DMG) is supported at this time.
 
 The performance is the major consideration, and please look for an
-alternative emulator if accuracy is important to you.
+alternative emulator if accuracy is crucial to you.
 
-## Build
+## Build and Verify
 
 `gameboy-emu` relies on some 3rd party packages to be fully usable and to
 provide you full access to all of its features. You need to have a working
