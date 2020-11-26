@@ -25,7 +25,7 @@ all: $(BIN)
 
 OBJS = \
 	apu.o \
- 	sdl.o	
+	main.o
 
 OBJS := $(addprefix $(OUT)/, $(OBJS))
 deps := $(OBJS:%.o=%.o.d)
@@ -56,6 +56,7 @@ $(OUT)/bench: $(OUT)/cpu_instrs.h prof.h bench.c gameboy.h
 # Download Game Boy ROMs with full source
 download_rom:
 	mkdir -p roms
+	wget -O roms/FlappyBoy.gb https://github.com/bitnenfer/flappy-boy-asm/blob/master/build/flappyboy.gb?raw=true
 	wget -O roms/HungryBirds.gb https://github.com/oshf/hungry_birds/blob/master/bin/HungryBirds.gb?raw=true
 	wget -O roms/Snake.gb https://github.com/brovador/GBsnake/blob/master/dist/gbsnake.gb?raw=true
 
