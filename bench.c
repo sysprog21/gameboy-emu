@@ -64,6 +64,11 @@ void gb_error(struct gb_s *gb, const gb_error_t gb_err, const uint16_t val)
     return;
 }
 
+void gb_mem_alloc(struct gb_s *gb)
+{
+    (void) gb;
+    return;
+}
 int main(void)
 {
     const unsigned short pc_end = 0x06F1; /* Test ends when PC is this value. */
@@ -73,7 +78,7 @@ int main(void)
     PROF_START();
 
     ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write,
-                  &gb_error, NULL);
+                  &gb_error, &gb_mem_alloc, NULL);
 
     if (ret != GB_INIT_NO_ERROR) {
         printf("Error: %d\n", ret);

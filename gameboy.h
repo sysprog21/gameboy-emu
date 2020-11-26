@@ -379,10 +379,12 @@ struct gb_s {
     struct count_s counter;
 
     /* TODO: Allow implementation to allocate WRAM, VRAM and Frame Buffer */
-    uint8_t wram[WRAM_SIZE];
-    uint8_t vram[VRAM_SIZE];
-    uint8_t hram[HRAM_SIZE];
-    uint8_t oam[OAM_SIZE];
+    /* implementate at gb_mem_alloc */
+    void (*gb_mem_alloc)(struct gb_s *);
+    uint8_t *wram;
+    uint8_t *vram;
+    uint8_t *hram;
+    uint8_t *oam;
 
     struct {
         /* Draw line on screen.
@@ -3364,6 +3366,7 @@ gb_init_error_t gb_init(
                               const uint_fast32_t,
                               const uint8_t),
     void (*gb_error)(struct gb_s *, const gb_error_t, const uint16_t),
+    void (*gb_mem_alloc)(struct gb_s *),
     void *priv)
 {
     const uint16_t mbc_location = 0x0147;
@@ -3396,12 +3399,14 @@ gb_init_error_t gb_init(
     gb->gb_cart_ram_read = gb_cart_ram_read;
     gb->gb_cart_ram_write = gb_cart_ram_write;
     gb->gb_error = gb_error;
+    gb->gb_mem_alloc = gb_mem_alloc;
     gb->direct.priv = priv;
 
     /* Initialize serial transfer function to NULL. If the front-end does
      * not provide serial support, it will emulate no cable connected
      * automatically.
      */
+    gb->gb_mem_alloc(gb);
     gb->gb_serial_tx = NULL;
     gb->gb_serial_rx = NULL;
 

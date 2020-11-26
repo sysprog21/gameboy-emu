@@ -151,6 +151,15 @@ void gb_error(struct gb_s *gb, const gb_error_t gb_err, const uint16_t val)
     return;
 }
 
+void gb_mem_alloc(struct gb_s *gb)
+{
+  gb->wram = calloc(WRAM_SIZE, sizeof(uint8_t));
+  gb->vram = calloc(VRAM_SIZE, sizeof(uint8_t));
+  gb->hram = calloc(HRAM_SIZE, sizeof(uint8_t));
+  gb->oam = calloc(OAM_SIZE, sizeof(uint8_t));
+  return;
+}
+
 /* Assign color palette to the game using a given game checksum */
 void auto_assign_palette(struct priv_t *priv, uint8_t game_checksum)
 {
@@ -541,7 +550,7 @@ int main(int argc, char **argv)
 
     /* Initialize emulator context */
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write,
-                     &gb_error, &priv);
+                     &gb_error, &gb_mem_alloc, &priv);
 
     switch (gb_ret) {
     case GB_INIT_NO_ERROR:
