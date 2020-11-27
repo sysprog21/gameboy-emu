@@ -59,6 +59,7 @@ download_rom:
 	wget -O roms/FlappyBoy.gb https://github.com/bitnenfer/flappy-boy-asm/blob/master/build/flappyboy.gb?raw=true
 	wget -O roms/HungryBirds.gb https://github.com/oshf/hungry_birds/blob/master/bin/HungryBirds.gb?raw=true
 	wget -O roms/Snake.gb https://github.com/brovador/GBsnake/blob/master/dist/gbsnake.gb?raw=true
+	wget -O roms/Kanoid.gb https://github.com/untoxa/a_kanoid/blob/master/a_kanoid.gb?raw=true
 
 clean:
 	$(RM) $(BIN) $(OBJS) $(deps)
