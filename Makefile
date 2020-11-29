@@ -60,6 +60,7 @@ download_rom:
 	wget -O roms/HungryBirds.gb https://github.com/oshf/hungry_birds/blob/master/bin/HungryBirds.gb?raw=true
 	wget -O roms/Snake.gb https://github.com/brovador/GBsnake/blob/master/dist/gbsnake.gb?raw=true
 	wget -O roms/Kanoid.gb https://github.com/untoxa/a_kanoid/blob/master/a_kanoid.gb?raw=true
+	wget -O roms/Frapball.gb https://github.com/1r3n33/frapball/releases/download/refs%2Fheads%2Fmaster/game.gb
 
 clean:
 	$(RM) $(BIN) $(OBJS) $(deps)
