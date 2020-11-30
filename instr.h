@@ -257,4 +257,263 @@ static const cpu_instruction_s instrs[] = {
     {"NOP", 1, false, false, op_nop}, // 0xFD
     {"CP %02x", 2, false, false, op_cp_d8}, // 0xFE
     {"RST 38H", 1, false, false, op_rst_38h} // 0xFF
-} 
+};
+
+static const cpu_instruction_s CB_instrs[] = {
+    {"RLC B", 2, false, true, op_rlc_b}, // 0xCB00
+    {"RLC C", 2, false, true, op_rlc_c}, // 0xCB01
+    {"RLC D", 2, false, true, op_rlc_d}, // 0xCB02
+    {"RLC E", 2, false, true, op_rlc_e}, // 0xCB03
+    {"RLC H", 2, false, true, op_rlc_h}, // 0xCB04
+    {"RLC L", 2, false, true, op_rlc_l}, // 0xCB05
+    {"RLC (HL)", 2, false, true, op_rlc_hlp}, // 0xCB06
+    {"RLC A", 2, false, true, op_rlc_a}, // 0xCB07
+    {"RRC B", 2, false, true, op_rrc_b}, // 0xCB08
+    {"RRC C", 2, false, true, op_rrc_c}, // 0xCB09
+    {"RRC D", 2, false, true, op_rrc_d}, // 0xCB0A
+    {"RRC E", 2, false, true, op_rrc_e}, // 0xCB0B
+    {"RRC H", 2, false, true, op_rrc_h}, // 0xCB0C
+    {"RRC L", 2, false, true, op_rrc_l}, // 0xCB0D
+    {"RRC (HL)", 2, false, true, op_rrc_hlp}, // 0xCB0E
+    {"RRC A", 2, false, true, op_rrc_a}, // 0xCB0F
+    {"RL B", 2, false, true, op_rl_b}, // 0xCB10
+    {"RL C", 2, false, true, op_rl_c}, // 0xCB11
+    {"RL D", 2, false, true, op_rl_d}, // 0xCB12
+    {"RL E", 2, false, true, op_rl_e}, // 0xCB13
+    {"RL H", 2, false, true, op_rl_h}, // 0xCB14
+    {"RL L", 2, false, true, op_rl_l}, // 0xCB15
+    {"RL (HL)", 2, false, true, op_rl_hlp}, // 0xCB16
+    {"RL A", 2, false, true, op_rl_a}, // 0xCB17
+    {"RR B", 2, false, true, op_rr_b}, // 0xCB18
+    {"RR C", 2, false, true, op_rr_c}, // 0xCB19
+    {"RR D", 2, false, true, op_rr_d}, // 0xCB1A
+    {"RR E", 2, false, true, op_rr_e}, // 0xCB1B
+    {"RR H", 2, false, true, op_rr_h}, // 0xCB1C
+    {"RR L", 2, false, true, op_rr_l}, // 0xCB1D
+    {"RR (HL)", 2, false, true, op_rr_hlp}, // 0xCB1E
+    {"RR A", 2, false, true, op_rr_a}, // 0xCB1F
+    {"SLA B", 2, false, true, op_sla_b}, // 0xCB20
+    {"SLA C", 2, false, true, op_sla_c}, // 0xCB21
+    {"SLA D", 2, false, true, op_sla_d}, // 0xCB22
+    {"SLA E", 2, false, true, op_sla_e}, // 0xCB23
+    {"SLA H", 2, false, true, op_sla_h}, // 0xCB24
+    {"SLA L", 2, false, true, op_sla_l}, // 0xCB25
+    {"SLA (HL)", 2, false, true, op_sla_hlp}, // 0xCB26
+    {"SLA A", 2, false, true, op_sla_a}, // 0xCB27
+    {"SRA B", 2, false, true, op_sra_b}, // 0xCB28
+    {"SRA C", 2, false, true, op_sra_c}, // 0xCB29
+    {"SRA D", 2, false, true, op_sra_d}, // 0xCB2A
+    {"SRA E", 2, false, true, op_sra_e}, // 0xCB2B
+    {"SRA H", 2, false, true, op_sra_h}, // 0xCB2C
+    {"SRA L", 2, false, true, op_sra_l}, // 0xCB2D
+    {"SRA (HL)", 2, false, true, op_sra_hlp}, // 0xCB2E
+    {"SRA A", 2, false, true, op_sra_a}, // 0xCB2F
+    {"SWAP B", 2, false, true, op_swap_b}, // 0xCB30
+    {"SWAP C", 2, false, true, op_swap_c}, // 0xCB31
+    {"SWAP D", 2, false, true, op_swap_d}, // 0xCB32
+    {"SWAP E", 2, false, true, op_swap_e}, // 0xCB33
+    {"SWAP H", 2, false, true, op_swap_h}, // 0xCB34
+    {"SWAP L", 2, false, true, op_swap_l}, // 0xCB35
+    {"SWAP (HL)", 2, false, true, op_swap_hlp}, // 0xCB36
+    {"SWAP A", 2, false, true, op_swap_a}, // 0xCB37
+    {"SRL B", 2, false, true, op_srl_b}, // 0xCB38
+    {"SRL C", 2, false, true, op_srl_c}, // 0xCB39
+    {"SRL D", 2, false, true, op_srl_d}, // 0xCB3A
+    {"SRL E", 2, false, true, op_srl_e}, // 0xCB3B
+    {"SRL H", 2, false, true, op_srl_h}, // 0xCB3C
+    {"SRL L", 2, false, true, op_srl_l}, // 0xCB3D
+    {"SRL (HL)", 2, false, true, op_srl_hlp}, // 0xCB3E
+    {"SRL A", 2, false, true, op_srl_a}, // 0xCB3F
+    {"BIT 0, B", 2, false, true, op_bit_0_b}, // 0xCB40
+    {"BIT 0, C", 2, false, true, op_bit_0_c}, // 0xCB41
+    {"BIT 0, D", 2, false, true, op_bit_0_d}, // 0xCB42
+    {"BIT 0, E", 2, false, true, op_bit_0_e}, // 0xCB43
+    {"BIT 0, H", 2, false, true, op_bit_0_h}, // 0xCB44
+    {"BIT 0, L", 2, false, true, op_bit_0_l}, // 0xCB45
+    {"BIT 0, (HL)", 2, false, true, op_bit_0_hlp}, // 0xCB46
+    {"BIT 0, A", 2, false, true, op_bit_0_a}, // 0xCB47
+    {"BIT 1, B", 2, false, true, op_bit_1_b}, // 0xCB48
+    {"BIT 1, C", 2, false, true, op_bit_1_c}, // 0xCB49
+    {"BIT 1, D", 2, false, true, op_bit_1_d}, // 0xCB4A
+    {"BIT 1, E", 2, false, true, op_bit_1_e}, // 0xCB4B
+    {"BIT 1, H", 2, false, true, op_bit_1_h}, // 0xCB4C
+    {"BIT 1, L", 2, false, true, op_bit_1_l}, // 0xCB4D
+    {"BIT 1, (HL)", 2, false, true, op_bit_1_hlp}, // 0xCB4E
+    {"BIT 1, A", 2, false, true, op_bit_1_a}, // 0xCB4F
+    {"BIT 2, B", 2, false, true, op_bit_2_b}, // 0xCB50
+    {"BIT 2, C", 2, false, true, op_bit_2_c}, // 0xCB51
+    {"BIT 2, D", 2, false, true, op_bit_2_d}, // 0xCB52
+    {"BIT 2, E", 2, false, true, op_bit_2_e}, // 0xCB53
+    {"BIT 2, H", 2, false, true, op_bit_2_h}, // 0xCB54
+    {"BIT 2, L", 2, false, true, op_bit_2_l}, // 0xCB55
+    {"BIT 2, (HL)", 2, false, true, op_bit_2_hlp}, // 0xCB56
+    {"BIT 2, A", 2, false, true, op_bit_2_a}, // 0xCB57
+    {"BIT 3, B", 2, false, true, op_bit_3_b}, // 0xCB58
+    {"BIT 3, C", 2, false, true, op_bit_3_c}, // 0xCB59
+    {"BIT 3, D", 2, false, true, op_bit_3_d}, // 0xCB5A
+    {"BIT 3, E", 2, false, true, op_bit_3_e}, // 0xCB5B
+    {"BIT 3, H", 2, false, true, op_bit_3_h}, // 0xCB5C
+    {"BIT 3, L", 2, false, true, op_bit_3_l}, // 0xCB5D
+    {"BIT 3, (HL)", 2, false, true, op_bit_3_hlp}, // 0xCB5E
+    {"BIT 3, A", 2, false, true, op_bit_3_a}, // 0xCB5F
+    {"BIT 4, B", 2, false, true, op_bit_4_b}, // 0xCB60
+    {"BIT 4, C", 2, false, true, op_bit_4_c}, // 0xCB61
+    {"BIT 4, D", 2, false, true, op_bit_4_d}, // 0xCB62
+    {"BIT 4, E", 2, false, true, op_bit_4_e}, // 0xCB63
+    {"BIT 4, H", 2, false, true, op_bit_4_h}, // 0xCB64
+    {"BIT 4, L", 2, false, true, op_bit_4_l}, // 0xCB65
+    {"BIT 4, (HL)", 2, false, true, op_bit_4_hlp}, // 0xCB66
+    {"BIT 4, A", 2, false, true, op_bit_4_a}, // 0xCB67
+    {"BIT 5, B", 2, false, true, op_bit_5_b}, // 0xCB68
+    {"BIT 5, C", 2, false, true, op_bit_5_c}, // 0xCB69
+    {"BIT 5, D", 2, false, true, op_bit_5_d}, // 0xCB6A
+    {"BIT 5, E", 2, false, true, op_bit_5_e}, // 0xCB6B
+    {"BIT 5, H", 2, false, true, op_bit_5_h}, // 0xCB6C
+    {"BIT 5, L", 2, false, true, op_bit_5_l}, // 0xCB6D
+    {"BIT 5, (HL)", 2, false, true, op_bit_5_hlp}, // 0xCB6E
+    {"BIT 5, A", 2, false, true, op_bit_5_a}, // 0xCB6F
+    {"BIT 6, B", 2, false, true, op_bit_6_b}, // 0xCB70
+    {"BIT 6, C", 2, false, true, op_bit_6_c}, // 0xCB71
+    {"BIT 6, D", 2, false, true, op_bit_6_d}, // 0xCB72
+    {"BIT 6, E", 2, false, true, op_bit_6_e}, // 0xCB73
+    {"BIT 6, H", 2, false, true, op_bit_6_h}, // 0xCB74
+    {"BIT 6, L", 2, false, true, op_bit_6_l}, // 0xCB75
+    {"BIT 6, (HL)", 2, false, true, op_bit_6_hlp}, // 0xCB76
+    {"BIT 6, A", 2, false, true, op_bit_6_a}, // 0xCB77
+    {"BIT 7, B", 2, false, true, op_bit_7_b}, // 0xCB78
+    {"BIT 7, C", 2, false, true, op_bit_7_c}, // 0xCB79
+    {"BIT 7, D", 2, false, true, op_bit_7_d}, // 0xCB7A
+    {"BIT 7, E", 2, false, true, op_bit_7_e}, // 0xCB7B
+    {"BIT 7, H", 2, false, true, op_bit_7_h}, // 0xCB7C
+    {"BIT 7, L", 2, false, true, op_bit_7_l}, // 0xCB7D
+    {"BIT 7, (HL)", 2, false, true, op_bit_7_hlp}, // 0xCB7E
+    {"BIT 7, A", 2, false, true, op_bit_7_a}, // 0xCB7F
+    {"RES 0, B", 2, false, true, op_res_0_b}, // 0xCB80
+    {"RES 0, C", 2, false, true, op_res_0_c}, // 0xCB81
+    {"RES 0, D", 2, false, true, op_res_0_d}, // 0xCB82
+    {"RES 0, E", 2, false, true, op_res_0_e}, // 0xCB83
+    {"RES 0, H", 2, false, true, op_res_0_h}, // 0xCB84
+    {"RES 0, L", 2, false, true, op_res_0_l}, // 0xCB85
+    {"RES 0, (HL)", 2, false, true, op_res_0_hlp}, // 0xCB86
+    {"RES 0, A", 2, false, true, op_res_0_a}, // 0xCB87
+    {"RES 1, B", 2, false, true, op_res_1_b}, // 0xCB88
+    {"RES 1, C", 2, false, true, op_res_1_c}, // 0xCB89
+    {"RES 1, D", 2, false, true, op_res_1_d}, // 0xCB8A
+    {"RES 1, E", 2, false, true, op_res_1_e}, // 0xCB8B
+    {"RES 1, H", 2, false, true, op_res_1_h}, // 0xCB8C
+    {"RES 1, L", 2, false, true, op_res_1_l}, // 0xCB8D
+    {"RES 1, (HL)", 2, false, true, op_res_1_hlp}, // 0xCB8E
+    {"RES 1, A", 2, false, true, op_res_1_a}, // 0xCB8F
+    {"RES 2, B", 2, false, true, op_res_2_b}, // 0xCB90
+    {"RES 2, C", 2, false, true, op_res_2_c}, // 0xCB91
+    {"RES 2, D", 2, false, true, op_res_2_d}, // 0xCB92
+    {"RES 2, E", 2, false, true, op_res_2_e}, // 0xCB93
+    {"RES 2, H", 2, false, true, op_res_2_h}, // 0xCB94
+    {"RES 2, L", 2, false, true, op_res_2_l}, // 0xCB95
+    {"RES 2, (HL)", 2, false, true, op_res_2_hlp}, // 0xCB96
+    {"RES 2, A", 2, false, true, op_res_2_a}, // 0xCB97
+    {"RES 3, B", 2, false, true, op_res_3_b}, // 0xCB98
+    {"RES 3, C", 2, false, true, op_res_3_c}, // 0xCB99
+    {"RES 3, D", 2, false, true, op_res_3_d}, // 0xCB9A
+    {"RES 3, E", 2, false, true, op_res_3_e}, // 0xCB9B
+    {"RES 3, H", 2, false, true, op_res_3_h}, // 0xCB9C
+    {"RES 3, L", 2, false, true, op_res_3_l}, // 0xCB9D
+    {"RES 3, (HL)", 2, false, true, op_res_3_hlp}, // 0xCB9E
+    {"RES 3, A", 2, false, true, op_res_3_a}, // 0xCB9F
+    {"RES 4, B", 2, false, true, op_res_4_b}, // 0xCBA0
+    {"RES 4, C", 2, false, true, op_res_4_c}, // 0xCBA1
+    {"RES 4, D", 2, false, true, op_res_4_d}, // 0xCBA2
+    {"RES 4, E", 2, false, true, op_res_4_e}, // 0xCBA3
+    {"RES 4, H", 2, false, true, op_res_4_h}, // 0xCBA4
+    {"RES 4, L", 2, false, true, op_res_4_l}, // 0xCBA5
+    {"RES 4, (HL)", 2, false, true, op_res_4_hlp}, // 0xCBA6
+    {"RES 4, A", 2, false, true, op_res_4_a}, // 0xCBA7
+    {"RES 5, B", 2, false, true, op_res_5_b}, // 0xCBA8
+    {"RES 5, C", 2, false, true, op_res_5_c}, // 0xCBA9
+    {"RES 5, D", 2, false, true, op_res_5_d}, // 0xCBAA
+    {"RES 5, E", 2, false, true, op_res_5_e}, // 0xCBAB
+    {"RES 5, H", 2, false, true, op_res_5_h}, // 0xCBAC
+    {"RES 5, L", 2, false, true, op_res_5_l}, // 0xCBAD
+    {"RES 5, (HL)", 2, false, true, op_res_5_hlp}, // 0xCBAE
+    {"RES 5, A", 2, false, true, op_res_5_a}, // 0xCBAF
+    {"RES 6, B", 2, false, true, op_res_6_b}, // 0xCBB0
+    {"RES 6, C", 2, false, true, op_res_6_c}, // 0xCBB1
+    {"RES 6, D", 2, false, true, op_res_6_d}, // 0xCBB2
+    {"RES 6, E", 2, false, true, op_res_6_e}, // 0xCBB3
+    {"RES 6, H", 2, false, true, op_res_6_h}, // 0xCBB4
+    {"RES 6, L", 2, false, true, op_res_6_l}, // 0xCBB5
+    {"RES 6, (HL)", 2, false, true, op_res_6_hlp}, // 0xCBB6
+    {"RES 6, A", 2, false, true, op_res_6_a}, // 0xCBB7
+    {"RES 7, B", 2, false, true, op_res_7_b}, // 0xCBB8
+    {"RES 7, C", 2, false, true, op_res_7_c}, // 0xCBB9
+    {"RES 7, D", 2, false, true, op_res_7_d}, // 0xCBBA
+    {"RES 7, E", 2, false, true, op_res_7_e}, // 0xCBBB
+    {"RES 7, H", 2, false, true, op_res_7_h}, // 0xCBBC
+    {"RES 7, L", 2, false, true, op_res_7_l}, // 0xCBBD
+    {"RES 7, (HL)", 2, false, true, op_res_7_hlp}, // 0xCBBE
+    {"RES 7, A", 2, false, true, op_res_7_a}, // 0xCBBF
+    {"SET 0, B", 2, false, true, op_set_0_b}, // 0xCBC0
+    {"SET 0, C", 2, false, true, op_set_0_c}, // 0xCBC1
+    {"SET 0, D", 2, false, true, op_set_0_d}, // 0xCBC2
+    {"SET 0, E", 2, false, true, op_set_0_e}, // 0xCBC3
+    {"SET 0, H", 2, false, true, op_set_0_h}, // 0xCBC4
+    {"SET 0, L", 2, false, true, op_set_0_l}, // 0xCBC5
+    {"SET 0, (HL)", 2, false, true, op_set_0_hlp}, // 0xCBC6
+    {"SET 0, A", 2, false, true, op_set_0_a}, // 0xCBC7
+    {"SET 1, B", 2, false, true, op_set_1_b}, // 0xCBC8
+    {"SET 1, C", 2, false, true, op_set_1_c}, // 0xCBC9
+    {"SET 1, D", 2, false, true, op_set_1_d}, // 0xCBCA
+    {"SET 1, E", 2, false, true, op_set_1_e}, // 0xCBCB
+    {"SET 1, H", 2, false, true, op_set_1_h}, // 0xCBCC
+    {"SET 1, L", 2, false, true, op_set_1_l}, // 0xCBCD
+    {"SET 1, (HL)", 2, false, true, op_set_1_hlp}, // 0xCBCE
+    {"SET 1, A", 2, false, true, op_set_1_a}, // 0xCBCF
+    {"SET 2, B", 2, false, true, op_set_2_b}, // 0xCBD0
+    {"SET 2, C", 2, false, true, op_set_2_c}, // 0xCBD1
+    {"SET 2, D", 2, false, true, op_set_2_d}, // 0xCBD2
+    {"SET 2, E", 2, false, true, op_set_2_e}, // 0xCBD3
+    {"SET 2, H", 2, false, true, op_set_2_h}, // 0xCBD4
+    {"SET 2, L", 2, false, true, op_set_2_l}, // 0xCBD5
+    {"SET 2, (HL)", 2, false, true, op_set_2_hlp}, // 0xCBD6
+    {"SET 2, A", 2, false, true, op_set_2_a}, // 0xCBD7
+    {"SET 3, B", 2, false, true, op_set_3_b}, // 0xCBD8
+    {"SET 3, C", 2, false, true, op_set_3_c}, // 0xCBD9
+    {"SET 3, D", 2, false, true, op_set_3_d}, // 0xCBDA
+    {"SET 3, E", 2, false, true, op_set_3_e}, // 0xCBDB
+    {"SET 3, H", 2, false, true, op_set_3_h}, // 0xCBDC
+    {"SET 3, L", 2, false, true, op_set_3_l}, // 0xCBDD
+    {"SET 3, (HL)", 2, false, true, op_set_3_hlp}, // 0xCBDE
+    {"SET 3, A", 2, false, true, op_set_3_a}, // 0xCBDF
+    {"SET 4, B", 2, false, true, op_set_4_b}, // 0xCBE0
+    {"SET 4, C", 2, false, true, op_set_4_c}, // 0xCBE1
+    {"SET 4, D", 2, false, true, op_set_4_d}, // 0xCBE2
+    {"SET 4, E", 2, false, true, op_set_4_e}, // 0xCBE3
+    {"SET 4, H", 2, false, true, op_set_4_h}, // 0xCBE4
+    {"SET 4, L", 2, false, true, op_set_4_l}, // 0xCBE5
+    {"SET 4, (HL)", 2, false, true, op_set_4_hlp}, // 0xCBE6
+    {"SET 4, A", 2, false, true, op_set_4_a}, // 0xCBE7
+    {"SET 5, B", 2, false, true, op_set_5_b}, // 0xCBE8
+    {"SET 5, C", 2, false, true, op_set_5_c}, // 0xCBE9
+    {"SET 5, D", 2, false, true, op_set_5_d}, // 0xCBEA
+    {"SET 5, E", 2, false, true, op_set_5_e}, // 0xCBEB
+    {"SET 5, H", 2, false, true, op_set_5_h}, // 0xCBEC
+    {"SET 5, L", 2, false, true, op_set_5_l}, // 0xCBED
+    {"SET 5, (HL)", 2, false, true, op_set_5_hlp}, // 0xCBEE
+    {"SET 5, A", 2, false, true, op_set_5_a}, // 0xCBEF
+    {"SET 6, B", 2, false, true, op_set_6_b}, // 0xCBF0
+    {"SET 6, C", 2, false, true, op_set_6_c}, // 0xCBF1
+    {"SET 6, D", 2, false, true, op_set_6_d}, // 0xCBF2
+    {"SET 6, E", 2, false, true, op_set_6_e}, // 0xCBF3
+    {"SET 6, H", 2, false, true, op_set_6_h}, // 0xCBF4
+    {"SET 6, L", 2, false, true, op_set_6_l}, // 0xCBF5
+    {"SET 6, (HL)", 2, false, true, op_set_6_hlp}, // 0xCBF6
+    {"SET 6, A", 2, false, true, op_set_6_a}, // 0xCBF7
+    {"SET 7, B", 2, false, true, op_set_7_b}, // 0xCBF8
+    {"SET 7, C", 2, false, true, op_set_7_c}, // 0xCBF9
+    {"SET 7, D", 2, false, true, op_set_7_d}, // 0xCBFA
+    {"SET 7, E", 2, false, true, op_set_7_e}, // 0xCBFB
+    {"SET 7, H", 2, false, true, op_set_7_h}, // 0xCBFC
+    {"SET 7, L", 2, false, true, op_set_7_l}, // 0xCBFD
+    {"SET 7, (HL)", 2, false, true, op_set_7_hlp}, // 0xCBFE
+    {"SET 7, A", 2, false, true, op_set_7_a} // 0xCBFF
+};
