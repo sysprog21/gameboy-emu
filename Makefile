@@ -23,8 +23,10 @@ BIN = $(OUT)/emu $(OUT)/bench
 
 all: $(BIN)
 
-OBJS = \
-	apu.o \
+OBJS = 			\
+	apu.o 		\
+	cpu.o 		\
+	gameboy.o \
 	main.o
 
 OBJS := $(addprefix $(OUT)/, $(OBJS))
