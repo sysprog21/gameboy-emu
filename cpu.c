@@ -1,7 +1,9 @@
+#include "apu.h"
+#include "gameboy.h"
 #include "cpu.h"
 
 /* Internal function used to read bytes. */
-static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
+uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 {
     switch (addr >> 12) {
     case 0x0:
@@ -159,7 +161,7 @@ static uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 }
 
 /* Internal function used to write bytes */
-static void __gb_write(struct gb_s *gb,
+void __gb_write(struct gb_s *gb,
                        const uint_fast16_t addr,
                        const uint8_t val)
 {
@@ -431,7 +433,7 @@ static void __gb_write(struct gb_s *gb,
     (gb->gb_error)(gb, GB_INVALID_WRITE, addr);
 }
 
-static uint8_t __gb_execute_cb(struct gb_s *gb)
+uint8_t __gb_execute_cb(struct gb_s *gb)
 {
     uint8_t inst_cycles;
     uint8_t cbop = __gb_read(gb, gb->cpu_reg.pc++);
@@ -608,7 +610,7 @@ static uint8_t __gb_execute_cb(struct gb_s *gb)
 }
 
 #if ENABLE_LCD
-static void __gb_draw_line(struct gb_s *gb)
+void __gb_draw_line(struct gb_s *gb)
 {
     uint8_t pixels[160] = {0};
 
@@ -847,7 +849,7 @@ static void __gb_draw_line(struct gb_s *gb)
 #endif
 
 /* Internal function used to step the CPU */
-static void __gb_step_cpu(struct gb_s *gb)
+void __gb_step_cpu(struct gb_s *gb)
 {
     uint8_t opcode, inst_cycles;
     static const uint8_t op_cycles[0x100] = {
