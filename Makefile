@@ -25,6 +25,7 @@ all: $(BIN)
 
 OBJS = \
 	apu.o \
+	gameboy.o \
 	main.o
 
 OBJS := $(addprefix $(OUT)/, $(OBJS))
@@ -51,7 +52,7 @@ $(OUT)/cpu_instrs.h: tests/cpu_instrs.gb tests/rom2h.c
 
 $(OUT)/bench: $(OUT)/cpu_instrs.h prof.h bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"
-	$(Q)$(CC) -o $@ bench.c
+	$(Q)$(CC) -o $@ bench.c $(OBJS) `sdl2-config --libs`
 
 # Download Game Boy ROMs with full source
 download_rom:

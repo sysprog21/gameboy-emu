@@ -1,3 +1,5 @@
+
+#include "apu.h"
 #include "gameboy.h"
 
 /* Tick the internal RTC by one second */
