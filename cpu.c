@@ -1,5 +1,4 @@
 #include "apu.h"
-#include "gameboy.h"
 #include "cpu.h"
 
 /* Internal function used to read bytes. */
