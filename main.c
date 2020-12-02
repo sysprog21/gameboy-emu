@@ -468,9 +468,13 @@ int main(int argc, char **argv)
 
     if (argc == 2) { /* ROM file was specified */
         rom_file_name = argv[1];
+        printf("Warning! save_file_name not specified\n");
         /* FIXME: save_file_name is set to NULL. Make it configurable. */
+    } else if (argc == 3) {
+        rom_file_name = argv[1];
+        save_file_name = argv[2];
     } else {
-        printf("Usage: %s ROM\n", argv[0]);
+        printf("Usage: %s roms/$(game) $(save)\n", argv[0]);
         ret = EXIT_FAILURE;
         goto out;
     }

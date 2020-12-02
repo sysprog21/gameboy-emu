@@ -1,5 +1,5 @@
-#include "apu.h"
 #include "cpu.h"
+#include "apu.h"
 
 /* Internal function used to read bytes. */
 uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
@@ -160,9 +160,7 @@ uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 }
 
 /* Internal function used to write bytes */
-void __gb_write(struct gb_s *gb,
-                       const uint_fast16_t addr,
-                       const uint8_t val)
+void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
 {
     switch (addr >> 12) {
     case 0x0:
@@ -908,7 +906,21 @@ void __gb_step_cpu(struct gb_s *gb)
 
     /* Obtain opcode */
     opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
-    inst_cycles = op_cycles[opcode];
+    // inst_cycles = op_cycles[opcode];
+
+    /* cpu_instr */
+    cpu_instr table;
+    void (*opcode_function)() = table.execute;
+    if (opcode == 0xcb)
+        table = cb_table[READ8(REG(pc)++)];
+    else
+        table = instr_table[opcode];
+
+    inst_cycles = table.alt_cycles * 4;
+    if (table.flags == INST_FLAG_USES_CC)
+        opcode_function(gb, opcode, &inst_cycles);
+    else
+        opcode_function(gb, opcode);
 
     /* Execute opcode */
     switch (opcode) {
