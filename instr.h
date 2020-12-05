@@ -2,6 +2,10 @@
 
 #include "cpu.h"
 
+#define REG(N) gb->cpu.reg.N
+#define READ8(addr) __gb_read(gb, addr)
+#define WRITE8(addr, value) __gb_write(gb, addr, value)
+
 static const cpu_instr instr_table[] = {
     /* clang-format off */
 /* CODE     OPCODE ARG1    ARG2    PTR/ADDR BYTES CYCLES  FLAGS */
