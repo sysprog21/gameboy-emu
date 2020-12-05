@@ -28,93 +28,108 @@ void LD16(struct gb_s *gb, uint8_t opcode)
 void LD(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
-    case 0x02:  // MEM_BC | REG_A:
+      case 0x02: // MEM_BC | REG_A:
         break;
-    case 0x06:  // REG_B | IMM8:
+      case 0x06: // REG_B | IMM8:
         break;
-    case 0x0a:  // REG_A | MEM_BC:
+      case 0x0a: // REG_A | MEM_BC:
         break;
-    case  // REG_C | IMM8:
+      case 0x0e: // REG_C | IMM8:
         break;
-        case  // MEM_DE | REG_A:
+      case 0x12: // MEM_DE | REG_A:
         break;
-        case  // REG_D | IMM8:
+      case 0x16: // REG_D | IMM8:
         break;
-        case  // REG_A | MEM_DE:
+      case 0x1a: // REG_A | MEM_DE:
         break;
-        case  // REG_E | IMM8:
+      case 0x1e: // REG_E | IMM8:
         break;
-        case  // MEM_INC_HL | REG_A:
+      case 0x22: // MEM_INC_HL | REG_A:
         break;
-        case  // REG_H | IMM8:
+      case 0x26: // REG_H | IMM8:
         break;
-        case REG_A | MEM_INC_HL:
+      case 0x2a: // REG_A | MEM_INC_HL:
         break;
-    case REG_L | IMM8:
+      case 0x2e: // REG_L | IMM8:
         break;
-    case MEM_DEC_HL | REG_A:
+      case 0x32: // MEM_DEC_HL | REG_A:
         break;
-    case MEM_HL | IMM8:
+      case 0x36: // MEM_HL | IMM8:
         break;
-    case REG_A | MEM_DEC_HL:
+      case 0x3a: // REG_A | MEM_DEC_HL:
         break;
-    case REG_A | IMM8:
+      case 0x3e: // REG_A | IMM8:
         break;
-    case REG_B | REG_C:
-    case REG_B | REG_D:
-    case REG_B | REG_E:
-    case REG_B | REG_H:
-    case REG_B | REG_L:
-    case REG_B | MEM_HL:
-    case REG_B | REG_A:
+      case 0x41: // REG_B | REG_C:
+      case 0x42: // REG_B | REG_D:
+      case 0x43: // REG_B | REG_E:
+      case 0x44: // REG_B | REG_H:
+      case 0x45: // REG_B | REG_L:
+      case 0x46: // REG_B | MEM_HL:
+      case 0x47: // REG_B | REG_A:
         break;
-    case REG_C | REG_B:
-    case REG_C | REG_D:
-    case REG_C | REG_E:
-    case REG_C | REG_H:
-    case REG_C | REG_L:
-    case REG_C | MEM_HL:
-    case REG_C | REG_A:
+      case 0x48: // REG_C | REG_B:
+      case 0x4a: // REG_C | REG_D:
+      case 0x4b: // REG_C | REG_E:
+      case 0x4c: // REG_C | REG_H:
+      case 0x4d: // REG_C | REG_L:
+      case 0x4e: // REG_C | MEM_HL:
+      case 0x4f: // REG_C | REG_A:
         break;
-    case REG_D | REG_B:
-    case REG_D | REG_C:
-    case REG_D | REG_E:
-    case REG_D | REG_H:
-    case REG_D | REG_L:
-    case REG_D | MEM_HL:
-    case REG_D | REG_A:
+      case 0x50: // REG_D | REG_B:
+      case 0x51: // REG_D | REG_C:
+      case 0x53: // REG_D | REG_E:
+      case 0x54: // REG_D | REG_H:
+      case 0x55: // REG_D | REG_L:
+      case 0x56: // REG_D | MEM_HL:
+      case 0x57: // REG_D | REG_A:
         break;
-    case REG_E | REG_B:
-    case REG_E | REG_C:
-    case REG_E | REG_D:
-    case REG_E | REG_H:
-    case REG_E | REG_L:
-    case REG_E | MEM_HL:
-    case REG_E | REG_A:
+      case 0x58: // REG_E | REG_B:
+      case 0x59: // REG_E | REG_C:
+      case 0x5a: // REG_E | REG_D:
+      case 0x5c: // REG_E | REG_H:
+      case 0x5d: // REG_E | REG_L:
+      case 0x5e: // REG_E | MEM_HL:
+      case 0x5f: // REG_E | REG_A:
         break;
-    case REG_H | REG_B:
-    case REG_H | REG_C:
-    case REG_H | REG_D:
-    case REG_H | REG_E:
-    case REG_H | REG_L:
-    case REG_H | MEM_HL:
-    case REG_H | REG_A:
+      case 0x60: // REG_H | REG_B:
+      case 0x61: // REG_H | REG_C:
+      case 0x62: // REG_H | REG_D:
+      case 0x63: // REG_H | REG_E:
+      case 0x65: // REG_H | REG_L:
+      case 0x66: // REG_H | MEM_HL:
+      case 0x67: // REG_H | REG_A:
         break;
-    case REG_L | REG_B:
-    case REG_L | REG_C:
-    case REG_L | REG_D:
-    case REG_L | REG_E:
-    case REG_L | REG_H:
-    case REG_L | MEM_HL:
-    case REG_L | REG_A:
+      case 0x68: // REG_L | REG_B:
+      case 0x69: // REG_L | REG_C:
+      case 0x6a: // REG_L | REG_D:
+      case 0x6b: // REG_L | REG_E:
+      case 0x6c: // REG_L | REG_H:
+      case 0x6e: // REG_L | MEM_HL:
+      case 0x6f: // REG_L | REG_A:
         break;
-    case MEM_HL | REG_B:
-    case MEM_HL | REG_C:
-    case MEM_HL | REG_D:
-    case MEM_HL | REG_E:
-    case MEM_HL | REG_H:
-    case MEM_HL | REG_L:
-    case MEM_HL | REG_A:
+      case 0x70: // MEM_HL | REG_B:
+      case 0x71: // MEM_HL | REG_C:
+      case 0x72: // MEM_HL | REG_D:
+      case 0x73: // MEM_HL | REG_E:
+      case 0x74: // MEM_HL | REG_H:
+      case 0x75: // MEM_HL | REG_L:
+      case 0x77: // MEM_HL | REG_A:
+        break;
+      case 0x78: // REG_A | REG_B
+      case 0x79:
+      case 0x7a:
+      case 0x7b:
+      case 0x7c:
+      case 0x7d:
+      case 0x7e:
+        break;
+      case 0xe0: // MEM_8 | REG_A
+      case 0xe2:
+      case 0xea:
+      case 0xf0:
+      case 0xf2:
+      case 0xfa:
         break;
     }
 }
