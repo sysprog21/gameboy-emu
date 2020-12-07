@@ -32,18 +32,15 @@ void LD16(struct gb_s *gb, uint8_t opcode)
         REG(hl) = REG(sp) + offset;
         REG(f_bits.z) = 0;
         REG(f_bits.n) = 0;
-        REG(f_bits.h) =
-          ((REG(sp) & 0xF) + (offset & 0xF) > 0xF) ? 1 : 0;
-        REG(f_bits.c) = 
-          ((REG(sp) & 0xFF) + (offset & 0xFF) > 0xFF) ? 1 : 0;
+        REG(f_bits.h) = ((REG(sp) & 0xF) + (offset & 0xF) > 0xF) ? 1 : 0;
+        REG(f_bits.c) = ((REG(sp) & 0xFF) + (offset & 0xFF) > 0xFF) ? 1 : 0;
         break;
     case 0x31:  // REG_SP | IMM16:
         REG(sp) = READ8(REG(pc)++);
         REG(sp) |= READ8(REG(pc)++) << 8;
         break;
     case 0xf9:  // REG_SP | REG_HL:
-        REG(sp) = REG(hl)
-        break;
+        REG(sp) = REG(hl) break;
     default:
         (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
     }
@@ -53,36 +50,53 @@ void LD(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x02:  // MEM_BC | REG_A:
+        WRITE8(REG(bc), REG(a));
         break;
     case 0x06:  // REG_B | IMM8:
+        REG(b) = READ8(REG(pc)++);
         break;
     case 0x0a:  // REG_A | MEM_BC:
+        REG(a) = READ8(REG(bc));
         break;
     case 0x0e:  // REG_C | IMM8:
+        REG(c) = READ8(REG(pc)++);
         break;
     case 0x12:  // MEM_DE | REG_A:
+        WRITE8(REG(de), REG(a));
         break;
     case 0x16:  // REG_D | IMM8:
+        REG(d) = READ8(REG(pc)++);
         break;
     case 0x1a:  // REG_A | MEM_DE:
+        REG(a) = READ8(REG(de));
         break;
     case 0x1e:  // REG_E | IMM8:
+        REG(e) = READ8(REG(pc)++);
         break;
     case 0x22:  // MEM_INC_HL | REG_A:
+        WRITE8(REG(hl), REG(a));
+        REG(hl)++;
         break;
     case 0x26:  // REG_H | IMM8:
+        REG(h) = READ8(REG(pc)++);
         break;
     case 0x2a:  // REG_A | MEM_INC_HL:
+        REG(a) = READ8(REG(hl)++);
         break;
     case 0x2e:  // REG_L | IMM8:
-        break;
+        REG(l) = READ8(REG(pc)++) break;
     case 0x32:  // MEM_DEC_HL | REG_A:
+        WRITE8(REG(hl), REG(a));
+        REG(hl)--;
         break;
     case 0x36:  // MEM_HL | IMM8:
+        WRITE8(REG(hl), READ8(REG(pc)++));
         break;
     case 0x3a:  // REG_A | MEM_DEC_HL:
+        REG(a) = READ8(REG(hl)--);
         break;
     case 0x3e:  // REG_A | IMM8:
+        REG(a) = READ8(REG(pc)++);
         break;
     case 0x41:  // REG_B | REG_C:
         REG(b) = REG(c);
@@ -127,7 +141,7 @@ void LD(struct gb_s *gb, uint8_t opcode)
         REG(c) = REG(a);
         break;
     case 0x50:  // REG_D | REG_B:
-        REG(d) = REG(b); 
+        REG(d) = REG(b);
         break;
     case 0x51:  // REG_D | REG_C:
         REG(d) = REG(c);
@@ -211,12 +225,25 @@ void LD(struct gb_s *gb, uint8_t opcode)
         REG(l) = REG(a);
         break;
     case 0x70:  // MEM_HL | REG_B:
+        WRITE8(REG(hl), REG(b));
+        break;
     case 0x71:  // MEM_HL | REG_C:
+        WRITE8(REG(hl), REG(c));
+        break;
     case 0x72:  // MEM_HL | REG_D:
+        WRITE8(REG(hl), REG(d));
+        break;
     case 0x73:  // MEM_HL | REG_E:
+        WRITE8(REG(hl), REG(e));
+        break;
     case 0x74:  // MEM_HL | REG_H:
+        WRITE8(REG(hl), REG(h));
+        break;
     case 0x75:  // MEM_HL | REG_L:
+        WRITE8(REG(hl), REG(l));
+        break;
     case 0x77:  // MEM_HL | REG_A:
+        WRITE8(REG(hl), REG(a));
         break;
     case 0x78:  // REG_A | REG_B
         REG(a) = REG(b);
@@ -240,58 +267,93 @@ void LD(struct gb_s *gb, uint8_t opcode)
         REG(a) = READ8(REG(hl));
         break;
     case 0xe0:  // MEM_8 | REG_A
+        WRITE8(0xFF00 | READ8(REG(pc)++), REG(a));
+        break;
     case 0xe2:
+        WRITE8(0xFF00 | REG(c), REG(a));
+        break;
     case 0xea:
+        uint16_t addr = READ8(REG(pc)++);
+        addr |= READ8(REG(pc)++) << 8;
+        WRITE8(addr, REG(a));
+        break;
     case 0xf0:
+        REG(a) = READ8(0xFF00 | READ8(REG(pc)++));
+        break;
     case 0xf2:
+        REG(a) = READ8(0xFF00 | REG(c));
+        break;
     case 0xfa:
+        uint16_t addr = READ8(REG(pc)++);
+        addr |= READ8(REG(pc)++) << 8;
+        REG(a) = READ8(addr);
         break;
     }
 }
 
-void INC16(struct gb_s *gb, cpu_instr instr) {}
+void INC16(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x03:
+    case 0x13:
+    case 0x23:
+    case 0x33:
+    }
+}
 
-void INC(struct gb_s *gb, cpu_instr instr) {}
+void INC(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x04:
+    case 0x0c:
+    case 0x14:
+    case 0x1c:
+    case 0x24:
+    case 0x2c:
+    case 0x34:
+    case 0x3c:
+    }
+}
 
-void DEC16(struct gb_s *gb, cpu_instr instr) {}
+void DEC16(struct gb_s *gb, uint8_t opcode) {}
 
-void DEC(struct gb_s *gb, cpu_instr instr) {}
+void DEC(struct gb_s *gb, uint8_t opcode) {}
 
-void RLC(struct gb_s *gb, cpu_instr instr) {}
+void RLC(struct gb_s *gb, uint8_t opcode) {}
 
-void ADD16(struct gb_s *gb, cpu_instr instr) {}
+void ADD16(struct gb_s *gb, uint8_t opcode) {}
 
-void ADD(struct gb_s *gb, cpu_instr instr) {}
+void ADD(struct gb_s *gb, uint8_t opcode) {}
 
-void RRC(struct gb_s *gb, cpu_instr instr) {}
+void RRC(struct gb_s *gb, uint8_t opcode) {}
 
-void STOP(struct gb_s *gb, cpu_instr instr) {}
+void STOP(struct gb_s *gb, uint8_t opcode) {}
 
-void RL(struct gb_s *gb, cpu_instr instr) {}
+void RL(struct gb_s *gb, uint8_t opcode) {}
 
-void JR(struct gb_s *gb, cpu_instr instr) {}
+void JR(struct gb_s *gb, uint8_t opcode) {}
 
-void RR(struct gb_s *gb, cpu_instr instr) {}
+void RR(struct gb_s *gb, uint8_t opcode) {}
 
-void DAA(struct gb_s *gb, cpu_instr instr) {}
+void DAA(struct gb_s *gb, uint8_t opcode) {}
 
-void CPL(struct gb_s *gb, cpu_instr instr) {}
+void CPL(struct gb_s *gb, uint8_t opcode) {}
 
-void SCF(struct gb_s *gb, cpu_instr instr) {}
+void SCF(struct gb_s *gb, uint8_t opcode) {}
 
-void CCF(struct gb_s *gb, cpu_instr instr) {}
+void CCF(struct gb_s *gb, uint8_t opcode) {}
 
-void HALT(struct gb_s *gb, cpu_instr instr) {}
+void HALT(struct gb_s *gb, uint8_t opcode) {}
 
-void ADC(struct gb_s *gb, cpu_instr instr) {}
+void ADC(struct gb_s *gb, uint8_t opcode) {}
 
-void SUB(struct gb_s *gb, cpu_instr instr) {}
+void SUB(struct gb_s *gb, uint8_t opcode) {}
 
-void SBC(struct gb_s *gb, cpu_instr instr) {}
+void SBC(struct gb_s *gb, uint8_t opcode) {}
 
-void AND(struct gb_s *gb, cpu_instr instr) {}
+void AND(struct gb_s *gb, uint8_t opcode) {}
 
-void XOR(struct gb_s *gb, cpu_instr instr) {}
+void XOR(struct gb_s *gb, uint8_t opcode) {}
 
 void OR(struct gb_s *gb, cpu_instr instr) {}
 
