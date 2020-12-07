@@ -315,86 +315,338 @@ void INC(struct gb_s *gb, uint8_t opcode)
     }
 }
 
-void DEC16(struct gb_s *gb, uint8_t opcode) {}
+void DEC16(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x0b:
+    case 0x1b:
+    case 0x2b:
+    case 0x3b:
+    }
+}
 
-void DEC(struct gb_s *gb, uint8_t opcode) {}
+void DEC(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x05:
+    case 0x0d:
+    case 0x15:
+    case 0x1d:
+    case 0x25:
+    case 0x2d:
+    case 0x35:
+    case 0x3d:
+    }
+}
 
-void RLC(struct gb_s *gb, uint8_t opcode) {}
+void RLC(struct gb_s *gb, uint8_t opcode)
 
-void ADD16(struct gb_s *gb, uint8_t opcode) {}
+void ADD16(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x09:
+    case 0x19:
+    case 0x29:
+    case 0x39:
+    case 0xe8:
+    } 
+}
 
-void ADD(struct gb_s *gb, uint8_t opcode) {}
+void ADD(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x80:
+    case 0x81:
+    case 0x82:
+    case 0x83:
+    case 0x84:
+    case 0x85:
+    case 0x86:
+    case 0x87:
+    case 0xc6:
+    } 
+}
 
-void RRC(struct gb_s *gb, uint8_t opcode) {}
+void RRC(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void STOP(struct gb_s *gb, uint8_t opcode) {}
+void STOP(struct gb_s *gb, uint8_t opcode)
+{
+    0x10:
+}
 
-void RL(struct gb_s *gb, uint8_t opcode) {}
+void RL(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void JR(struct gb_s *gb, uint8_t opcode) {}
+void JR(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x18:
+    case 0x20:
+    case 0x28:
+    case 0x30:
+    case 0x38:
+    }     
+}
 
-void RR(struct gb_s *gb, uint8_t opcode) {}
+void RR(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void DAA(struct gb_s *gb, uint8_t opcode) {}
+void DAA(struct gb_s *gb, uint8_t opcode)
+{
+    0x27:
+}
 
-void CPL(struct gb_s *gb, uint8_t opcode) {}
+void CPL(struct gb_s *gb, uint8_t opcode) 
+{
+    0x2f:
+}
 
-void SCF(struct gb_s *gb, uint8_t opcode) {}
+void SCF(struct gb_s *gb, uint8_t opcode) 
+{
+    0x37:
+}
 
-void CCF(struct gb_s *gb, uint8_t opcode) {}
+void CCF(struct gb_s *gb, uint8_t opcode)
+{
+    0x3f:
+}
 
-void HALT(struct gb_s *gb, uint8_t opcode) {}
+void HALT(struct gb_s *gb, uint8_t opcode)
+{
+    0x76:
+}
 
-void ADC(struct gb_s *gb, uint8_t opcode) {}
+void ADC(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x88:
+    case 0x89:
+    case 0x8a:
+    case 0x8b:
+    case 0x8c:
+    case 0x8d:
+    case 0x8e:
+    case 0x8f:
+    case 0xce:
+    }     
+}
 
-void SUB(struct gb_s *gb, uint8_t opcode) {}
+void SUB(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x90:
+    case 0x91:
+    case 0x92:
+    case 0x93:
+    case 0x94:
+    case 0x95:
+    case 0x96:
+    case 0x97:
+    case 0xd6:
+    }  
+}
 
-void SBC(struct gb_s *gb, uint8_t opcode) {}
+void SBC(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0x98:
+    case 0x99:
+    case 0x9a:
+    case 0x9b:
+    case 0x9c:
+    case 0x9d:
+    case 0x9e:
+    case 0x9f:
+    case 0xde:
+    }
+}
 
-void AND(struct gb_s *gb, uint8_t opcode) {}
+void AND(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xa0:
+    case 0xa1:
+    case 0xa2:
+    case 0xa3:
+    case 0xa4:
+    case 0xa5:
+    case 0xa6:
+    case 0xa7:
+    case 0xe6:
+    }
+}
 
-void XOR(struct gb_s *gb, uint8_t opcode) {}
+void XOR(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xa8:
+    case 0xa9:
+    case 0xaa:
+    case 0xab:
+    case 0xac:
+    case 0xad:
+    case 0xae:
+    case 0xaf:
+    case 0xee:
+    }    
+}
 
-void OR(struct gb_s *gb, cpu_instr instr) {}
+void OR(struct gb_s *gb, uint8_t opcode) 
+{
+    switch (opcode) {
+    case 0xb0:
+    case 0xb1:
+    case 0xb2:
+    case 0xb3:
+    case 0xb4:
+    case 0xb5:
+    case 0xb6:
+    case 0xb7:
+    case 0xf6:
+    }     
+}
 
-void CP(struct gb_s *gb, cpu_instr instr) {}
+void CP(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xb8:
+    case 0xb9:
+    case 0xba:
+    case 0xbb:
+    case 0xbc:
+    case 0xbd:
+    case 0xbe:
+    case 0xbf:
+    case 0xfe:
+    }    
+}
 
-void RET(struct gb_s *gb, cpu_instr instr) {}
+void RET(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xc0:
+    case 0xc8:
+    case 0xc9:
+    case 0xd0:
+    case 0xd8:
+    }
+}
 
-void POP(struct gb_s *gb, cpu_instr instr) {}
+void POP(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xc1:
+    case 0xd1:
+    case 0xe1:
+    case 0xf1:
+    }    
+}
 
-void JP(struct gb_s *gb, cpu_instr instr) {}
+void JP(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xc2:
+    case 0xc3:
+    case 0xca:
+    case 0xd2:
+    case 0xda:
+    case 0xe9:
+    }    
+}
 
-void CALL(struct gb_s *gb, cpu_instr instr) {}
+void CALL(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xc4:
+    case 0xcc:
+    case 0xcd:
+    case 0xd4:
+    case 0xdc:
+    }
+}
 
-void PUSH(struct gb_s *gb, cpu_instr instr) {}
+void PUSH(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xc5:
+    case 0xd5:
+    case 0xe5:
+    case 0xf5:
+    }  
+}
 
-void RST(struct gb_s *gb, cpu_instr instr) {}
+void RST(struct gb_s *gb, uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xc7:
+    case 0xcf:
+    case 0xd7:
+    case 0xdf:
+    case 0xe7:
+    case 0xef:
+    case 0xf7:
+    case 0xff:
+    }    
+}
 
-void RETI(struct gb_s *gb, cpu_instr instr) {}
+void RETI(struct gb_s *gb, uint8_t opcode)
+{
+    0xd9:
+}
 
-void DI(struct gb_s *gb, cpu_instr instr) {}
+void DI(struct gb_s *gb, uint8_t opcode)
+{
+    0xf3:
+}
 
-void EI(struct gb_s *gb, cpu_instr instr) {}
+void EI(struct gb_s *gb, uint8_t opcode)
+{
+    0xfb:
+}
 
-void SLA(struct gb_s *gb, cpu_instr instr) {}
+void SLA(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void SRA(struct gb_s *gb, cpu_instr instr) {}
+void SRA(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void SWAP(struct gb_s *gb, cpu_instr instr) {}
+void SWAP(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void SRL(struct gb_s *gb, cpu_instr instr) {}
+void SRL(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void BIT(struct gb_s *gb, cpu_instr instr) {}
+void BIT(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void RES(struct gb_s *gb, cpu_instr instr) {}
+void RES(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void SET(struct gb_s *gb, cpu_instr instr) {}
+void SET(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
 
-void JP_TARGET(struct gb_s *gb, cpu_instr instr) {}
-
-void JP_BWD(struct gb_s *gb, cpu_instr instr) {}
-
-void JP_FWD(struct gb_s *gb, cpu_instr instr) {}
-
-void ERROR(struct gb_s *gb, cpu_instr instr) {}
+void ERROR(struct gb_s *gb, uint8_t opcode)
+{
+    
+}
