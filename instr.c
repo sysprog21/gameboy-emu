@@ -295,9 +295,17 @@ void INC16(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x03:
+        REG(bc)++;
+        break;
     case 0x13:
+        REG(de)++;
+        break;
     case 0x23:
+        REG(hl)++;
+        break;
     case 0x33:
+        REG(sp)++;
+        break;
     }
 }
 
@@ -305,13 +313,33 @@ void INC(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x04:
+        DEFINE_INC_DECODER(b)
+        break;
     case 0x0c:
+        DEFINE_INC_DECODER(c)
+        break;
     case 0x14:
+        DEFINE_INC_DECODER(d)
+        break;
     case 0x1c:
+        DEFINE_INC_DECODER(e)
+        break;
     case 0x24:
+        DEFINE_INC_DECODER(h)
+        break;
     case 0x2c:
+        DEFINE_INC_DECODER(l)
+        break;
     case 0x34:
+        uint8_t temp = READ8(REG(hl)) + 1;
+        REG(f_bits.z) = (temp == 0x00);
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = ((REG(b) & 0x0F) == 0x00);
+        WRITE8(REG(hl), temp);
+        break;
     case 0x3c:
+        DEFINE_INC_DECODER(a)
+        break;
     }
 }
 
@@ -319,9 +347,17 @@ void DEC16(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x0b:
+        REG(bc)--;
+        break;
     case 0x1b:
+        REG(de)--;
+        break;
     case 0x2b:
+        REG(hl)--;
+        break;
     case 0x3b:
+        REG(sp)--;
+        break;
     }
 }
 
@@ -329,86 +365,204 @@ void DEC(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x05:
+        DEFINE_DEC_DECODER(b)
+        break;
     case 0x0d:
+        DEFINE_DEC_DECODER(c)
+        break;
     case 0x15:
+        DEFINE_DEC_DECODER(d)
+        break;
     case 0x1d:
+        DEFINE_DEC_DECODER(e)
+        break;
     case 0x25:
+        DEFINE_DEC_DECODER(h)
+        break;
     case 0x2d:
+        DEFINE_DEC_DECODER(l)
+        break;
     case 0x35:
+        uint8_t temp = READ8(REG(hl)) - 1;
+        REG(f_bits.z) = (temp == 0x00);
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = ((REG(b) & 0x0F) == 0x0F);
+        WRITE8(REG(hl), temp);
+        break;
     case 0x3d:
+        DEFINE_DEC_DECODER(a)
+        break;
     }
 }
 
-void RLC(struct gb_s *gb, uint8_t opcode)
+void RLC(struct gb_s *gb, uint8_t opcode) {}
 
 void ADD16(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x09:
+        uint_fast32_t temp = REG(hl) + REG(bc);
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = (temp ^ REG(hl) ^ REG(bc) & 0x1000 ? 1 : 0);
+        REG(f_bits.c) = (temp & 0xFFFF0000) ? 1 : 0;
+        REG(hl) = (temp & 0x0000FFFF);
+        break;
     case 0x19:
+        uint_fast32_t temp = REG(hl) + REG(de);
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = (temp ^ REG(hl) ^ REG(de) & 0x1000 ? 1 : 0);
+        REG(f_bits.c) = (temp & 0xFFFF0000) ? 1 : 0;
+        REG(hl) = (temp & 0x0000FFFF);
+        break;
     case 0x29:
+        uint_fast32_t temp = REG(hl) + REG(hl);
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = (temp & 0x1000 ? 1 : 0);
+        REG(f_bits.c) = (temp & 0xFFFF0000) ? 1 : 0;
+        REG(hl) = (temp & 0x0000FFFF);
+        break;
     case 0x39:
+        uint_fast32_t temp = REG(hl) + REG(sp);
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) =
+            ((REG(hl) & 0xFFF) + (REG(sp) & 0xFFF)) & 0x1000 ? 1 : 0;
+        REG(f_bits.c) = temp & 0x10000 ? 1 : 0;
+        REG(hl) = (uint16_t) temp;
+        break;
     case 0xe8:
-    } 
+        int8_t offset = (int8_t) READ8(REG(pc)++);
+        REG(f_bits.z) = 0;
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = ((REG(sp) & 0xF) + (offset & 0xF) > 0xF) ? 1 : 0;
+        REG(f_bits.c) = ((REG(sp) & 0xFF) + (offset & 0xFF) > 0xFF);
+        REG(sp) += offset;
+        break;
+    }
 }
 
 void ADD(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x80:
+        uint16_t temp = REG(a) + REG(b);
+        DEFINE_ALU_DECODER(b, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x81:
+        uint16_t temp = REG(a) + REG(c);
+        DEFINE_ALU_DECODER(c, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x82:
+        uint16_t temp = REG(a) + REG(d);
+        DEFINE_ALU_DECODER(d, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x83:
+        uint16_t temp = REG(a) + REG(e);
+        DEFINE_ALU_DECODER(e, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x84:
+        uint16_t temp = REG(a) + REG(h);
+        DEFINE_ALU_DECODER(h, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x85:
+        uint16_t temp = REG(a) + REG(l);
+        DEFINE_ALU_DECODER(l, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x86:
+        uint8_t hl = READ8(REG(hl));
+        uint16_t temp = REG(a) + hl;
+        REG(f_bits.z) = ((temp & 0xFF) == 0x00);
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = (REG(a) ^ hl ^ temp) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x87:
+        uint16_t temp = REG(a) + REG(a);
+        DEFINE_ALU_DECODER(a, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0xc6:
-    } 
+        uint8_t value = READ8(REG(pc)++);
+        uint16_t calc = REG(a) + value;
+        REG(f_bits.z) = ((uint8_t) calc == 0) ? 1 : 0;
+        REG(f_bits.h) = ((REG(a) & 0xF) + (value & 0xF) > 0x0F) ? 1 : 0;
+        REG(f_bits.c) = calc > 0xFF ? 1 : 0;
+        REG(f_bits.n) = 0;
+        REG(a) = (uint8_t) calc;
+        break;
+    }
 }
 
-void RRC(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void RRC(struct gb_s *gb, uint8_t opcode) {}
 
 void STOP(struct gb_s *gb, uint8_t opcode)
 {
-    0x10:
+    // 0x10: gb->gb_halt = 1;
 }
 
-void RL(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void RL(struct gb_s *gb, uint8_t opcode) {}
 
-void JR(struct gb_s *gb, uint8_t opcode)
+void JR(struct gb_s *gb, uint8_t opcode, uint8_t *inst_cycles)
 {
     switch (opcode) {
     case 0x18:
+        int8_t temp = (int8_t) READ8(REG(pc)++);
+        REG(pc) += temp;
+        break;
     case 0x20:
+        if (!REG(f_bits.z)) {
+            int8_t temp = (int8_t) READ8(REG(pc)++);
+            REG(pc) += temp;
+            *inst_cycles += 4;
+        } else
+            REG(pc)++;
+        break;
     case 0x28:
+        if (!REG(f_bits.z)) {
+            int8_t temp = (int8_t) READ8(REG(pc)++);
+            REG(pc) += temp;
+            *inst_cycles += 4;
+        } else
+            REG(pc)++;
+        break;
     case 0x30:
+        if (!REG(f_bits.c)) {
+            int8_t temp = (int8_t) READ8(REG(pc)++);
+            REG(pc) += temp;
+            *inst_cycles += 4;
+        } else
+            REG(pc)++;
+        break;
     case 0x38:
-    }     
+        if (REG(f_bits.c)) {
+            int8_t temp = (int8_t) READ8(REG(pc)++);
+            REG(pc) += temp;
+            *inst_cycles += 4;
+        } else
+            REG(pc)++;
+        break;
+    }
 }
 
-void RR(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void RR(struct gb_s *gb, uint8_t opcode) {}
 
 void DAA(struct gb_s *gb, uint8_t opcode)
 {
     0x27:
 }
 
-void CPL(struct gb_s *gb, uint8_t opcode) 
+void CPL(struct gb_s *gb, uint8_t opcode)
 {
     0x2f:
 }
 
-void SCF(struct gb_s *gb, uint8_t opcode) 
+void SCF(struct gb_s *gb, uint8_t opcode)
 {
     0x37:
 }
@@ -427,44 +581,182 @@ void ADC(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x88:
+        uint16_t temp = REG(a) + REG(b) + REG(f_bits.c);
+        DEFINE_ALU_DECODER(b, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x89:
+        uint16_t temp = REG(a) + REG(c) + REG(f_bits.c);
+        DEFINE_ALU_DECODER(c, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x8a:
+        uint16_t temp = REG(a) + REG(d) + REG(f_bits.c);
+        DEFINE_ALU_DECODER(d, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x8b:
+        uint16_t temp = REG(a) + REG(e) + REG(f_bits.c);
+        DEFINE_ALU_DECODER(e, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x8c:
+        uint16_t temp = REG(a) + REG(h) + REG(f_bits.c);
+        DEFINE_ALU_DECODER(h, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x8d:
+        uint16_t temp = REG(a) + REG(l) + REG(f_bits.c);
+        DEFINE_ALU_DECODER(l, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x8e:
+        uint8_t val = READ8(REG(hl));
+        uint16_t temp = REG(a) + val + REG(f_bits.c);
+        REG(f_bits.z) = ((temp & 0xFF) == 0x00);
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = (REG(a) ^ val ^ temp) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x8f:
+        uint16_t temp = REG(a) + REG(a) + REG(f_bits.c);
+        DEFINE_ALU_DECODER(a, 0)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0xce:
-    }     
+        uint8_t value, a, carry;
+        value = READ8(REG(pc)++);
+        a = REG(a);
+        carry = REG(f_bits.c);
+        REG(a) = a + value + carry;
+        REG(f_bits.z) = (REG(a) == 0) ? 1 : 0;
+        REG(f_bits.h) = ((a & 0xF) + (value & 0xF) + carry > 0x0F) ? 1 : 0;
+        REG(f_bits.c) =
+            (((uint16_t) a) + ((uint16_t) value) + carry > 0xFF) ? 1 : 0;
+        REG(f_bits.n) = 0;
+        break;
+    }
 }
 
 void SUB(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x90:
+        uint16_t temp = REG(a) - REG(b);
+        DEFINE_ALU_DECODER(b, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x91:
+        uint16_t temp = REG(a) - REG(c);
+        DEFINE_ALU_DECODER(c, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x92:
+        uint16_t temp = REG(a) - REG(d);
+        DEFINE_ALU_DECODER(d, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x93:
+        uint16_t temp = REG(a) - REG(e);
+        DEFINE_ALU_DECODER(e, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x94:
+        uint16_t temp = REG(a) - REG(h);
+        DEFINE_ALU_DECODER(h, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x95:
+        uint16_t temp = REG(a) - REG(l);
+        DEFINE_ALU_DECODER(l, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x96:
+        uint8_t val = READ8(REG(hl));
+        uint16_t temp = REG(a) - val;
+        REG(f_bits.z) = ((temp & 0xFF) == 0x00);
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = (REG(a) ^ val ^ temp) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x97:
+        REG(a) = 0;
+        REG(f_bits.z) = 1;
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = 0;
+        REG(f_bits.c) = 0;
+        break;
     case 0xd6:
-    }  
+        uint8_t val = READ8(REG(pc)++);
+        uint16_t temp = REG(a) - val;
+        REG(f_bits.z) = ((temp & 0xFF) == 0x00);
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = (REG(a) ^ val ^ temp) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
+        REG(a) = (temp & 0xFF);
+        break;
+    }
 }
 
 void SBC(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0x98:
+        uint16_t temp = REG(a) - REG(b) - REG(f_bits.c);
+        DEFINE_ALU_DECODER(b, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x99:
+        uint16_t temp = REG(a) - REG(c) - REG(f_bits.c);
+        DEFINE_ALU_DECODER(c, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x9a:
+        uint16_t temp = REG(a) - REG(d) - REG(f_bits.c);
+        DEFINE_ALU_DECODER(d, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x9b:
+        uint16_t temp = REG(a) - REG(e) - REG(f_bits.c);
+        DEFINE_ALU_DECODER(e, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x9c:
+        uint16_t temp = REG(a) - REG(h) - REG(f_bits.c);
+        DEFINE_ALU_DECODER(h, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x9d:
+        uint16_t temp = REG(a) - REG(l) - REG(f_bits.c);
+        DEFINE_ALU_DECODER(l, 1)
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x9e:
+        uint8_t val = READ8(REG(hl));
+        uint16_t temp = REG(a) - val - REG(f_bits.c);
+        REG(f_bits.z) = ((temp & 0xFF) == 0x00);
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = (REG(a) ^ val ^ temp) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
+        REG(a) = (temp & 0xFF);
+        break;
     case 0x9f:
+        REG(a) = REG(f_bits.c) ? 0xFF : 0x00;
+        REG(f_bits.z) = REG(f_bits.c) ? 0x00 : 0x01;
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = REG(f_bits.c);
+        break;
     case 0xde:
+        uint8_t temp_8 = READ8(REG(pc)++);
+        uint16_t temp_16 = REG(a) - temp_8 - REG(f_bits.c);
+        REG(f_bits.z) = ((temp_16 & 0xFF) == 0x00);
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = (REG(a) ^ temp_8 ^ temp_16) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp_16 & 0xFF00) ? 1 : 0;
+        REG(a) = (temp_16 & 0xFF);
+        break;
     }
 }
 
@@ -472,14 +764,40 @@ void AND(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0xa0:
+        REG(a) = REG(a) & REG(b);
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xa1:
+        REG(a) = REG(a) & REG(c);
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xa2:
+        REG(a) = REG(a) & REG(d);
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xa3:
+        REG(a) = REG(a) & REG(e);
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xa4:
+        REG(a) = REG(a) & REG(h);
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xa5:
+        REG(a) = REG(a) & REG(l);
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xa6:
+        REG(a) = REG(a) & READ8(REG(hl));
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xa7:
+        DEFINE_LOGIC_DECODER(0, 1, 0)
+        break;
     case 0xe6:
+        REG(a) = REG(a) & READ8(REG(pc)++);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     }
 }
 
@@ -487,51 +805,149 @@ void XOR(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0xa8:
+        REG(a) = REG(a) ^ REG(b);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xa9:
+        REG(a) = REG(a) ^ REG(c);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xaa:
+        REG(a) = REG(a) ^ REG(d);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xab:
+        REG(a) = REG(a) ^ REG(e);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xac:
+        REG(a) = REG(a) ^ REG(h);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xad:
+        REG(a) = REG(a) ^ REG(l);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xae:
+        REG(a) = REG(a) ^ READ8(REG(hl));
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xaf:
+        REG(a) = 0x00;
+        REG(f_bits.z) = 1;
+        REG(f_bits.n) = 0;
+        REG(f_bits.h) = 0;
+        REG(f_bits.c) = 0;
+        break;
     case 0xee:
-    }    
+        REG(a) = REG(a) ^ READ8(REG(pc)++);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
+    }
 }
 
-void OR(struct gb_s *gb, uint8_t opcode) 
+void OR(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0xb0:
+        REG(a) = REG(a) | REG(b);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xb1:
+        REG(a) = REG(a) | REG(c);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xb2:
+        REG(a) = REG(a) | REG(d);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xb3:
+        REG(a) = REG(a) | REG(e);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xb4:
+        REG(a) = REG(a) | REG(h);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xb5:
+        REG(a) = REG(a) | REG(l);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xb6:
+        REG(a) = REG(a) | READ8(REG(hl));
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xb7:
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
     case 0xf6:
-    }     
+        REG(a) = REG(a) | READ8(REG(pc)++);
+        DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
+    }
 }
 
 void CP(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0xb8:
+        uint16_t temp = REG(a) - REG(b);
+        DEFINE_ALU_DECODER(b, 1)
+        break;
     case 0xb9:
+        uint16_t temp = REG(a) - REG(c);
+        DEFINE_ALU_DECODER(c, 1)
+        break;
     case 0xba:
+        uint16_t temp = REG(a) - REG(d);
+        DEFINE_ALU_DECODER(d, 1)
+        break;
     case 0xbb:
+        uint16_t temp = REG(a) - REG(e);
+        DEFINE_ALU_DECODER(e, 1)
+        break;
     case 0xbc:
+        uint16_t temp = REG(a) - REG(h);
+        DEFINE_ALU_DECODER(h, 1)
+        break;
     case 0xbd:
+        uint16_t temp = REG(a) - REG(l);
+        DEFINE_ALU_DECODER(l, 1)
+        break;
     case 0xbe:
+        uint8_t val = READ8(REG(hl));
+        uint16_t temp = REG(a) - val;
+        REG(f_bits.z) = ((temp & 0xFF) == 0x00);
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = (REG(a) ^ val ^ temp) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
+        break;
     case 0xbf:
+        REG(f_bits.z) = 1;
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = 0;
+        REG(f_bits.c) = 0;
+        break;
     case 0xfe:
-    }    
+        uint8_t temp_8 = READ8(REG(pc)++);
+        uint16_t temp_16 = REG(a) - temp_8;
+        REG(f_bits.z) = ((temp_16 & 0xFF) == 0x00);
+        REG(f_bits.n) = 1;
+        REG(f_bits.h) = (REG(a) ^ temp_8 ^ temp_16) & 0x10 ? 1 : 0;
+        REG(f_bits.c) = (temp_16 & 0xFF00) ? 1 : 0;
+        break;
+    }
 }
 
-void RET(struct gb_s *gb, uint8_t opcode)
+void RET(struct gb_s *gb, uint8_t opcode, uint8_t *inst_cycles)
 {
     switch (opcode) {
     case 0xc0:
+        if (!REG(f_bits.z)) {
+            REG(pc) = READ8(REG(sp)++);
+            REG(pc) |= READ8(REG(sp)++) << 8;
+            *inst_cycles += 12;
+        }
     case 0xc8:
     case 0xc9:
     case 0xd0:
@@ -546,7 +962,7 @@ void POP(struct gb_s *gb, uint8_t opcode)
     case 0xd1:
     case 0xe1:
     case 0xf1:
-    }    
+    }
 }
 
 void JP(struct gb_s *gb, uint8_t opcode)
@@ -558,7 +974,7 @@ void JP(struct gb_s *gb, uint8_t opcode)
     case 0xd2:
     case 0xda:
     case 0xe9:
-    }    
+    }
 }
 
 void CALL(struct gb_s *gb, uint8_t opcode)
@@ -579,7 +995,7 @@ void PUSH(struct gb_s *gb, uint8_t opcode)
     case 0xd5:
     case 0xe5:
     case 0xf5:
-    }  
+    }
 }
 
 void RST(struct gb_s *gb, uint8_t opcode)
@@ -593,7 +1009,7 @@ void RST(struct gb_s *gb, uint8_t opcode)
     case 0xef:
     case 0xf7:
     case 0xff:
-    }    
+    }
 }
 
 void RETI(struct gb_s *gb, uint8_t opcode)
@@ -611,42 +1027,18 @@ void EI(struct gb_s *gb, uint8_t opcode)
     0xfb:
 }
 
-void SLA(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void SLA(struct gb_s *gb, uint8_t opcode) {}
 
-void SRA(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void SRA(struct gb_s *gb, uint8_t opcode) {}
 
-void SWAP(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void SWAP(struct gb_s *gb, uint8_t opcode) {}
 
-void SRL(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void SRL(struct gb_s *gb, uint8_t opcode) {}
 
-void BIT(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void BIT(struct gb_s *gb, uint8_t opcode) {}
 
-void RES(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void RES(struct gb_s *gb, uint8_t opcode) {}
 
-void SET(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void SET(struct gb_s *gb, uint8_t opcode) {}
 
-void ERROR(struct gb_s *gb, uint8_t opcode)
-{
-    
-}
+void ERROR(struct gb_s *gb, uint8_t opcode) {}
