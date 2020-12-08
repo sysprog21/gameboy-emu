@@ -2,6 +2,26 @@
 
 #include "cpu.h"
 
+#define DEFINE_INC_DECODER(N) REG(N)++; \
+                              REG(f_bits.z) = (REG(N) == 0x00); \
+                              REG(f_bits.n) = 0; \
+                              REG(f_bits.h) = ((REG(N) & 0x0F) == 0x00);
+
+#define DEFINE_DEC_DECODER(N) REG(N)--; \
+                              REG(f_bits.z) = (REG(N) == 0x00); \
+                              REG(f_bits.n) = 1; \
+                              REG(f_bits.h) = ((REG(N) & 0x0F) == 0x0F);
+
+#define DEFINE_ALU_DECODER(N, FLAG) REG(f_bits.z) = ((temp & 0xFF) == 0x00); \
+                                    REG(f_bits.n) = FLAG; \
+                                    REG(f_bits.h) = (REG(a) ^ REG(N) ^ temp) & 0x10 ? 1 : 0; \
+                                    REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
+                        
+#define DEFINE_LOGIC_DECODER(N, H, C) REG(f_bits.z) = (REG(a) == 0x00); \
+                                      REG(f_bits.n) = N; \
+                                      REG(f_bits.h) = H; \
+                                      REG(f_bits.c) = C;
+
 #define REG(N) gb->cpu.reg.N
 #define READ8(addr) __gb_read(gb, addr)
 #define WRITE8(addr, value) __gb_write(gb, addr, value)
