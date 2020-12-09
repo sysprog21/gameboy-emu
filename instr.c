@@ -40,9 +40,11 @@ void LD16(struct gb_s *gb, uint8_t opcode)
         REG(sp) |= READ8(REG(pc)++) << 8;
         break;
     case 0xf9:  // REG_SP | REG_HL:
-        REG(sp) = REG(hl) break;
+        REG(sp) = REG(hl);
+        break;
     default:
         (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -288,6 +290,9 @@ void LD(struct gb_s *gb, uint8_t opcode)
         addr |= READ8(REG(pc)++) << 8;
         REG(a) = READ8(addr);
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -305,6 +310,9 @@ void INC16(struct gb_s *gb, uint8_t opcode)
         break;
     case 0x33:
         REG(sp)++;
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
         break;
     }
 }
@@ -340,6 +348,9 @@ void INC(struct gb_s *gb, uint8_t opcode)
     case 0x3c:
         DEFINE_INC_DECODER(a)
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -357,6 +368,9 @@ void DEC16(struct gb_s *gb, uint8_t opcode)
         break;
     case 0x3b:
         REG(sp)--;
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
         break;
     }
 }
@@ -391,6 +405,9 @@ void DEC(struct gb_s *gb, uint8_t opcode)
         break;
     case 0x3d:
         DEFINE_DEC_DECODER(a)
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
         break;
     }
 }
@@ -436,6 +453,9 @@ void ADD16(struct gb_s *gb, uint8_t opcode)
         REG(f_bits.h) = ((REG(sp) & 0xF) + (offset & 0xF) > 0xF) ? 1 : 0;
         REG(f_bits.c) = ((REG(sp) & 0xFF) + (offset & 0xFF) > 0xFF);
         REG(sp) += offset;
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
         break;
     }
 }
@@ -496,6 +516,9 @@ void ADD(struct gb_s *gb, uint8_t opcode)
         REG(f_bits.n) = 0;
         REG(a) = (uint8_t) calc;
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -547,34 +570,60 @@ void JR(struct gb_s *gb, uint8_t opcode, uint8_t *inst_cycles)
         } else
             REG(pc)++;
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
 void RR(struct gb_s *gb, uint8_t opcode) {}
 
-void DAA(struct gb_s *gb, uint8_t opcode)
+void DAA(struct gb_s *gb, uint8_t opcode)  // 0x27
 {
-    0x27:
+    uint16_t a = REG(a);
+    if (REG(f_bits.n)) {
+        if (REG(f_bits.n))
+            a = (a - 0x06) & 0xFF;
+        if (REG(f_bits.c))
+            a -= 0x60;
+    } else {
+        if (REG(f_bits.h) || (a & 0x0F) > 9)
+            a += 0x06;
+        if (REG(f_bits.c) || a > 0x9F)
+            a += 0x60;
+    }
+    if ((a & 0x100) == 0x100)
+        REG(f_bits.c) = 1;
+    REG(a) = a;
+    REG(f_bits.z) = (REG(a) == 0);
+    REG(f_bits.h) = 0;
+    break;
 }
 
-void CPL(struct gb_s *gb, uint8_t opcode)
+void CPL(struct gb_s *gb, uint8_t opcode)  // 0x2F
 {
-    0x2f:
+    REG(a) = ~REG(a);
+    REG(f_bits.n) = 1;
+    REG(f_bits.h) = 1;
 }
 
-void SCF(struct gb_s *gb, uint8_t opcode)
+void SCF(struct gb_s *gb, uint8_t opcode)  // 0x37
 {
-    0x37:
+    REG(f_bits.n) = 0;
+    REG(f_bits.h) = 0;
+    REG(f_bits.c) = 1;
 }
 
-void CCF(struct gb_s *gb, uint8_t opcode)
+void CCF(struct gb_s *gb, uint8_t opcode)  // 0x3F
 {
-    0x3f:
+    REG(f_bits.n) = 0;
+    REG(f_bits.h) = 0;
+    REG(f_bits.c) = ~REG(f_bits.c);
 }
 
-void HALT(struct gb_s *gb, uint8_t opcode)
+void HALT(struct gb_s *gb, uint8_t opcode)  // 0x76
 {
-    0x76:
+    gb->gb_halt = 1;
 }
 
 void ADC(struct gb_s *gb, uint8_t opcode)
@@ -635,6 +684,9 @@ void ADC(struct gb_s *gb, uint8_t opcode)
         REG(f_bits.c) =
             (((uint16_t) a) + ((uint16_t) value) + carry > 0xFF) ? 1 : 0;
         REG(f_bits.n) = 0;
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
         break;
     }
 }
@@ -697,6 +749,9 @@ void SUB(struct gb_s *gb, uint8_t opcode)
         REG(f_bits.c) = (temp & 0xFF00) ? 1 : 0;
         REG(a) = (temp & 0xFF);
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -757,6 +812,9 @@ void SBC(struct gb_s *gb, uint8_t opcode)
         REG(f_bits.c) = (temp_16 & 0xFF00) ? 1 : 0;
         REG(a) = (temp_16 & 0xFF);
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -797,6 +855,9 @@ void AND(struct gb_s *gb, uint8_t opcode)
     case 0xe6:
         REG(a) = REG(a) & READ8(REG(pc)++);
         DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
         break;
     }
 }
@@ -843,6 +904,9 @@ void XOR(struct gb_s *gb, uint8_t opcode)
         REG(a) = REG(a) ^ READ8(REG(pc)++);
         DEFINE_LOGIC_DECODER(0, 0, 0)
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -883,6 +947,9 @@ void OR(struct gb_s *gb, uint8_t opcode)
     case 0xf6:
         REG(a) = REG(a) | READ8(REG(pc)++);
         DEFINE_LOGIC_DECODER(0, 0, 0)
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
         break;
     }
 }
@@ -936,6 +1003,9 @@ void CP(struct gb_s *gb, uint8_t opcode)
         REG(f_bits.h) = (REG(a) ^ temp_8 ^ temp_16) & 0x10 ? 1 : 0;
         REG(f_bits.c) = (temp_16 & 0xFF00) ? 1 : 0;
         break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -952,6 +1022,9 @@ void RET(struct gb_s *gb, uint8_t opcode, uint8_t *inst_cycles)
     case 0xc9:
     case 0xd0:
     case 0xd8:
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -959,32 +1032,75 @@ void POP(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0xc1:
+        REG(c) = READ8(REG(sp)++);
+        REG(b) = READ8(REG(sp)++);
+        break;
     case 0xd1:
+        REG(e) = READ8(REG(sp)++);
+        REG(d) = READ8(REG(sp)++);
+        break;
     case 0xe1:
+        REG(l) = READ8(REG(sp)++);
+        REG(h) = READ8(REG(sp)++);
+        break;
     case 0xf1:
+        uint8_t temp_8 = READ8(REG(sp)++);
+        REG(f_bits.z) = (temp_8 >> 7) & 1;
+        REG(f_bits.n) = (temp_8 >> 6) & 1;
+        REG(f_bits.h) = (temp_8 >> 5) & 1;
+        REG(f_bits.c) = (temp_8 >> 4) & 1;
+        REG(a) = READ8(REG(sp)++);
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
-void JP(struct gb_s *gb, uint8_t opcode)
+void JP(struct gb_s *gb, uint8_t opcode, uint8_t *inst_cycles)
 {
     switch (opcode) {
     case 0xc2:
+        if (!REG(f_bits.z)) {
+            uint16_t temp = READ8(REG(pc)++);
+            temp |= READ8(REG(pc)++) << 8;
+            REG(pc) = temp;
+            *inst_cycles += 4;
+        } else
+            REG(pc) += 2;
+        break;
     case 0xc3:
     case 0xca:
     case 0xd2:
     case 0xda:
     case 0xe9:
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
-void CALL(struct gb_s *gb, uint8_t opcode)
+void CALL(struct gb_s *gb, uint8_t opcode, uint8_t *inst_cycles)
 {
     switch (opcode) {
     case 0xc4:
+        if (!REG(f_bits.z)) {
+            uint16_t temp = READ8(REG(pc)++);
+            temp |= READ8(REG(pc)++) << 8;
+            WRITE8(--REG(sp), REG(pc) >> 8);
+            WRITE8(--REG(sp), REG(pc) & 0xFF);
+            REG(pc) = temp;
+            *inst_cycles += 12;
+        } else
+            REG(pc) += 2;
+        break;
     case 0xcc:
     case 0xcd:
     case 0xd4:
     case 0xdc:
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -992,9 +1108,25 @@ void PUSH(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0xc5:
+        WRITE8(--REG(sp), REG(b));
+        WRITE8(--REG(sp), REG(c));
+        break;
     case 0xd5:
+        WRITE8(--REG(sp), REG(d));
+        WRITE8(--REG(sp), REG(e));
+        break;
     case 0xe5:
+        WRITE8(--REG(sp), REG(h));
+        WRITE8(--REG(sp), REG(l));
+        break;
     case 0xf5:
+        WRITE8(--REG(sp), REG(a));
+        WRITE8(--REG(sp), REG(f_bits.z) << 7 | REG(f_bits.n) << 6 |
+                              REG(f_bits.h) << 5 | REG(f_bits.c) << 4);
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
@@ -1002,29 +1134,67 @@ void RST(struct gb_s *gb, uint8_t opcode)
 {
     switch (opcode) {
     case 0xc7:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0000;
+        break;
     case 0xcf:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0008;
+        break;
     case 0xd7:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0010;
+        break;
     case 0xdf:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0018;
+        break;
     case 0xe7:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0020;
+        break;
     case 0xef:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0028;
+        break;
     case 0xf7:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0030;
+        break;
     case 0xff:
+        WRITE8(--REG(sp), REG(pc) >> 8);
+        WRITE8(--REG(sp), REG(pc) & 0xFF);
+        REG(pc) = 0x0038;
+        break;
+    default:
+        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+        break;
     }
 }
 
-void RETI(struct gb_s *gb, uint8_t opcode)
+void RETI(struct gb_s *gb, uint8_t opcode)  // 0xD9
 {
-    0xd9:
+    uint16_t temp = READ8(REG(sp)++);
+    temp |= READ8(REG(sp)++) << 8;
+    REG(pc) = temp;
+    gb->gb_ime = 1;
 }
 
-void DI(struct gb_s *gb, uint8_t opcode)
+void DI(struct gb_s *gb, uint8_t opcode)  // 0xF3
 {
-    0xf3:
+    gb->gb_ime = 0;
 }
 
-void EI(struct gb_s *gb, uint8_t opcode)
+void EI(struct gb_s *gb, uint8_t opcode)  // 0xFB
 {
-    0xfb:
+    gb->gb_ime = 1;
 }
 
 void SLA(struct gb_s *gb, uint8_t opcode) {}

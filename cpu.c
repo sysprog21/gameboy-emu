@@ -907,7 +907,7 @@ void __gb_step_cpu(struct gb_s *gb)
     /* Obtain opcode */
     opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
     // inst_cycles = op_cycles[opcode];
-    
+
     /* cpu_instr */
     cpu_instr table;
     void (*opcode_function)() = table.execute;
@@ -921,7 +921,7 @@ void __gb_step_cpu(struct gb_s *gb)
         opcode_function(gb, opcode, &inst_cycles);
     else
         opcode_function(gb, opcode);
-    
+
     /* Execute opcode */
     switch (opcode) {
     case 0x00: /* NOP */
