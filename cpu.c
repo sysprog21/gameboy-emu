@@ -1,6 +1,269 @@
 #include "cpu.h"
 #include "apu.h"
 
+static const void *dispatch_table[] = {
+  /* clang-format off */ 
+  [0x00] = {&&NOP_NONE_NONE},
+  [0x01] = {&&LD16_REG_BC_IMM16},
+  [0x02] = {&&LD_MEM_BC_REG_A},
+  [0x03] = {&&INC16_REG_BC_NONE},
+  [0x04] = {&&INC_REG_B_NONE},
+  [0x05] = {&&DEC_REG_B_NONE},
+  [0x06] = {&&LD_REG_B_IMM8},
+  [0x07] = {&&RLC_REG_A_NONE},
+  [0x08] = {&&LD16_MEM_16_REG_SP},
+  [0x09] = {&&ADD16_REG_HL_REG_BC},
+  [0x0a] = {&&LD_REG_A_MEM_BC},
+  [0x0b] = {&&DEC16_REG_BC_NONE},
+  [0x0c] = {&&INC_REG_C_NONE},
+  [0x0d] = {&&DEC_REG_C_NONE},
+  [0x0e] = {&&LD_REG_C_IMM8},
+  [0x0f] = {&&RRC_REG_A_NONE},
+  [0x10] = {&&STOP_NONE_NONE},
+  [0x11] = {&&LD16_REG_DE_IMM16},
+  [0x12] = {&&LD_MEM_DE_REG_A},
+  [0x13] = {&&INC16_REG_DE_NONE},
+  [0x14] = {&&INC_REG_D_NONE},
+  [0x15] = {&&DEC_REG_D_NONE},
+  [0x16] = {&&LD_REG_D_IMM8},
+  [0x17] = {&&RL_REG_A_NONE},
+  [0x18] = {&&JR_NONE_IMM8},
+  [0x19] = {&&ADD16_REG_HL_REG_DE},
+  [0x1a] = {&&LD_REG_A_MEM_DE},
+  [0x1b] = {&&DEC16_REG_DE_NONE},
+  [0x1c] = {&&INC_REG_E_NONE},
+  [0x1d] = {&&DEC_REG_E_NONE},
+  [0x1e] = {&&LD_REG_E_IMM8},
+  [0x1f] = {&&RR_REG_A_NONE},
+  [0x20] = {&&JR_CC_NZ_IMM8},
+  [0x21] = {&&LD16_REG_HL_IMM16},
+  [0x22] = {&&LD_MEM_INC_HL_REG_A},
+  [0x23] = {&&INC16_REG_HL_NONE},
+  [0x24] = {&&INC_REG_H_NONE},
+  [0x25] = {&&DEC_REG_H_NONE},
+  [0x26] = {&&LD_REG_H_IMM8},
+  [0x27] = {&&DAA_NONE_NONE},
+  [0x28] = {&&JR_CC_Z_IMM8},
+  [0x29] = {&&ADD16_REG_HL_REG_HL},
+  [0x2a] = {&&LD_REG_A_MEM_INC_HL},
+  [0x2b] = {&&DEC16_REG_HL_NONE},
+  [0x2c] = {&&INC_REG_L_NONE},
+  [0x2d] = {&&DEC_REG_L_NONE},
+  [0x2e] = {&&LD_REG_L_IMM8},
+  [0x2f] = {&&CPL_REG_A_NONE},
+  [0x30] = {&&JR_CC_NC_IMM8},
+  [0x31] = {&&LD16_REG_SP_IMM16},
+  [0x32] = {&&LD_MEM_DEC_HL_REG_A},
+  [0x33] = {&&INC16_REG_SP_NONE},
+  [0x34] = {&&INC_MEM_HL_NONE},
+  [0x35] = {&&DEC_MEM_HL_NONE},
+  [0x36] = {&&LD_MEM_HL_IMM8},
+  [0x37] = {&&SCF_NONE_NONE},
+  [0x38] = {&&JR_CC_C_IMM8},
+  [0x39] = {&&ADD16_REG_HL_REG_SP},
+  [0x3a] = {&&LD_REG_A_MEM_DEC_HL},
+  [0x3b] = {&&DEC16_REG_SP_NONE},
+  [0x3c] = {&&INC_REG_A_NONE},
+  [0x3d] = {&&DEC_REG_A_NONE},
+  [0x3e] = {&&LD_REG_A_IMM8},
+  [0x3f] = {&&CCF_NONE_NONE},
+  [0x40] = {&&NOP_NONE_NONE},
+  [0x41] = {&&LD_REG_B_REG_C},
+  [0x42] = {&&LD_REG_B_REG_D},
+  [0x43] = {&&LD_REG_B_REG_E},
+  [0x44] = {&&LD_REG_B_REG_H},
+  [0x45] = {&&LD_REG_B_REG_L},
+  [0x46] = {&&LD_REG_B_MEM_HL},
+  [0x47] = {&&LD_REG_B_REG_A},
+  [0x48] = {&&LD_REG_C_REG_B},
+  [0x49] = {&&NOP_NONE_NONE},
+  [0x4a] = {&&LD_REG_C_REG_D},
+  [0x4b] = {&&LD_REG_C_REG_E},
+  [0x4c] = {&&LD_REG_C_REG_H},
+  [0x4d] = {&&LD_REG_C_REG_L},
+  [0x4e] = {&&LD_REG_C_MEM_HL},
+  [0x4f] = {&&LD_REG_C_REG_A},
+  [0x50] = {&&LD_REG_D_REG_B},
+  [0x51] = {&&LD_REG_D_REG_C},
+  [0x52] = {&&NOP_NONE_NONE},
+  [0x53] = {&&LD_REG_D_REG_E},
+  [0x54] = {&&LD_REG_D_REG_H},
+  [0x55] = {&&LD_REG_D_REG_L},
+  [0x56] = {&&LD_REG_D_MEM_HL},
+  [0x57] = {&&LD_REG_D_REG_A},
+  [0x58] = {&&LD_REG_E_REG_B},
+  [0x59] = {&&LD_REG_E_REG_C},
+  [0x5a] = {&&LD_REG_E_REG_D},
+  [0x5b] = {&&NOP_NONE_NONE},
+  [0x5c] = {&&LD_REG_E_REG_H},
+  [0x5d] = {&&LD_REG_E_REG_L},
+  [0x5e] = {&&LD_REG_E_MEM_HL},
+  [0x5f] = {&&LD_REG_E_REG_A},
+  [0x60] = {&&LD_REG_H_REG_B},
+  [0x61] = {&&LD_REG_H_REG_C},
+  [0x62] = {&&LD_REG_H_REG_D},
+  [0x63] = {&&LD_REG_H_REG_E},
+  [0x64] = {&&NOP_NONE_NONE},
+  [0x65] = {&&LD_REG_H_REG_L},
+  [0x66] = {&&LD_REG_H_MEM_HL},
+  [0x67] = {&&LD_REG_H_REG_A},
+  [0x68] = {&&LD_REG_L_REG_B},
+  [0x69] = {&&LD_REG_L_REG_C},
+  [0x6a] = {&&LD_REG_L_REG_D},
+  [0x6b] = {&&LD_REG_L_REG_E},
+  [0x6c] = {&&LD_REG_L_REG_H},
+  [0x6d] = {&&NOP_NONE_NONE},
+  [0x6e] = {&&LD_REG_L_MEM_HL},
+  [0x6f] = {&&D_REG_L_REG_A},
+  [0x70] = {&&LD_MEM_HL_REG_B},
+  [0x71] = {&&LD_MEM_HL_REG_C},
+  [0x72] = {&&LD_MEM_HL_REG_D},
+  [0x73] = {&&LD_MEM_HL_REG_E},
+  [0x74] = {&&LD_MEM_HL_REG_H},
+  [0x75] = {&&LD_MEM_HL_REG_L},
+  [0x76] = {&&HALT_NONE_NONE},
+  [0x77] = {&&LD_MEM_HL_REG_A},
+  [0x78] = {&&LD_REG_A_REG_B},
+  [0x79] = {&&LD_REG_A_REG_C},
+  [0x7a] = {&&LD_REG_A_REG_D},
+  [0x7b] = {&&LD_REG_A_REG_E},
+  [0x7c] = {&&LD_REG_A_REG_H},
+  [0x7d] = {&&LD_REG_A_REG_L},
+  [0x7e] = {&&LD_REG_A_MEM_HL},
+  [0x7f] = {&&NOP_NONE_NONE},
+  [0x80] = {&&ADD_REG_A_REG_B},
+  [0x81] = {&&ADD_REG_A_REG_C},
+  [0x82] = {&&ADD_REG_A_REG_D},
+  [0x83] = {&&ADD_REG_A_REG_E},
+  [0x84] = {&&ADD_REG_A_REG_H},
+  [0x85] = {&&ADD_REG_A_REG_L},
+  [0x86] = {&&ADD_REG_A_MEM_HL},
+  [0x87] = {&&ADD_REG_A_REG_A},
+  [0x88] = {&&ADC_REG_A_REG_B},
+  [0x89] = {&&ADC_REG_A_REG_C},
+  [0x8a] = {&&ADC_REG_A_REG_D},
+  [0x8b] = {&&ADC_REG_A_REG_E},
+  [0x8c] = {&&ADC_REG_A_REG_H},
+  [0x8d] = {&&ADC_REG_A_REG_L},
+  [0x8e] = {&&ADC_REG_A_MEM_HL},
+  [0x8f] = {&&ADC_REG_A_REG_A},
+  [0x90] = {&&SUB_REG_A_REG_B},
+  [0x91] = {&&SUB_REG_A_REG_C},
+  [0x92] = {&&SUB_REG_A_REG_D},
+  [0x93] = {&&SUB_REG_A_REG_E},
+  [0x94] = {&&SUB_REG_A_REG_H},
+  [0x95] = {&&SUB_REG_A_REG_L},
+  [0x96] = {&&SUB_REG_A_MEM_HL},
+  [0x97] = {&&SUB_REG_A_REG_A},
+  [0x98] = {&&SBC_REG_A_REG_B},
+  [0x99] = {&&SBC_REG_A_REG_C},
+  [0x9a] = {&&SBC_REG_A_REG_D},
+  [0x9b] = {&&SBC_REG_A_REG_E},
+  [0x9c] = {&&SBC_REG_A_REG_H},
+  [0x9d] = {&&SBC_REG_A_REG_L},
+  [0x9e] = {&&SBC_REG_A_MEM_HL},
+  [0x9f] = {&&SBC_REG_A_REG_A},
+  [0xa0] = {&&AND_REG_A_REG_B},
+  [0xa1] = {&&AND_REG_A_REG_C},
+  [0xa2] = {&&AND_REG_A_REG_D},
+  [0xa3] = {&&AND_REG_A_REG_E},
+  [0xa4] = {&&AND_REG_A_REG_H},
+  [0xa5] = {&&AND_REG_A_REG_L},
+  [0xa6] = {&&AND_REG_A_MEM_HL},
+  [0xa7] = {&&AND_REG_A_REG_A},
+  [0xa8] = {&&XOR_REG_A_REG_B},
+  [0xa9] = {&&XOR_REG_A_REG_C},
+  [0xaa] = {&&XOR_REG_A_REG_D},
+  [0xab] = {&&XOR_REG_A_REG_E},
+  [0xac] = {&&XOR_REG_A_REG_H},
+  [0xad] = {&&XOR_REG_A_REG_L},
+  [0xae] = {&&XOR_REG_A_MEM_HL},
+  [0xaf] = {&&XOR_REG_A_REG_A},
+  [0xb0] = {&&OR_REG_A_REG_B},
+  [0xb1] = {&&OR_REG_A_REG_C},
+  [0xb2] = {&&OR_REG_A_REG_D},
+  [0xb3] = {&&OR_REG_A_REG_E},
+  [0xb4] = {&&OR_REG_A_REG_H},
+  [0xb5] = {&&OR_REG_A_REG_L},
+  [0xb6] = {&&OR_REG_A_MEM_HL},
+  [0xb7] = {&&OR_REG_A_REG_A},
+  [0xb8] = {&&CP_REG_A_REG_B},
+  [0xb9] = {&&CP_REG_A_REG_C},
+  [0xba] = {&&CP_REG_A_REG_D},
+  [0xbb] = {&&CP_REG_A_REG_E},
+  [0xbc] = {&&CP_REG_A_REG_H},
+  [0xbd] = {&&CP_REG_A_REG_L},
+  [0xbe] = {&&CP_REG_A_MEM_HL},
+  [0xbf] = {&&CP_REG_A_REG_A},
+  [0xc0] = {&&RET_CC_NZ_NONE},
+  [0xc1] = {&&POP_REG_BC_NONE},
+  [0xc2] = {&&JP_CC_NZ_IMM16},
+  [0xc3] = {&&JP_NONE_IMM16},
+  [0xc4] = {&&CALL_CC_NZ_IMM16},
+  [0xc5] = {&&PUSH_REG_BC_NONE},
+  [0xc6] = {&&ADD_REG_A_IMM8},
+  [0xc7] = {&&RST_NONE_MEM_0x00},
+  [0xc8] = {&&RET_CC_Z_NONE},
+  [0xc9] = {&&RET_NONE_NONE},
+  [0xca] = {&&JP_CC_Z_IMM16},
+  [0xcb] = {&&ERROR_NONE_NONE},
+  [0xcc] = {&&CALL_CC_Z_IMM16},
+  [0xcd] = {&&CALL_NONE_IMM16},
+  [0xce] = {&&ADC_REG_A_IMM8},
+  [0xcf] = {&&RST_NONE_MEM_0x08},
+  [0xd0] = {&&RET_CC_NC_NONE},
+  [0xd1] = {&&POP_REG_DE_NONE},
+  [0xd2] = {&&JP_CC_NC_IMM16},
+  [0xd3] = {&&ERROR_NONE_NONE},
+  [0xd4] = {&&CALL_CC_NC_IMM16},
+  [0xd5] = {&&PUSH_REG_DE_NONE},
+  [0xd6] = {&&SUB_REG_A_IMM8},
+  [0xd7] = {&&RST_NONE_MEM_0x10},
+  [0xd8] = {&&RET_CC_C_NONE},
+  [0xd9] = {&&RETI_NONE_NONE},
+  [0xda] = {&&JP_CC_C_IMM16},
+  [0xdb] = {&&ERROR_NONE_NONE},
+  [0xdc] = {&&CALL_CC_C_IMM16},
+  [0xdd] = {&&ERROR_NONE_NONE},
+  [0xde] = {&&SBC_REG_A_IMM8},
+  [0xdf] = {&&RST_NONE_MEM_0x18},
+  [0xe0] = {&&LD_MEM_8_REG_A},
+  [0xe1] = {&&POP_REG_HL_NONE},
+  [0xe2] = {&&LD_MEM_C_REG_A},
+  [0xe3] = {&&ERROR_NONE_NONE},
+  [0xe4] = {&&ERROR_NONE_NONE},
+  [0xe5] = {&&PUSH_REG_HL_NONE},
+  [0xe6] = {&&AND_REG_A_IMM8},
+  [0xe7] = {&&RST_NONE_MEM_0x20},
+  [0xe8] = {&&ADD16_REG_SP_IMM8},
+  [0xe9] = {&&JP_NONE_MEM_HL},
+  [0xea] = {&&LD_MEM_16_REG_A},
+  [0xeb] = {&&ERROR_NONE_NONE},
+  [0xec] = {&&ERROR_NONE_NONE},
+  [0xed] = {&&ERROR_NONE_NONE},
+  [0xee] = {&&XOR_REG_A_IMM8},
+  [0xef] = {&&RST_NONE_MEM_0x28},
+  [0xf0] = {&&LD_REG_A_MEM_8},
+  [0xf1] = {&&POP_REG_AF_NONE},
+  [0xf2] = {&&LD_REG_A_MEM_C},
+  [0xf3] = {&&DI_NONE_NONE},
+  [0xf4] = {&&ERROR_NONE_NONE},
+  [0xf5] = {&&PUSH_REG_AF_NONE},
+  [0xf6] = {&&OR_REG_A_IMM8},
+  [0xf7] = {&&RST_NONE_MEM_0x30},
+  [0xf8] = {&&LD16_REG_HL_MEM_8},
+  [0xf9] = {&&LD16_REG_SP_REG_HL},
+  [0xfa] = {&&LD_REG_A_MEM_16},
+  [0xfb] = {&&EI_NONE_NONE},
+  [0xfc] = {&&ERROR_NONE_NONE},
+  [0xfd] = {&&ERROR_NONE_NONE},
+  [0xfe] = {&&CP_REG_A_IMM8},
+  [0xff] = {&&RST_NONE_MEM_0x38}
+  /* clang-format on */
+};
+#define DISPATCH() \
+        goto* dispatch_table[(gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++))]
+
 /* Internal function used to read bytes. */
 uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 {
@@ -903,25 +1166,500 @@ void __gb_step_cpu(struct gb_s *gb)
             }
         }
     }
-
+    
     /* Obtain opcode */
-    opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
+    //opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
     // inst_cycles = op_cycles[opcode];
-
+     
     /* cpu_instr */
-    cpu_instr table;
-    void (*opcode_function)() = table.execute;
-    if (opcode == 0xcb)
-        table = cb_table[READ8(REG(pc)++)];
-    else
-        table = instr_table[opcode];
+    //cpu_instr table;
+    //void (*opcode_function)() = table.execute;
+    //if (opcode == 0xcb)
+    //    table = cb_table[READ8(REG(pc)++)];
+    //else
+    //    table = instr_table[opcode];
 
-    inst_cycles = table.alt_cycles * 4;
-    if (table.flags == INST_FLAG_USES_CC)
-        opcode_function(gb, opcode, &inst_cycles);
-    else
-        opcode_function(gb, opcode);
-
+    //inst_cycles = table.alt_cycles * 4;
+    //if (table.flags == INST_FLAG_USES_CC)
+    //    opcode_function(gb, opcode, &inst_cycles);
+    //else
+    //    opcode_function(gb, opcode);
+    NOP_NONE_NONE:
+            DISPATCH();
+    LD16_REG_BC_IMM16:
+            DISPATCH();
+    LD_MEM_BC_REG_A:
+            DISPATCH();
+    INC16_REG_BC_NONE:
+            DISPATCH();
+    INC_REG_B_NONE:
+            DISPATCH();
+    DEC_REG_B_NONE:
+            DISPATCH();
+    LD_REG_B_IMM8:
+            DISPATCH();
+    RLC_REG_A_NONE:
+            DISPATCH();
+    LD16_MEM_16_REG_SP:
+            DISPATCH();
+    ADD16_REG_HL_REG_BC:
+            DISPATCH();
+    LD_REG_A_MEM_BC:
+            DISPATCH();
+    DEC16_REG_BC_NONE:
+            DISPATCH();
+    INC_REG_C_NONE:
+            DISPATCH();
+    DEC_REG_C_NONE:
+            DISPATCH();
+    LD_REG_C_IMM8:
+            DISPATCH();
+    RRC_REG_A_NONE:
+            DISPATCH();
+    STOP_NONE_NONE:
+            DISPATCH();
+    LD16_REG_DE_IMM16:
+            DISPATCH();
+    LD_MEM_DE_REG_A:
+            DISPATCH();
+    INC16_REG_DE_NONE:
+            DISPATCH();
+    INC_REG_D_NONE:
+            DISPATCH();
+    DEC_REG_D_NONE:
+            DISPATCH();
+    LD_REG_D_IMM8:
+            DISPATCH();
+    RL_REG_A_NONE:
+            DISPATCH();
+    JR_NONE_IMM8:
+            DISPATCH();
+    ADD16_REG_HL_REG_DE:
+            DISPATCH();
+    LD_REG_A_MEM_DE:
+            DISPATCH();
+    DEC16_REG_DE_NONE:
+            DISPATCH();
+    INC_REG_E_NONE:
+            DISPATCH();
+    DEC_REG_E_NONE:
+            DISPATCH();
+    LD_REG_E_IMM8:
+            DISPATCH();
+    RR_REG_A_NONE:
+            DISPATCH();
+    JR_CC_NZ_IMM8:
+            DISPATCH();
+    LD16_REG_HL_IMM16:
+            DISPATCH();
+    LD_MEM_INC_HL_REG_A:
+            DISPATCH();
+    INC16_REG_HL_NONE:
+            DISPATCH();
+    INC_REG_H_NONE:
+            DISPATCH();
+    DEC_REG_H_NONE:
+            DISPATCH();
+    LD_REG_H_IMM8:
+            DISPATCH();
+    DAA_NONE_NONE:
+            DISPATCH();
+    JR_CC_Z_IMM8:
+            DISPATCH();
+    ADD16_REG_HL_REG_HL:
+            DISPATCH();
+    LD_REG_A_MEM_INC_HL:
+            DISPATCH();
+    DEC16_REG_HL_NONE:
+            DISPATCH();
+    INC_REG_L_NONE:
+            DISPATCH();
+    DEC_REG_L_NONE:
+            DISPATCH();
+    LD_REG_L_IMM8:
+            DISPATCH();
+    CPL_REG_A_NONE:
+            DISPATCH();
+    JR_CC_NC_IMM8:
+            DISPATCH();
+    LD16_REG_SP_IMM16:
+            DISPATCH();
+    LD_MEM_DEC_HL_REG_A:
+            DISPATCH();
+    INC16_REG_SP_NONE:
+            DISPATCH();
+    INC_MEM_HL_NONE:
+            DISPATCH();
+    DEC_MEM_HL_NONE:
+            DISPATCH();
+    LD_MEM_HL_IMM8:
+            DISPATCH();
+    SCF_NONE_NONE:
+            DISPATCH();
+    JR_CC_C_IMM8:
+            DISPATCH();
+    ADD16_REG_HL_REG_SP:
+            DISPATCH();
+    LD_REG_A_MEM_DEC_HL:
+            DISPATCH();
+    DEC16_REG_SP_NONE:
+            DISPATCH();
+    INC_REG_A_NONE:
+            DISPATCH();
+    DEC_REG_A_NONE:
+            DISPATCH();
+    LD_REG_A_IMM8:
+            DISPATCH();
+    CCF_NONE_NONE:
+            DISPATCH();
+    LD_REG_B_REG_C:
+            DISPATCH();
+    LD_REG_B_REG_D:
+            DISPATCH();
+    LD_REG_B_REG_E:
+            DISPATCH();
+    LD_REG_B_REG_H:
+            DISPATCH();
+    LD_REG_B_REG_L:
+            DISPATCH();
+    LD_REG_B_MEM_HL:
+            DISPATCH();
+    LD_REG_B_REG_A:
+            DISPATCH();
+    LD_REG_C_REG_B:
+            DISPATCH();
+    LD_REG_C_REG_D:
+            DISPATCH();
+    LD_REG_C_REG_E:
+            DISPATCH();
+    LD_REG_C_REG_H:
+            DISPATCH();
+    LD_REG_C_REG_L:
+            DISPATCH();
+    LD_REG_C_MEM_HL:
+            DISPATCH();
+    LD_REG_C_REG_A:
+            DISPATCH();
+    LD_REG_D_REG_B:
+            DISPATCH();
+    LD_REG_D_REG_C:
+            DISPATCH();
+    LD_REG_D_REG_E:
+            DISPATCH();
+    LD_REG_D_REG_H:
+            DISPATCH();
+    LD_REG_D_REG_L:
+            DISPATCH();
+    LD_REG_D_MEM_HL:
+            DISPATCH();
+    LD_REG_D_REG_A:
+            DISPATCH();
+    LD_REG_E_REG_B:
+            DISPATCH();
+    LD_REG_E_REG_C:
+            DISPATCH();
+    LD_REG_E_REG_D:
+            DISPATCH();
+    LD_REG_E_REG_H:
+            DISPATCH();
+    LD_REG_E_REG_L:
+            DISPATCH();
+    LD_REG_E_MEM_HL:
+            DISPATCH();
+    LD_REG_E_REG_A:
+            DISPATCH();
+    LD_REG_H_REG_B:
+            DISPATCH();
+    LD_REG_H_REG_C:
+            DISPATCH();
+    LD_REG_H_REG_D:
+            DISPATCH();
+    LD_REG_H_REG_E:
+            DISPATCH();
+    LD_REG_H_REG_L:
+            DISPATCH();
+    LD_REG_H_MEM_HL:
+            DISPATCH();
+    LD_REG_H_REG_A:
+            DISPATCH();
+    LD_REG_L_REG_B:
+            DISPATCH();
+    LD_REG_L_REG_C:
+            DISPATCH();
+    LD_REG_L_REG_D:
+            DISPATCH();
+    LD_REG_L_REG_E:
+            DISPATCH();
+    LD_REG_L_REG_H:
+            DISPATCH();
+    LD_REG_L_MEM_HL:
+            DISPATCH();
+    D_REG_L_REG_A:
+            DISPATCH();
+    LD_MEM_HL_REG_B:
+            DISPATCH();
+    LD_MEM_HL_REG_C:
+            DISPATCH();
+    LD_MEM_HL_REG_D:
+            DISPATCH();
+    LD_MEM_HL_REG_E:
+            DISPATCH();
+    LD_MEM_HL_REG_H:
+            DISPATCH();
+    LD_MEM_HL_REG_L:
+            DISPATCH();
+    HALT_NONE_NONE:
+            DISPATCH();
+    LD_MEM_HL_REG_A:
+            DISPATCH();
+    LD_REG_A_REG_B:
+            DISPATCH();
+    LD_REG_A_REG_C:
+            DISPATCH();
+    LD_REG_A_REG_D:
+            DISPATCH();
+    LD_REG_A_REG_E:
+            DISPATCH();
+    LD_REG_A_REG_H:
+            DISPATCH();
+    LD_REG_A_REG_L:
+            DISPATCH();
+    LD_REG_A_MEM_HL:
+            DISPATCH();
+    ADD_REG_A_REG_B:
+            DISPATCH();
+    ADD_REG_A_REG_C:
+            DISPATCH();
+    ADD_REG_A_REG_D:
+            DISPATCH();
+    ADD_REG_A_REG_E:
+            DISPATCH();
+    ADD_REG_A_REG_H:
+            DISPATCH();
+    ADD_REG_A_REG_L:
+            DISPATCH();
+    ADD_REG_A_MEM_HL:
+            DISPATCH();
+    ADD_REG_A_REG_A:
+            DISPATCH();
+    ADC_REG_A_REG_B:
+            DISPATCH();
+    ADC_REG_A_REG_C:
+            DISPATCH();
+    ADC_REG_A_REG_D:
+            DISPATCH();
+    ADC_REG_A_REG_E:
+            DISPATCH();
+    ADC_REG_A_REG_H:
+            DISPATCH();
+    ADC_REG_A_REG_L:
+            DISPATCH();
+    ADC_REG_A_MEM_HL:
+            DISPATCH();
+    ADC_REG_A_REG_A:
+            DISPATCH();
+    SUB_REG_A_REG_B:
+            DISPATCH();
+    SUB_REG_A_REG_C:
+            DISPATCH();
+    SUB_REG_A_REG_D:
+            DISPATCH();
+    SUB_REG_A_REG_E:
+            DISPATCH();
+    SUB_REG_A_REG_H:
+            DISPATCH();
+    SUB_REG_A_REG_L:
+            DISPATCH();
+    SUB_REG_A_MEM_HL:
+            DISPATCH();
+    SUB_REG_A_REG_A:
+            DISPATCH();
+    SBC_REG_A_REG_B:
+            DISPATCH();
+    SBC_REG_A_REG_C:
+            DISPATCH();
+    SBC_REG_A_REG_D:
+            DISPATCH();
+    SBC_REG_A_REG_E:
+            DISPATCH();
+    SBC_REG_A_REG_H:
+            DISPATCH();
+    SBC_REG_A_REG_L:
+            DISPATCH();
+    SBC_REG_A_MEM_HL:
+            DISPATCH();
+    SBC_REG_A_REG_A:
+            DISPATCH();
+    AND_REG_A_REG_B:
+            DISPATCH();
+    AND_REG_A_REG_C:
+            DISPATCH();
+    AND_REG_A_REG_D:
+            DISPATCH();
+    AND_REG_A_REG_E:
+            DISPATCH();
+    AND_REG_A_REG_H:
+            DISPATCH();
+    AND_REG_A_REG_L:
+            DISPATCH();
+    AND_REG_A_MEM_HL:
+            DISPATCH();
+    AND_REG_A_REG_A:
+            DISPATCH();
+    XOR_REG_A_REG_B:
+            DISPATCH();
+    XOR_REG_A_REG_C:
+            DISPATCH();
+    XOR_REG_A_REG_D:
+            DISPATCH();
+    XOR_REG_A_REG_E:
+            DISPATCH();
+    XOR_REG_A_REG_H:
+            DISPATCH();
+    XOR_REG_A_REG_L:
+            DISPATCH();
+    XOR_REG_A_MEM_HL:
+            DISPATCH();
+    XOR_REG_A_REG_A:
+            DISPATCH();
+    OR_REG_A_REG_B:
+            DISPATCH();
+    OR_REG_A_REG_C:
+            DISPATCH();
+    OR_REG_A_REG_D:
+            DISPATCH();
+    OR_REG_A_REG_E:
+            DISPATCH();
+    OR_REG_A_REG_H:
+            DISPATCH();
+    OR_REG_A_REG_L:
+            DISPATCH();
+    OR_REG_A_MEM_HL:
+            DISPATCH();
+    OR_REG_A_REG_A:
+            DISPATCH();
+    CP_REG_A_REG_B:
+            DISPATCH();
+    CP_REG_A_REG_C:
+            DISPATCH();
+    CP_REG_A_REG_D:
+            DISPATCH();
+    CP_REG_A_REG_E:
+            DISPATCH();
+    CP_REG_A_REG_H:
+            DISPATCH();
+    CP_REG_A_REG_L:
+            DISPATCH();
+    CP_REG_A_MEM_HL:
+            DISPATCH();
+    CP_REG_A_REG_A:
+            DISPATCH();
+    RET_CC_NZ_NONE:
+            DISPATCH();
+    POP_REG_BC_NONE:
+            DISPATCH();
+    JP_CC_NZ_IMM16:
+            DISPATCH();
+    JP_NONE_IMM16:
+            DISPATCH();
+    CALL_CC_NZ_IMM16:
+            DISPATCH();
+    PUSH_REG_BC_NONE:
+            DISPATCH();
+    ADD_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x00:
+            DISPATCH();
+    RET_CC_Z_NONE:
+            DISPATCH();
+    RET_NONE_NONE:
+            DISPATCH();
+    JP_CC_Z_IMM16:
+            DISPATCH();
+    ERROR_NONE_NONE:
+            DISPATCH();
+    CALL_CC_Z_IMM16:
+            DISPATCH();
+    CALL_NONE_IMM16:
+            DISPATCH();
+    ADC_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x08:
+            DISPATCH();
+    RET_CC_NC_NONE:
+            DISPATCH();
+    POP_REG_DE_NONE:
+            DISPATCH();
+    JP_CC_NC_IMM16:
+            DISPATCH();
+    CALL_CC_NC_IMM16:
+            DISPATCH();
+    PUSH_REG_DE_NONE:
+            DISPATCH();
+    SUB_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x10:
+            DISPATCH();
+    RET_CC_C_NONE:
+            DISPATCH();
+    RETI_NONE_NONE:
+            DISPATCH();
+    JP_CC_C_IMM16:
+            DISPATCH();
+    CALL_CC_C_IMM16:
+            DISPATCH();
+    SBC_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x18:
+            DISPATCH();
+    LD_MEM_8_REG_A:
+            DISPATCH();
+    POP_REG_HL_NONE:
+            DISPATCH();
+    LD_MEM_C_REG_A:
+            DISPATCH();
+    PUSH_REG_HL_NONE:
+            DISPATCH();
+    AND_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x20:
+            DISPATCH();
+    ADD16_REG_SP_IMM8:
+            DISPATCH();
+    JP_NONE_MEM_HL:
+            DISPATCH();
+    LD_MEM_16_REG_A:
+            DISPATCH();
+    XOR_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x28:
+            DISPATCH();
+    LD_REG_A_MEM_8:
+            DISPATCH();
+    POP_REG_AF_NONE:
+            DISPATCH();
+    LD_REG_A_MEM_C:
+            DISPATCH();
+    DI_NONE_NONE:
+            DISPATCH();
+    PUSH_REG_AF_NONE:
+            DISPATCH();
+    OR_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x30:
+            DISPATCH();
+    LD16_REG_HL_MEM_8:
+            DISPATCH();
+    LD16_REG_SP_REG_HL:
+            DISPATCH();
+    LD_REG_A_MEM_16:
+            DISPATCH();
+    EI_NONE_NONE:
+            DISPATCH();
+    CP_REG_A_IMM8:
+            DISPATCH();
+    RST_NONE_MEM_0x38:
+            DISPATCH();
     /* Execute opcode */
     switch (opcode) {
     case 0x00: /* NOP */
