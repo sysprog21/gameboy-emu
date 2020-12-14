@@ -90,15 +90,6 @@ void __gb_step_cpu(struct gb_s *gb);
 #if ENABLE_LCD
 void __gb_draw_line(struct gb_s *gb);
 #endif
-/*
-struct cpu_instr_s {
-    const char mnemonic;
-    uint8_t length;
-    bool signed_operand;
-    bool extended;
-    void *execute;
-}
-*/
 
 typedef struct cpu_instr_s {
     enum {
