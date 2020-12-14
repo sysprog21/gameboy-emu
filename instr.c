@@ -375,6 +375,18 @@ DEFINE_INSTRUCTION_Z80(ADDHL_SP, \
 
 DEFINE_ALU_INSTRUCTION_Z80_NOHL(INC);
 DEFINE_ALU_INSTRUCTION_Z80_NOHL(DEC);
+DEFINE_INSTRUCTION_Z80(INC_Mem,
+    uint8_t diff = Z80ReadHL(gb) + 1;
+    gb->cpu_reg.f_bits.z = !diff;
+    gb->cpu_reg.f_bits.n = 0;
+    gb->cpu_reg.f_bits.h = ((diff & 0x0F) == 0x00);
+    Z80WriteHL(gb, diff);)
+DEFINE_INSTRUCTION_Z80(DEC_Mem,
+    uint8_t diff = Z80ReadHL(gb) - 1;
+    gb->cpu_reg.f_bits.z = !diff;
+    gb->cpu_reg.f_bits.n = 1;
+    gb->cpu_reg.f_bits.h = ((diff & 0x0F) == 0x0F);
+    Z80WriteHL(gb, diff);)
 
 DEFINE_INSTRUCTION_Z80(INC_BC,
 	gb->cpu_reg.bc++;)
@@ -404,7 +416,7 @@ DEFINE_INSTRUCTION_Z80(CCF,
 	gb->cpu_reg.f_bits.h = 0;
 	gb->cpu_reg.f_bits.n = 0;)
 
-DEFINE_INSTRUCTION_Z80(CPL,
+DEFINE_INSTRUCTION_Z80(CPL_,
 	gb->cpu_reg.a ^= 0xFF;
 	gb->cpu_reg.f_bits.h = 1;
 	gb->cpu_reg.f_bits.n = 1;)
@@ -457,6 +469,13 @@ DEFINE_INSTRUCTION_Z80(PUSHAF,
                gb->cpu_reg.f_bits.z << 7 | gb->cpu_reg.f_bits.n << 6 |
                gb->cpu_reg.f_bits.h << 5 | gb->cpu_reg.f_bits.c << 4);)
 
+DEFINE_INSTRUCTION_Z80(RLCA,
+	gb->cpu_reg.a = (gb->cpu_reg.a << 1) | (gb->cpu_reg.a >> 7);
+	gb->cpu_reg.f_bits.z = 0;
+	gb->cpu_reg.f_bits.h = 0;
+	gb->cpu_reg.f_bits.n = 0;
+	gb->cpu_reg.f_bits.c = gb->cpu_reg.a & 1;)
+ 
 DEFINE_INSTRUCTION_Z80(RLA,
 	int wide = (gb->cpu_reg.a << 1) | gb->cpu_reg.f_bits.c;
 	gb->cpu_reg.a = wide;
@@ -465,24 +484,17 @@ DEFINE_INSTRUCTION_Z80(RLA,
 	gb->cpu_reg.f_bits.n = 0;
 	gb->cpu_reg.f_bits.c = wide >> 8;)
 
-DEFINE_INSTRUCTION_Z80(RLCA,
-	gb->cpu_reg.a = (gb->cpu_reg.a << 1) | (gb->cpu_reg.a >> 7);
-	gb->cpu_reg.f_bits.z = 0;
-	gb->cpu_reg.f_bits.h = 0;
-	gb->cpu_reg.f_bits.n = 0;
-	gb->cpu_reg.f_bits.c = gb->cpu_reg.a & 1;)
-
-DEFINE_INSTRUCTION_Z80(RRA,
+DEFINE_INSTRUCTION_Z80(RRCA,
 	int low = gb->cpu_reg.a & 1;
-	gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (gb->cpu_reg.f_bits.c << 7);
+	gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (low << 7);
 	gb->cpu_reg.f_bits.z = 0;
 	gb->cpu_reg.f_bits.h = 0;
 	gb->cpu_reg.f_bits.n = 0;
 	gb->cpu_reg.f_bits.c = low;)
 
-DEFINE_INSTRUCTION_Z80(RRCA,
+DEFINE_INSTRUCTION_Z80(RRA,
 	int low = gb->cpu_reg.a & 1;
-	gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (low << 7);
+	gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (gb->cpu_reg.f_bits.c << 7);
 	gb->cpu_reg.f_bits.z = 0;
 	gb->cpu_reg.f_bits.h = 0;
 	gb->cpu_reg.f_bits.n = 0;
