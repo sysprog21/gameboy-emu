@@ -1185,480 +1185,716 @@ void __gb_step_cpu(struct gb_s *gb)
     //else
     //    opcode_function(gb, opcode);
     NOP_NONE_NONE:
+    		_Z80InstructionNOP(gb);
             DISPATCH();
     LD16_REG_BC_IMM16:
+    		_Z80InstructionLDBC_Imm16(gb);
             DISPATCH();
     LD_MEM_BC_REG_A:
+    		_Z80InstructionLDBC_A(gb);
             DISPATCH();
     INC16_REG_BC_NONE:
+    		_Z80InstructionINC_BC(gb);
             DISPATCH();
     INC_REG_B_NONE:
+    		_Z80InstructionINCB(gb);
             DISPATCH();
     DEC_REG_B_NONE:
+    		_Z80InstructionDECB(gb);
             DISPATCH();
     LD_REG_B_IMM8:
+    		_Z80InstructionLDB_Imm(gb);
             DISPATCH();
     RLC_REG_A_NONE:
+    		_Z80InstructionRLCA(gb);
             DISPATCH();
     LD16_MEM_16_REG_SP:
+    		_Z80InstructionLDImm16_SP(gb);
             DISPATCH();
     ADD16_REG_HL_REG_BC:
+    		_Z80InstructionADDHL_BC(gb);
             DISPATCH();
     LD_REG_A_MEM_BC:
+    		_Z80InstructionLDA_BC(gb);
             DISPATCH();
     DEC16_REG_BC_NONE:
+    		_Z80InstructionDEC_BC(gb);
             DISPATCH();
     INC_REG_C_NONE:
+    		_Z80InstructionINCC(gb);
             DISPATCH();
     DEC_REG_C_NONE:
+    		_Z80InstructionDECC(gb);
             DISPATCH();
     LD_REG_C_IMM8:
+    		_Z80InstructionLDC_Imm(gb);
             DISPATCH();
     RRC_REG_A_NONE:
+    		_Z80InstructionRRCA(gb);
             DISPATCH();
     STOP_NONE_NONE:
+    		_Z80InstructionSTOP(gb);
             DISPATCH();
     LD16_REG_DE_IMM16:
+    		_Z80InstructionLDDE_Imm16(gb);
             DISPATCH();
     LD_MEM_DE_REG_A:
+    		_Z80InstructionLDDE_A(gb);
             DISPATCH();
     INC16_REG_DE_NONE:
+    		_Z80InstructionINC_DE(gb);
             DISPATCH();
     INC_REG_D_NONE:
+    		_Z80InstructionINCD(gb);
             DISPATCH();
     DEC_REG_D_NONE:
+    		_Z80InstructionDECD(gb);
             DISPATCH();
     LD_REG_D_IMM8:
+    		_Z80InstructionLDD_Imm(gb);
             DISPATCH();
     RL_REG_A_NONE:
+    		_Z80InstructionRLA(gb);
             DISPATCH();
     JR_NONE_IMM8:
+    		_Z80InstructionJR(gb);
             DISPATCH();
     ADD16_REG_HL_REG_DE:
+    		_Z80InstructionADDHL_DE(gb);
             DISPATCH();
     LD_REG_A_MEM_DE:
+    		_Z80InstructionLDA_DE(gb);
             DISPATCH();
     DEC16_REG_DE_NONE:
+    		_Z80InstructionDEC_DE(gb);
             DISPATCH();
     INC_REG_E_NONE:
+    		_Z80InstructionINCE(gb);
             DISPATCH();
     DEC_REG_E_NONE:
+    		_Z80InstructionDECE(gb);
             DISPATCH();
     LD_REG_E_IMM8:
+    		_Z80InstructionLDE_Imm(gb);
             DISPATCH();
     RR_REG_A_NONE:
+    		_Z80InstructionRRA(gb);
             DISPATCH();
     JR_CC_NZ_IMM8:
+    		_Z80InstructionJRNZ(gb, &inst_cycles);
             DISPATCH();
     LD16_REG_HL_IMM16:
+    		_Z80InstructionLDHL_Imm16(gb);
             DISPATCH();
     LD_MEM_INC_HL_REG_A:
+    		_Z80InstructionLDINC_A(gb);
             DISPATCH();
     INC16_REG_HL_NONE:
+    		_Z80InstructionINC_HL(gb);
             DISPATCH();
     INC_REG_H_NONE:
+    		_Z80InstructionINCH(gb);
             DISPATCH();
     DEC_REG_H_NONE:
+    		_Z80InstructionDECH(gb);
             DISPATCH();
     LD_REG_H_IMM8:
+    		_Z80InstructionLDH_Imm(gb);
             DISPATCH();
     DAA_NONE_NONE:
+    		_Z80InstructionDAA(gb);
             DISPATCH();
     JR_CC_Z_IMM8:
+    		_Z80InstructionJRZ(gb, &inst_cycles);
             DISPATCH();
     ADD16_REG_HL_REG_HL:
+    		_Z80InstructionADDHL_HL(gb);
             DISPATCH();
     LD_REG_A_MEM_INC_HL:
+    		_Z80InstructionLDA_INC(gb);
             DISPATCH();
     DEC16_REG_HL_NONE:
+    		_Z80InstructionDEC_HL(gb);
             DISPATCH();
     INC_REG_L_NONE:
+    		_Z80InstructionINCL(gb);
             DISPATCH();
     DEC_REG_L_NONE:
+    		_Z80InstructionDECL(gb);
             DISPATCH();
     LD_REG_L_IMM8:
+    		_Z80InstructionLDL_Imm(gb);
             DISPATCH();
     CPL_REG_A_NONE:
+    		_Z80InstructionCPL_(gb);
             DISPATCH();
     JR_CC_NC_IMM8:
+    		_Z80InstructionJRNC(gb, &inst_cycles);
             DISPATCH();
     LD16_REG_SP_IMM16:
+    		_Z80InstructionLDSP_Imm16(gb);
             DISPATCH();
     LD_MEM_DEC_HL_REG_A:
+    		_Z80InstructionLDDEC_A(gb);
             DISPATCH();
     INC16_REG_SP_NONE:
+    		_Z80InstructionINC_SP(gb);
             DISPATCH();
     INC_MEM_HL_NONE:
+    		_Z80InstructionINC_Mem(gb);
             DISPATCH();
     DEC_MEM_HL_NONE:
+    		_Z80InstructionDEC_Mem(gb);
             DISPATCH();
     LD_MEM_HL_IMM8:
+    		_Z80InstructionLDHL_Imm(gb);
             DISPATCH();
     SCF_NONE_NONE:
+    		_Z80InstructionSCF(gb);
             DISPATCH();
     JR_CC_C_IMM8:
+    		_Z80InstructionJRC(gb, &inst_cycles);
             DISPATCH();
     ADD16_REG_HL_REG_SP:
+    		_Z80InstructionADDHL_SP(gb);
             DISPATCH();
     LD_REG_A_MEM_DEC_HL:
+    		_Z80InstructionLDA_DEC(gb);
             DISPATCH();
     DEC16_REG_SP_NONE:
+    		_Z80InstructionDEC_SP(gb);
             DISPATCH();
     INC_REG_A_NONE:
+    		_Z80InstructionINCA(gb);
             DISPATCH();
     DEC_REG_A_NONE:
+    		_Z80InstructionDECA(gb);
             DISPATCH();
     LD_REG_A_IMM8:
+    		_Z80InstructionLDA_Imm(gb);
             DISPATCH();
     CCF_NONE_NONE:
+    		_Z80InstructionCCF(gb);
             DISPATCH();
     LD_REG_B_REG_C:
+    		_Z80InstructionLDB_C(gb);
             DISPATCH();
     LD_REG_B_REG_D:
+    		_Z80InstructionLDB_D(gb);
             DISPATCH();
     LD_REG_B_REG_E:
+    		_Z80InstructionLDB_E(gb);
             DISPATCH();
     LD_REG_B_REG_H:
+    		_Z80InstructionLDB_H(gb);
             DISPATCH();
     LD_REG_B_REG_L:
+    		_Z80InstructionLDB_L(gb);
             DISPATCH();
     LD_REG_B_MEM_HL:
+    		_Z80InstructionLDB_HL(gb);
             DISPATCH();
     LD_REG_B_REG_A:
+    		_Z80InstructionLDB_A(gb);
             DISPATCH();
     LD_REG_C_REG_B:
+    		_Z80InstructionLDC_B(gb);
             DISPATCH();
     LD_REG_C_REG_D:
+    		_Z80InstructionLDC_D(gb);
             DISPATCH();
     LD_REG_C_REG_E:
+    		_Z80InstructionLDC_E(gb);
             DISPATCH();
     LD_REG_C_REG_H:
+    		_Z80InstructionLDC_H(gb);
             DISPATCH();
     LD_REG_C_REG_L:
+    		_Z80InstructionLDC_L(gb);
             DISPATCH();
     LD_REG_C_MEM_HL:
+    		_Z80InstructionLDC_HL(gb);
             DISPATCH();
     LD_REG_C_REG_A:
+    		_Z80InstructionLDC_A(gb);
             DISPATCH();
     LD_REG_D_REG_B:
+    		_Z80InstructionLDD_B(gb);
             DISPATCH();
     LD_REG_D_REG_C:
+    		_Z80InstructionLDD_C(gb);
             DISPATCH();
     LD_REG_D_REG_E:
+    		_Z80InstructionLDD_E(gb);
             DISPATCH();
     LD_REG_D_REG_H:
+    		_Z80InstructionLDD_H(gb);
             DISPATCH();
     LD_REG_D_REG_L:
+    		_Z80InstructionLDD_L(gb);
             DISPATCH();
     LD_REG_D_MEM_HL:
+    		_Z80InstructionLDD_HL(gb);
             DISPATCH();
     LD_REG_D_REG_A:
+    		_Z80InstructionLDD_A(gb);
             DISPATCH();
     LD_REG_E_REG_B:
+    		_Z80InstructionLDE_B(gb);
             DISPATCH();
     LD_REG_E_REG_C:
+    		_Z80InstructionLDE_C(gb);
             DISPATCH();
     LD_REG_E_REG_D:
+    		_Z80InstructionLDE_D(gb);
             DISPATCH();
     LD_REG_E_REG_H:
+    		_Z80InstructionLDE_H(gb);
             DISPATCH();
     LD_REG_E_REG_L:
+    		_Z80InstructionLDE_L(gb);
             DISPATCH();
     LD_REG_E_MEM_HL:
+    		_Z80InstructionLDE_HL(gb);
             DISPATCH();
     LD_REG_E_REG_A:
+    		_Z80InstructionLDE_A(gb);
             DISPATCH();
     LD_REG_H_REG_B:
+    		_Z80InstructionLDH_B(gb);
             DISPATCH();
     LD_REG_H_REG_C:
+    		_Z80InstructionLDH_C(gb);
             DISPATCH();
     LD_REG_H_REG_D:
+    		_Z80InstructionLDH_D(gb);
             DISPATCH();
     LD_REG_H_REG_E:
+    		_Z80InstructionLDH_E(gb);
             DISPATCH();
     LD_REG_H_REG_L:
+    		_Z80InstructionLDH_L(gb);
             DISPATCH();
     LD_REG_H_MEM_HL:
+    		_Z80InstructionLDH_HL(gb);
             DISPATCH();
     LD_REG_H_REG_A:
+    		_Z80InstructionLDH_A(gb);
             DISPATCH();
     LD_REG_L_REG_B:
+    		_Z80InstructionLDL_B(gb);
             DISPATCH();
     LD_REG_L_REG_C:
+    		_Z80InstructionLDL_C(gb);
             DISPATCH();
     LD_REG_L_REG_D:
+    		_Z80InstructionLDL_D(gb);
             DISPATCH();
     LD_REG_L_REG_E:
+    		_Z80InstructionLDL_E(gb);
             DISPATCH();
     LD_REG_L_REG_H:
+    		_Z80InstructionLDL_H(gb);
             DISPATCH();
     LD_REG_L_MEM_HL:
+    		_Z80InstructionLDL_HL(gb);
             DISPATCH();
     D_REG_L_REG_A:
             DISPATCH();
     LD_MEM_HL_REG_B:
+    		_Z80InstructionLDHL_B(gb);
             DISPATCH();
     LD_MEM_HL_REG_C:
+    		_Z80InstructionLDHL_C(gb);
             DISPATCH();
     LD_MEM_HL_REG_D:
+    		_Z80InstructionLDHL_D(gb);
             DISPATCH();
     LD_MEM_HL_REG_E:
+    		_Z80InstructionLDHL_E(gb);
             DISPATCH();
     LD_MEM_HL_REG_H:
+    		_Z80InstructionLDHL_H(gb);
             DISPATCH();
     LD_MEM_HL_REG_L:
+    		_Z80InstructionLDHL_L(gb);
             DISPATCH();
     HALT_NONE_NONE:
+    		_Z80InstructionHALT(gb);
             DISPATCH();
     LD_MEM_HL_REG_A:
+    		_Z80InstructionLDHL_A(gb);
             DISPATCH();
     LD_REG_A_REG_B:
+    		_Z80InstructionLDA_B(gb);
             DISPATCH();
     LD_REG_A_REG_C:
+    		_Z80InstructionLDA_C(gb);
             DISPATCH();
     LD_REG_A_REG_D:
+    		_Z80InstructionLDA_D(gb);
             DISPATCH();
     LD_REG_A_REG_E:
+    		_Z80InstructionLDA_E(gb);
             DISPATCH();
     LD_REG_A_REG_H:
+    		_Z80InstructionLDA_H(gb);
             DISPATCH();
     LD_REG_A_REG_L:
+    		_Z80InstructionLDA_L(gb);
             DISPATCH();
     LD_REG_A_MEM_HL:
+    		_Z80InstructionLDA_HL(gb);
             DISPATCH();
     ADD_REG_A_REG_B:
+    		_Z80InstructionADDB(gb);
             DISPATCH();
     ADD_REG_A_REG_C:
+    		_Z80InstructionADDC(gb);
             DISPATCH();
     ADD_REG_A_REG_D:
+    		_Z80InstructionADDD(gb);
             DISPATCH();
     ADD_REG_A_REG_E:
+    		_Z80InstructionADDE(gb);
             DISPATCH();
     ADD_REG_A_REG_H:
+    		_Z80InstructionADDH(gb);
             DISPATCH();
     ADD_REG_A_REG_L:
+    		_Z80InstructionADDL(gb);
             DISPATCH();
     ADD_REG_A_MEM_HL:
+    		_Z80InstructionADDHL(gb);
             DISPATCH();
     ADD_REG_A_REG_A:
+    		_Z80InstructionADDA(gb);
             DISPATCH();
     ADC_REG_A_REG_B:
+    		_Z80InstructionADCB(gb);
             DISPATCH();
     ADC_REG_A_REG_C:
+    		_Z80InstructionADCC(gb);
             DISPATCH();
     ADC_REG_A_REG_D:
+    		_Z80InstructionADCD(gb);
             DISPATCH();
     ADC_REG_A_REG_E:
+    		_Z80InstructionADCE(gb);
             DISPATCH();
     ADC_REG_A_REG_H:
+    		_Z80InstructionADCH(gb);
             DISPATCH();
     ADC_REG_A_REG_L:
+    		_Z80InstructionADCL(gb);
             DISPATCH();
     ADC_REG_A_MEM_HL:
+    		_Z80InstructionADCHL(gb);
             DISPATCH();
     ADC_REG_A_REG_A:
+    		_Z80InstructionADCA(gb);
             DISPATCH();
     SUB_REG_A_REG_B:
+    		_Z80InstructionSUBB(gb);
             DISPATCH();
     SUB_REG_A_REG_C:
+    		_Z80InstructionSUBC(gb);
             DISPATCH();
     SUB_REG_A_REG_D:
+    		_Z80InstructionSUBD(gb);
             DISPATCH();
     SUB_REG_A_REG_E:
+    		_Z80InstructionSUBE(gb);
             DISPATCH();
     SUB_REG_A_REG_H:
+    		_Z80InstructionSUBH(gb);
             DISPATCH();
     SUB_REG_A_REG_L:
+    		_Z80InstructionSUBL(gb);
             DISPATCH();
     SUB_REG_A_MEM_HL:
+    		_Z80InstructionSUBHL(gb);
             DISPATCH();
     SUB_REG_A_REG_A:
+    		_Z80InstructionSUBA(gb);
             DISPATCH();
     SBC_REG_A_REG_B:
+    		_Z80InstructionSBCB(gb);
             DISPATCH();
     SBC_REG_A_REG_C:
+    		_Z80InstructionSBCC(gb);
             DISPATCH();
     SBC_REG_A_REG_D:
+    		_Z80InstructionSBCD(gb);
             DISPATCH();
     SBC_REG_A_REG_E:
+    		_Z80InstructionSBCE(gb);
             DISPATCH();
     SBC_REG_A_REG_H:
+    		_Z80InstructionSBCH(gb);
             DISPATCH();
     SBC_REG_A_REG_L:
+    		_Z80InstructionSBCL(gb);
             DISPATCH();
     SBC_REG_A_MEM_HL:
+    		_Z80InstructionSBCHL(gb);
             DISPATCH();
     SBC_REG_A_REG_A:
+    		_Z80InstructionSBCA(gb);
             DISPATCH();
     AND_REG_A_REG_B:
+    		_Z80InstructionANDB(gb);
             DISPATCH();
     AND_REG_A_REG_C:
+    		_Z80InstructionANDC(gb);
             DISPATCH();
     AND_REG_A_REG_D:
+    		_Z80InstructionANDD(gb);
             DISPATCH();
     AND_REG_A_REG_E:
+    		_Z80InstructionANDE(gb);
             DISPATCH();
     AND_REG_A_REG_H:
+    		_Z80InstructionANDH(gb);
             DISPATCH();
     AND_REG_A_REG_L:
+    		_Z80InstructionANDL(gb);
             DISPATCH();
     AND_REG_A_MEM_HL:
+    		_Z80InstructionANDHL(gb);
             DISPATCH();
     AND_REG_A_REG_A:
+    		_Z80InstructionANDA(gb);
             DISPATCH();
     XOR_REG_A_REG_B:
+    		_Z80InstructionXORB(gb);
             DISPATCH();
     XOR_REG_A_REG_C:
+    		_Z80InstructionXORC(gb);
             DISPATCH();
     XOR_REG_A_REG_D:
+    		_Z80InstructionXORD(gb);
             DISPATCH();
     XOR_REG_A_REG_E:
+    		_Z80InstructionXORE(gb);
             DISPATCH();
     XOR_REG_A_REG_H:
+    		_Z80InstructionXORH(gb);
             DISPATCH();
     XOR_REG_A_REG_L:
+    		_Z80InstructionXORL(gb);
             DISPATCH();
     XOR_REG_A_MEM_HL:
+    		_Z80InstructionXORHL(gb);
             DISPATCH();
     XOR_REG_A_REG_A:
+    		_Z80InstructionXORA(gb);
             DISPATCH();
     OR_REG_A_REG_B:
+    		_Z80InstructionORB(gb);
             DISPATCH();
     OR_REG_A_REG_C:
+    		_Z80InstructionORC(gb);
             DISPATCH();
     OR_REG_A_REG_D:
+    		_Z80InstructionORD(gb);
             DISPATCH();
     OR_REG_A_REG_E:
+    		_Z80InstructionORE(gb);
             DISPATCH();
     OR_REG_A_REG_H:
+    		_Z80InstructionORH(gb);
             DISPATCH();
     OR_REG_A_REG_L:
+    		_Z80InstructionORL(gb);
             DISPATCH();
     OR_REG_A_MEM_HL:
+    		_Z80InstructionORHL(gb);
             DISPATCH();
     OR_REG_A_REG_A:
+    		_Z80InstructionORA(gb);
             DISPATCH();
     CP_REG_A_REG_B:
+    		_Z80InstructionCPB(gb);
             DISPATCH();
     CP_REG_A_REG_C:
+    		_Z80InstructionCPC(gb);
             DISPATCH();
     CP_REG_A_REG_D:
+    		_Z80InstructionCPD(gb);
             DISPATCH();
     CP_REG_A_REG_E:
+    		_Z80InstructionCPE(gb);
             DISPATCH();
     CP_REG_A_REG_H:
+    		_Z80InstructionCPH(gb);
             DISPATCH();
     CP_REG_A_REG_L:
+    		_Z80InstructionCPL(gb);
             DISPATCH();
     CP_REG_A_MEM_HL:
+    		_Z80InstructionCPHL(gb);
             DISPATCH();
     CP_REG_A_REG_A:
+    		_Z80InstructionCPA(gb);
             DISPATCH();
     RET_CC_NZ_NONE:
+    		_Z80InstructionRETNZ(gb, &inst_cycles);
             DISPATCH();
     POP_REG_BC_NONE:
+    		_Z80InstructionPOPBC(gb);
             DISPATCH();
     JP_CC_NZ_IMM16:
+    		_Z80InstructionJPNZ(gb, &inst_cycles);
             DISPATCH();
     JP_NONE_IMM16:
+    		_Z80InstructionJP(gb);
             DISPATCH();
     CALL_CC_NZ_IMM16:
+    		_Z80InstructionCALLNZ(gb, &inst_cycles);
             DISPATCH();
     PUSH_REG_BC_NONE:
+    		_Z80InstructionPUSHBC(gb);
             DISPATCH();
     ADD_REG_A_IMM8:
+    		_Z80InstructionADDImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x00:
+    		_Z80InstructionRST00(gb);
             DISPATCH();
     RET_CC_Z_NONE:
+    		_Z80InstructionRETZ(gb, &inst_cycles);
             DISPATCH();
     RET_NONE_NONE:
+    		_Z80InstructionRET(gb);
             DISPATCH();
     JP_CC_Z_IMM16:
+    		_Z80InstructionJPZ(gb, &inst_cycles);
             DISPATCH();
     ERROR_NONE_NONE:
             DISPATCH();
     CALL_CC_Z_IMM16:
+    		_Z80InstructionCALLZ(gb, &inst_cycles);
             DISPATCH();
     CALL_NONE_IMM16:
+    		_Z80InstructionCALL(gb);
             DISPATCH();
     ADC_REG_A_IMM8:
+    		_Z80InstructionADCImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x08:
+    		_Z80InstructionRST08(gb);
             DISPATCH();
     RET_CC_NC_NONE:
+    		_Z80InstructionRETNC(gb, &inst_cycles);
             DISPATCH();
     POP_REG_DE_NONE:
+    		_Z80InstructionPOPDE(gb);
             DISPATCH();
     JP_CC_NC_IMM16:
+    		_Z80InstructionJPNC(gb, &inst_cycles);
             DISPATCH();
     CALL_CC_NC_IMM16:
+    		_Z80InstructionCALLNC(gb, &inst_cycles);
             DISPATCH();
     PUSH_REG_DE_NONE:
+    		_Z80InstructionPUSHDE(gb);
             DISPATCH();
     SUB_REG_A_IMM8:
+    		_Z80InstructionSUBImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x10:
+    		_Z80InstructionRST10(gb);
             DISPATCH();
     RET_CC_C_NONE:
+    		_Z80InstructionRETC(gb, &inst_cycles);
             DISPATCH();
     RETI_NONE_NONE:
+    		_Z80InstructionRETI(gb);
             DISPATCH();
     JP_CC_C_IMM16:
+    		_Z80InstructionJPC(gb, &inst_cycles);
             DISPATCH();
     CALL_CC_C_IMM16:
+    		_Z80InstructionCALLC(gb, &inst_cycles);
             DISPATCH();
     SBC_REG_A_IMM8:
+    		_Z80InstructionSBCImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x18:
+    		_Z80InstructionRST18(gb);
             DISPATCH();
     LD_MEM_8_REG_A:
+    		_Z80InstructionLDImm_A(gb);
             DISPATCH();
     POP_REG_HL_NONE:
+    		_Z80InstructionPOPHL(gb);
             DISPATCH();
     LD_MEM_C_REG_A:
+    		_Z80InstructionLDImmC_A(gb);
             DISPATCH();
     PUSH_REG_HL_NONE:
+    		_Z80InstructionPUSHHL(gb);
             DISPATCH();
     AND_REG_A_IMM8:
+    		_Z80InstructionANDImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x20:
+    		_Z80InstructionRST20(gb);
             DISPATCH();
     ADD16_REG_SP_IMM8:
+    		_Z80InstructionADDSP_Imm(gb);
             DISPATCH();
     JP_NONE_MEM_HL:
+    		_Z80InstructionJPHL(gb);
             DISPATCH();
     LD_MEM_16_REG_A:
+    		_Z80InstructionLDImm16_A(gb);
             DISPATCH();
     XOR_REG_A_IMM8:
+    		_Z80InstructionXORImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x28:
+    		_Z80InstructionRST28(gb);
             DISPATCH();
     LD_REG_A_MEM_8:
+    		_Z80InstructionLDA_Mem(gb);
             DISPATCH();
     POP_REG_AF_NONE:
+    		_Z80InstructionPOPAF(gb);
             DISPATCH();
     LD_REG_A_MEM_C:
+    		_Z80InstructionLDA_ImmC(gb);
             DISPATCH();
     DI_NONE_NONE:
+    		_Z80InstructionDI(gb);
             DISPATCH();
     PUSH_REG_AF_NONE:
+    		_Z80InstructionPUSHAF(gb);
             DISPATCH();
     OR_REG_A_IMM8:
+    		_Z80InstructionORImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x30:
+    		_Z80InstructionRST30(gb);
             DISPATCH();
     LD16_REG_HL_MEM_8:
+    		_Z80InstructionLDHL_SPImm(gb);
             DISPATCH();
     LD16_REG_SP_REG_HL:
+    		_Z80InstructionLDSP_HL(gb);
             DISPATCH();
     LD_REG_A_MEM_16:
+    		_Z80InstructionLDA_Imm16(gb);
             DISPATCH();
     EI_NONE_NONE:
+    		_Z80InstructionEI(gb);
             DISPATCH();
     CP_REG_A_IMM8:
+    		_Z80InstructionCPImm(gb);
             DISPATCH();
     RST_NONE_MEM_0x38:
+    		_Z80InstructionRST38(gb);
             DISPATCH();
     /* Execute opcode */
     switch (opcode) {
