@@ -189,7 +189,7 @@ DEFINE_INSTRUCTION_Z80(RETI,
 	DEFINE_ ## NAME ## _INSTRUCTION_Z80(L, gb->cpu_reg.l);
 
 #define DEFINE_ALU_INSTRUCTION_Z80_MEM(NAME, REG) \
-	DEFINE_ ## NAME ## _INSTRUCTION_Z80(REG, Z80Read ## REG (gb));
+	DEFINE_ ## NAME ## _INSTRUCTION_Z80(REG, Z80Read ## REG (gb))
 
 #define DEFINE_ALU_INSTRUCTION_Z80(NAME) \
 	DEFINE_ ## NAME ## _INSTRUCTION_Z80(Imm, __gb_read(gb, gb->cpu_reg.pc++)); \
@@ -262,8 +262,8 @@ DEFINE_INSTRUCTION_Z80(LDImmC_A, // LD_MEM_C_REG_A
 
 DEFINE_INSTRUCTION_Z80(LDImm16_A, // LD_MEM_16_REG_A
 	uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++);
-    diff |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-    __gb_write(gb, diff, gb->cpu_reg.a);)
+    	diff |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
+    	__gb_write(gb, diff, gb->cpu_reg.a);)
 
 DEFINE_INSTRUCTION_Z80(LDA_Imm16, // LD_REG_A_MEM_16
 	uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++);
