@@ -77,7 +77,7 @@ DEFINE_INSTRUCTION_Z80(JR
     gb->cpu_reg.pc += diff;)
 
 #define DEFINE_CALL_INSTRUCTION_Z80(CONDITION_NAME, CONDITION) \
-	DEFINE_CONDITION_INSTRUCTION_Z80(JR ## CONDITION_NAME, \
+	DEFINE_CONDITION_INSTRUCTION_Z80(CALL ## CONDITION_NAME, \
 	if (CONDITION) { \
 		uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++); \
 		diff |= __gb_read(gb, gb->cpu_reg.pc++) << 8; \
