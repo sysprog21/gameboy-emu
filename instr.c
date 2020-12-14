@@ -88,7 +88,7 @@ DEFINE_INSTRUCTION_Z80(JR
 	} else \
 		gb->cpu_reg.pc += 2;)
 
-DEFINE_CONDITIONAL_INSTRUCTION_Z80(CALL)
+DEFINE_CONDITIONAL_INSTRUCTION_Z80(CALL);
 
 DEFINE_INSTRUCTION_Z80(CALL
     uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++);
@@ -97,7 +97,6 @@ DEFINE_INSTRUCTION_Z80(CALL
 	__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
 	gb->cpu_reg.pc = diff;)
 
-
 #define DEFINE_RET_INSTRUCTION_Z80(CONDITION_NAME, CONDITION) \
 	DEFINE_CONDITION_INSTRUCTION_Z80(RET ## CONDITION_NAME, \
 	if (CONDITION) { \
@@ -105,7 +104,7 @@ DEFINE_INSTRUCTION_Z80(CALL
 		gb->cpu_reg.pc |= __gb_read(gb, gb->cpu_reg.sp++) << 8; \
         *inst_cycles += 12;})
 
-DEFINE_CONDITIONAL_INSTRUCTION_Z80(RET)
+DEFINE_CONDITIONAL_INSTRUCTION_Z80(RET);
 
 DEFINE_INSTRUCTION_Z80(RET,
 	gb->cpu_reg.pc = __gb_read(gb, gb->cpu_reg.sp++);
@@ -392,10 +391,6 @@ DEFINE_INSTRUCTION_Z80(DEC_HL,
 DEFINE_INSTRUCTION_Z80(DEC_SP,
 	gb->cpu_reg.sp--;)
 
-
-
-
-
 DEFINE_INSTRUCTION_Z80(SCF,
 	gb->cpu_reg.f_bits.c = 1;
 	gb->cpu_reg.f_bits.h = 0;
@@ -406,7 +401,7 @@ DEFINE_INSTRUCTION_Z80(CCF,
 	gb->cpu_reg.f_bits.h = 0;
 	gb->cpu_reg.f_bits.n = 0;)
 
-DEFINE_INSTRUCTION_Z80(CPL_,
+DEFINE_INSTRUCTION_Z80(CPL,
 	gb->cpu_reg.a ^= 0xFF;
 	gb->cpu_reg.f_bits.h = 1;
 	gb->cpu_reg.f_bits.n = 1;)
@@ -435,89 +430,31 @@ DEFINE_INSTRUCTION_Z80(DAA,
 	gb->cpu_reg.f_bits.h = 0;
 	gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
 
-#define DEFINE_POPPUSH_INSTRUCTION_Z80(REG, HH, H, L) \
-	DEFINE_INSTRUCTION_Z80(POP ## REG ## Delay, \
-		cpu-> L = cpu->bus; \
-		cpu->f.packed &= 0xF0; \
-		cpu->index = cpu->sp; \
-		++cpu->sp; \
-		cpu->instruction = _Z80InstructionLD ## HH ## _Bus; \
-		cpu->executionState = Z80_CORE_MEMORY_LOAD;) \
+#define DEFINE_POPPUSH_INSTRUCTION_Z80(REG, H, L) \
 	DEFINE_INSTRUCTION_Z80(POP ## REG, \
-		cpu->index = cpu->sp; \
-		++cpu->sp; \
-		cpu->instruction = _Z80InstructionPOP ## REG ## Delay; \
-		cpu->executionState = Z80_CORE_MEMORY_LOAD;) \
-	DEFINE_INSTRUCTION_Z80(PUSH ## REG ## Finish, \
-		cpu->executionState = Z80_CORE_STALL;) \
-	DEFINE_INSTRUCTION_Z80(PUSH ## REG ## Delay, \
-		--cpu->sp; \
-		cpu->index = cpu->sp; \
-		cpu->bus = cpu-> L; \
-		cpu->instruction = _Z80InstructionPUSH ## REG ## Finish; \
-		cpu->executionState = Z80_CORE_MEMORY_STORE;) \
+		gb->cpu_reg. ## L = __gb_read(gb, gb->cpu_reg.sp++); \
+		gb->cpu_reg. ## H = __gb_read(gb, gb->cpu_reg.sp++);) \
 	DEFINE_INSTRUCTION_Z80(PUSH ## REG, \
-		--cpu->sp; \
-		cpu->index = cpu->sp; \
-		cpu->bus = cpu-> H; \
-		cpu->instruction = _Z80InstructionPUSH ## REG ## Delay; \
-		cpu->executionState = Z80_CORE_MEMORY_STORE;)
+		__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg. ## H); \
+		__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg. ## L);)
 
-DEFINE_POPPUSH_INSTRUCTION_Z80(BC, B, b, c);
-DEFINE_POPPUSH_INSTRUCTION_Z80(DE, D, d, e);
-DEFINE_POPPUSH_INSTRUCTION_Z80(HL, H, h, l);
-DEFINE_POPPUSH_INSTRUCTION_Z80(AF, A, a, f.packed);
+DEFINE_POPPUSH_INSTRUCTION_Z80(BC, b, c);
+DEFINE_POPPUSH_INSTRUCTION_Z80(DE, d, e);
+DEFINE_POPPUSH_INSTRUCTION_Z80(HL, h, l);
+DEFINE_INSTRUCTION_Z80(POPAF,
+	uint8_t diff = __gb_read(gb, gb->cpu_reg.sp++);
+	gb->cpu_reg.f_bits.z = (diff >> 7) & 1;
+	gb->cpu_reg.f_bits.n = (diff >> 6) & 1;
+	gb->cpu_reg.f_bits.h = (diff >> 5) & 1;
+	gb->cpu_reg.f_bits.c = (diff >> 4) & 1;
+	gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.sp++);)
+DEFINE_INSTRUCTION_Z80(PUSHAF,
+	__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.a);
+	__gb_write(gb, --gb->cpu_reg.sp,
+               gb->cpu_reg.f_bits.z << 7 | gb->cpu_reg.f_bits.n << 6 |
+               gb->cpu_reg.f_bits.h << 5 | gb->cpu_reg.f_bits.c << 4);)
 
-#define DEFINE_CB_2_INSTRUCTION_Z80(NAME, WB, BODY) \
-	DEFINE_INSTRUCTION_Z80(NAME ## B, uint8_t reg = gb->cpu_reg.b; BODY; gb->cpu_reg.b = reg) \
-	DEFINE_INSTRUCTION_Z80(NAME ## C, uint8_t reg = gb->cpu_reg.c; BODY; gb->cpu_reg.c = reg) \
-	DEFINE_INSTRUCTION_Z80(NAME ## D, uint8_t reg = gb->cpu_reg.d; BODY; gb->cpu_reg.d = reg) \
-	DEFINE_INSTRUCTION_Z80(NAME ## E, uint8_t reg = gb->cpu_reg.e; BODY; gb->cpu_reg.e = reg) \
-	DEFINE_INSTRUCTION_Z80(NAME ## H, uint8_t reg = gb->cpu_reg.h; BODY; gb->cpu_reg.h = reg) \
-	DEFINE_INSTRUCTION_Z80(NAME ## L, uint8_t reg = gb->cpu_reg.l; BODY; gb->cpu_reg.l = reg) \
-	DEFINE_INSTRUCTION_Z80(NAME ## HLDelay, \
-		uint8_t reg = cpu->bus; \
-		BODY; \
-		cpu->bus = reg; \
-		cpu->executionState = WB; \
-		cpu->instruction = _Z80InstructionNOP;) \
-	DEFINE_INSTRUCTION_Z80(NAME ## HL, \
-		cpu->index = cpu->hl; \
-		cpu->executionState = Z80_CORE_MEMORY_LOAD; \
-		cpu->instruction = _Z80Instruction ## NAME ## HLDelay;) \
-	DEFINE_INSTRUCTION_Z80(NAME ## A, uint8_t reg = gb->cpu_reg.a; BODY; gb->cpu_reg.a = reg)
-
-#define DEFINE_CB_INSTRUCTION_Z80(NAME, WB, BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 0, WB, uint8_t bit = 1; BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 1, WB, uint8_t bit = 2; BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 2, WB, uint8_t bit = 4; BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 3, WB, uint8_t bit = 8; BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 4, WB, uint8_t bit = 16; BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 5, WB, uint8_t bit = 32; BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 6, WB, uint8_t bit = 64; BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME ## 7, WB, uint8_t bit = 128; BODY)
-
-DEFINE_CB_INSTRUCTION_Z80(BIT, Z80_CORE_FETCH, gb->cpu_reg.f_bits.n = 0; gb->cpu_reg.f_bits.h = 1; gb->cpu_reg.f_bits.z = !(reg & bit))
-DEFINE_CB_INSTRUCTION_Z80(RES, Z80_CORE_MEMORY_STORE, reg &= ~bit)
-DEFINE_CB_INSTRUCTION_Z80(SET, Z80_CORE_MEMORY_STORE, reg |= bit)
-
-#define DEFINE_CB_ALU_INSTRUCTION_Z80(NAME, BODY) \
-	DEFINE_CB_2_INSTRUCTION_Z80(NAME, Z80_CORE_MEMORY_STORE, \
-		BODY; \
-		gb->cpu_reg.f_bits.n = 0; \
-		gb->cpu_reg.f_bits.h = 0; \
-		gb->cpu_reg.f_bits.z = !reg;)
-
-DEFINE_CB_ALU_INSTRUCTION_Z80(RL, int wide = (reg << 1) | gb->cpu_reg.f_bits.c; reg = wide; gb->cpu_reg.f_bits.c = wide >> 8)
-DEFINE_CB_ALU_INSTRUCTION_Z80(RLC, reg = (reg << 1) | (reg >> 7); gb->cpu_reg.f_bits.c = reg & 1)
-DEFINE_CB_ALU_INSTRUCTION_Z80(RR, int low = reg & 1; reg = (reg >> 1) | (gb->cpu_reg.f_bits.c << 7); gb->cpu_reg.f_bits.c = low)
-DEFINE_CB_ALU_INSTRUCTION_Z80(RRC, int low = reg & 1; reg = (reg >> 1) | (low << 7); gb->cpu_reg.f_bits.c = low)
-DEFINE_CB_ALU_INSTRUCTION_Z80(SLA, gb->cpu_reg.f_bits.c = reg >> 7; reg <<= 1)
-DEFINE_CB_ALU_INSTRUCTION_Z80(SRA, gb->cpu_reg.f_bits.c = reg & 1; reg = ((int8_t) reg) >> 1)
-DEFINE_CB_ALU_INSTRUCTION_Z80(SRL, gb->cpu_reg.f_bits.c = reg & 1; reg >>= 1)
-DEFINE_CB_ALU_INSTRUCTION_Z80(SWAP, reg = (reg << 4) | (reg >> 4); gb->cpu_reg.f_bits.c = 0)
-
-DEFINE_INSTRUCTION_Z80(RLA_,
+DEFINE_INSTRUCTION_Z80(RLA,
 	int wide = (gb->cpu_reg.a << 1) | gb->cpu_reg.f_bits.c;
 	gb->cpu_reg.a = wide;
 	gb->cpu_reg.f_bits.z = 0;
@@ -525,14 +462,14 @@ DEFINE_INSTRUCTION_Z80(RLA_,
 	gb->cpu_reg.f_bits.n = 0;
 	gb->cpu_reg.f_bits.c = wide >> 8;)
 
-DEFINE_INSTRUCTION_Z80(RLCA_,
+DEFINE_INSTRUCTION_Z80(RLCA,
 	gb->cpu_reg.a = (gb->cpu_reg.a << 1) | (gb->cpu_reg.a >> 7);
 	gb->cpu_reg.f_bits.z = 0;
 	gb->cpu_reg.f_bits.h = 0;
 	gb->cpu_reg.f_bits.n = 0;
 	gb->cpu_reg.f_bits.c = gb->cpu_reg.a & 1;)
 
-DEFINE_INSTRUCTION_Z80(RRA_,
+DEFINE_INSTRUCTION_Z80(RRA,
 	int low = gb->cpu_reg.a & 1;
 	gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (gb->cpu_reg.f_bits.c << 7);
 	gb->cpu_reg.f_bits.z = 0;
@@ -540,7 +477,7 @@ DEFINE_INSTRUCTION_Z80(RRA_,
 	gb->cpu_reg.f_bits.n = 0;
 	gb->cpu_reg.f_bits.c = low;)
 
-DEFINE_INSTRUCTION_Z80(RRCA_,
+DEFINE_INSTRUCTION_Z80(RRCA,
 	int low = gb->cpu_reg.a & 1;
 	gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (low << 7);
 	gb->cpu_reg.f_bits.z = 0;
@@ -548,28 +485,15 @@ DEFINE_INSTRUCTION_Z80(RRCA_,
 	gb->cpu_reg.f_bits.n = 0;
 	gb->cpu_reg.f_bits.c = low;)
 
-DEFINE_INSTRUCTION_Z80(DI, cpu->irqh.setInterrupts(cpu, false));
-DEFINE_INSTRUCTION_Z80(EI, cpu->irqh.setInterrupts(cpu, true));
-DEFINE_INSTRUCTION_Z80(HALT, cpu->irqh.halt(cpu));
+DEFINE_INSTRUCTION_Z80(DI, gb->gb_ime = 0;);
+DEFINE_INSTRUCTION_Z80(EI, gb->gb_ime = 1;);
+DEFINE_INSTRUCTION_Z80(HALT, /* gb->gb_halt = 1; */);
 
 #define DEFINE_RST_INSTRUCTION_Z80(VEC) \
-	DEFINE_INSTRUCTION_Z80(RST ## VEC ## UpdateSPL, \
-		--cpu->sp; \
-		cpu->index = cpu->sp; \
-		cpu->bus = cpu->pc; \
-		cpu->pc = 0x ## VEC; \
-		cpu->memory.setActiveRegion(cpu, cpu->pc); \
-		cpu->executionState = Z80_CORE_MEMORY_STORE; \
-		cpu->instruction = _Z80InstructionNOP;) \
-	DEFINE_INSTRUCTION_Z80(RST ## VEC ## UpdateSPH, \
-		--cpu->sp;\
-		cpu->index = cpu->sp; \
-		cpu->bus = cpu->pc >> 8; \
-		cpu->executionState = Z80_CORE_MEMORY_STORE; \
-		cpu->instruction = _Z80InstructionRST ## VEC ## UpdateSPL;) \
 	DEFINE_INSTRUCTION_Z80(RST ## VEC, \
-		cpu->executionState = Z80_CORE_OP2; \
-		cpu->instruction = _Z80InstructionRST ## VEC ## UpdateSPH;)
+		__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8); \
+		__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF); \
+		gb->cpu_reg.pc = 0x00 ## VEC;)
 
 DEFINE_RST_INSTRUCTION_Z80(00);
 DEFINE_RST_INSTRUCTION_Z80(08);
@@ -580,14 +504,7 @@ DEFINE_RST_INSTRUCTION_Z80(28);
 DEFINE_RST_INSTRUCTION_Z80(30);
 DEFINE_RST_INSTRUCTION_Z80(38);
 
-DEFINE_INSTRUCTION_Z80(ILL, cpu->irqh.hitIllegal(cpu));
-
-DEFINE_INSTRUCTION_Z80(STOP2, cpu->irqh.stop(cpu));
-
-DEFINE_INSTRUCTION_Z80(STOP, \
-	cpu->executionState = Z80_CORE_READ_PC; \
-	cpu->instruction = _Z80InstructionSTOP2;)
-
+DEFINE_INSTRUCTION_Z80(STOP, /* gb->gb_halt = 1; */);
 /*
 void NOP(struct gb_s *gb, uint8_t opcode)
 {
