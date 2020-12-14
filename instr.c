@@ -270,6 +270,9 @@ DEFINE_INSTRUCTION_Z80(LDA_Imm16, // LD_REG_A_MEM_16
 	diff |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
 	gb->cpu_reg.a = __gb_read(gb, diff);)
 
+DEFINE_INSTRUCTION_Z80(LDA_Mem, // LD_REG_A_MEM_8
+	gb->cpu_reg.a = __gb_read(gb, 0xFF00 | __gb_read(gb, gb->cpu_reg.pc++));)
+
 DEFINE_INSTRUCTION_Z80(LDA_ImmC, // LD_REG_A_MEM_C
 	gb->cpu_reg.a = __gb_read(gb, 0xFF00 | gb->cpu_reg.c);)
 
@@ -279,7 +282,7 @@ DEFINE_INSTRUCTION_Z80(LDA_DEC, // LD_REG_A_MEM_DEC_HL
 DEFINE_INSTRUCTION_Z80(LDA_INC, // LD_REG_A_MEM_INC_HL
 	gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.hl++);)
 
-DEFINE_INSTRUCTION_Z80(LDHL_Imm, //
+DEFINE_INSTRUCTION_Z80(LDHL_Imm,
 	Z80WriteHL(gb, __gb_read(gb, gb->cpu_reg.pc++));)
 
 DEFINE_INSTRUCTION_Z80(LDHL_SPImm, // LD16_REG_HL_MEM_8
