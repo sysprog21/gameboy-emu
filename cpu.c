@@ -4,10 +4,7 @@
 
 static const void *dispatch_table[] = {
     /* clang-format off */ 
-  [0x00] = {&&NOP_NONE_NONE},
-  [0x01] = {&&LD16_REG_BC_IMM16},
-  [0x02] = {&&LD_MEM_BC_REG_A},
-  [0x03] = {&&INC16_REG_BC_NONE},
+  &&NOP_NONE_NONE, &&LD16_REG_BC_IMM16, &&LD_MEM_BC_REG_A, &&INC16_REG_BC_NONE,
   [0x04] = {&&INC_REG_B_NONE},
   [0x05] = {&&DEC_REG_B_NONE},
   [0x06] = {&&LD_REG_B_IMM8},

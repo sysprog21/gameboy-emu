@@ -1,6 +1,10 @@
 #pragma once
 #include "cpu.h"
 
+/* clang-format off */
+
+#define UNUSED(x) (void)(x)
+
 #define DEFINE_INSTRUCTION_Z80(NAME, BODY) \
 	void _Z80Instruction ## NAME (struct gb_s *gb) { \
 		UNUSED(gb); \
@@ -73,7 +77,7 @@ DEFINE_INSTRUCTION_Z80(JPHL, // JP HL
 
 DEFINE_CONDITIONAL_INSTRUCTION_Z80(JR);
 
-DEFINE_INSTRUCTION_Z80(JR
+DEFINE_INSTRUCTION_Z80(JR,
     int8_t diff = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
     gb->cpu_reg.pc += diff;)
 
@@ -448,15 +452,15 @@ DEFINE_INSTRUCTION_Z80(DAA,
 
 #define DEFINE_POPPUSH_INSTRUCTION_Z80(REG, H, L) \
 	DEFINE_INSTRUCTION_Z80(POP ## REG, \
-		gb->cpu_reg. ## L = __gb_read(gb, gb->cpu_reg.sp++); \
-		gb->cpu_reg. ## H = __gb_read(gb, gb->cpu_reg.sp++);) \
+		L = __gb_read(gb, gb->cpu_reg.sp++); \
+		H = __gb_read(gb, gb->cpu_reg.sp++);) \
 	DEFINE_INSTRUCTION_Z80(PUSH ## REG, \
-		__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg. ## H); \
-		__gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg. ## L);)
+		__gb_write(gb, --gb->cpu_reg.sp, H); \
+		__gb_write(gb, --gb->cpu_reg.sp, L);)
 
-DEFINE_POPPUSH_INSTRUCTION_Z80(BC, b, c);
-DEFINE_POPPUSH_INSTRUCTION_Z80(DE, d, e);
-DEFINE_POPPUSH_INSTRUCTION_Z80(HL, h, l);
+DEFINE_POPPUSH_INSTRUCTION_Z80(BC, gb->cpu_reg.b, gb->cpu_reg.c);
+DEFINE_POPPUSH_INSTRUCTION_Z80(DE, gb->cpu_reg.d, gb->cpu_reg.e);
+DEFINE_POPPUSH_INSTRUCTION_Z80(HL, gb->cpu_reg.h, gb->cpu_reg.l);
 DEFINE_INSTRUCTION_Z80(POPAF,
 	  uint8_t diff = __gb_read(gb, gb->cpu_reg.sp++);
 	  gb->cpu_reg.f_bits.z = (diff >> 7) & 1;
@@ -506,7 +510,7 @@ DEFINE_INSTRUCTION_Z80(EI, gb->gb_ime = 1;);
 DEFINE_INSTRUCTION_Z80(HALT, /* gb->gb_halt = 1; */);
 
 #define DEFINE_RST_INSTRUCTION_Z80(VEC)                          \
-    DEFINE_INSTRUCTION_Z80(RST ## VEC,                           \ 
+    DEFINE_INSTRUCTION_Z80(RST ## VEC,                           \
         __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);   \
         __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF); \
         gb->cpu_reg.pc = 0x00 ## VEC;)
@@ -523,7 +527,6 @@ DEFINE_RST_INSTRUCTION_Z80(38);
 DEFINE_INSTRUCTION_Z80(STOP, /* gb->gb_halt = 1; */);
 
 static const cpu_instr instr_table[] = {
-    /* clang-format off */
 /* CODE     OPCODE ARG1    ARG2    PTR/ADDR BYTES CYCLES  FLAGS */
   [0x00] = {NOP,   NONE,   NONE,   0, 0,   1,     1, 1,   0},
   [0x01] = {LD16,  REG_BC, IMM16,  0, 0,   3,     3, 3,   0},
@@ -781,11 +784,9 @@ static const cpu_instr instr_table[] = {
   [0xfd] = {ERROR, NONE,   NONE,   0, 0,   0,     0, 0,   0},
   [0xfe] = {CP,    REG_A,  IMM8,   0, 0,   2,     2, 2,   INST_FLAG_AFFECTS_CC},
   [0xff] = {RST,   NONE,   MEM_0x38, 0, 0, 1,     4, 4,   INST_FLAG_ENDS_BLOCK}
-    /* clang-format off */
 };
 
 static const cpu_instr cb_table[] = {
-    /* clang-format off */
 /* CODE     OPCODE ARG1    ARG2    ARGPTR  BYTES  CYCLES  FLAGS */
   [0x00] = {RLC,   REG_B,  NONE,   0, 0,   2,     2, 2,   INST_FLAG_AFFECTS_CC},
   [0x01] = {RLC,   REG_C,  NONE,   0, 0,   2,     2, 2,   INST_FLAG_AFFECTS_CC},
@@ -1043,5 +1044,6 @@ static const cpu_instr cb_table[] = {
   [0xfd] = {SET,   REG_L,  BIT_7,  0, 0,   2,     2, 2,   0},
   [0xfe] = {SET,   MEM_HL, BIT_7,  0, 0,   2,     4, 4,   0},
   [0xff] = {SET,   REG_A,  BIT_7,  0, 0,   2,     2, 2,   0},
-    /* clang-format on */
 };
+
+/* clang-format on */
