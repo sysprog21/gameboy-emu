@@ -302,11 +302,11 @@ DEFINE_INSTRUCTION_Z80(LDHL_Imm16, // LD16_REG_HL_IMM16
 	gb->cpu_reg.l = __gb_read(gb, gb->cpu_reg.pc++);
 	gb->cpu_reg.h = __gb_read(gb, gb->cpu_reg.pc++);)
 
-DEFINE_INSTRUCTION_Z80(LDINC_HL_A, // LD_MEM_INC_HL_REG_A
+DEFINE_INSTRUCTION_Z80(LDINC_A, // LD_MEM_INC_HL_REG_A
 	Z80WriteHL(gb, gb->cpu_reg.a);
 	gb->cpu_reg.hl++;)
 
-DEFINE_INSTRUCTION_Z80(LDDEC_HL_A, // LD_MEM_DEC_HL_REG_A
+DEFINE_INSTRUCTION_Z80(LDDEC_A, // LD_MEM_DEC_HL_REG_A
 	Z80WriteHL(gb, gb->cpu_reg.a);
 	gb->cpu_reg.hl--;)
 
