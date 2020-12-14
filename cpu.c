@@ -1,8 +1,9 @@
 #include "cpu.h"
 #include "apu.h"
+#include "instr.h"
 
 static const void *dispatch_table[] = {
-  /* clang-format off */ 
+    /* clang-format off */ 
   [0x00] = {&&NOP_NONE_NONE},
   [0x01] = {&&LD16_REG_BC_IMM16},
   [0x02] = {&&LD_MEM_BC_REG_A},
@@ -206,7 +207,7 @@ static const void *dispatch_table[] = {
   [0xc8] = {&&RET_CC_Z_NONE},
   [0xc9] = {&&RET_NONE_NONE},
   [0xca] = {&&JP_CC_Z_IMM16},
-  [0xcb] = {&&ERROR_NONE_NONE},
+  [0xcb] = {&&CB},
   [0xcc] = {&&CALL_CC_Z_IMM16},
   [0xcd] = {&&CALL_NONE_IMM16},
   [0xce] = {&&ADC_REG_A_IMM8},
@@ -259,10 +260,10 @@ static const void *dispatch_table[] = {
   [0xfd] = {&&ERROR_NONE_NONE},
   [0xfe] = {&&CP_REG_A_IMM8},
   [0xff] = {&&RST_NONE_MEM_0x38}
-  /* clang-format on */
+    /* clang-format on */
 };
 #define DISPATCH() \
-        goto* dispatch_table[(gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++))]
+    goto *dispatch_table[(gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++))]
 
 /* Internal function used to read bytes. */
 uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
@@ -1166,2441 +1167,740 @@ void __gb_step_cpu(struct gb_s *gb)
             }
         }
     }
-    
-    /* Obtain opcode */
-    //opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
-    // inst_cycles = op_cycles[opcode];
-     
-    /* cpu_instr */
-    //cpu_instr table;
-    //void (*opcode_function)() = table.execute;
-    //if (opcode == 0xcb)
-    //    table = cb_table[READ8(REG(pc)++)];
-    //else
-    //    table = instr_table[opcode];
 
-    //inst_cycles = table.alt_cycles * 4;
-    //if (table.flags == INST_FLAG_USES_CC)
-    //    opcode_function(gb, opcode, &inst_cycles);
-    //else
-    //    opcode_function(gb, opcode);
-    NOP_NONE_NONE:
-    		_Z80InstructionNOP(gb);
-            DISPATCH();
-    LD16_REG_BC_IMM16:
-    		_Z80InstructionLDBC_Imm16(gb);
-            DISPATCH();
-    LD_MEM_BC_REG_A:
-    		_Z80InstructionLDBC_A(gb);
-            DISPATCH();
-    INC16_REG_BC_NONE:
-    		_Z80InstructionINC_BC(gb);
-            DISPATCH();
-    INC_REG_B_NONE:
-    		_Z80InstructionINCB(gb);
-            DISPATCH();
-    DEC_REG_B_NONE:
-    		_Z80InstructionDECB(gb);
-            DISPATCH();
-    LD_REG_B_IMM8:
-    		_Z80InstructionLDB_Imm(gb);
-            DISPATCH();
-    RLC_REG_A_NONE:
-    		_Z80InstructionRLCA(gb);
-            DISPATCH();
-    LD16_MEM_16_REG_SP:
-    		_Z80InstructionLDImm16_SP(gb);
-            DISPATCH();
-    ADD16_REG_HL_REG_BC:
-    		_Z80InstructionADDHL_BC(gb);
-            DISPATCH();
-    LD_REG_A_MEM_BC:
-    		_Z80InstructionLDA_BC(gb);
-            DISPATCH();
-    DEC16_REG_BC_NONE:
-    		_Z80InstructionDEC_BC(gb);
-            DISPATCH();
-    INC_REG_C_NONE:
-    		_Z80InstructionINCC(gb);
-            DISPATCH();
-    DEC_REG_C_NONE:
-    		_Z80InstructionDECC(gb);
-            DISPATCH();
-    LD_REG_C_IMM8:
-    		_Z80InstructionLDC_Imm(gb);
-            DISPATCH();
-    RRC_REG_A_NONE:
-    		_Z80InstructionRRCA(gb);
-            DISPATCH();
-    STOP_NONE_NONE:
-    		_Z80InstructionSTOP(gb);
-            DISPATCH();
-    LD16_REG_DE_IMM16:
-    		_Z80InstructionLDDE_Imm16(gb);
-            DISPATCH();
-    LD_MEM_DE_REG_A:
-    		_Z80InstructionLDDE_A(gb);
-            DISPATCH();
-    INC16_REG_DE_NONE:
-    		_Z80InstructionINC_DE(gb);
-            DISPATCH();
-    INC_REG_D_NONE:
-    		_Z80InstructionINCD(gb);
-            DISPATCH();
-    DEC_REG_D_NONE:
-    		_Z80InstructionDECD(gb);
-            DISPATCH();
-    LD_REG_D_IMM8:
-    		_Z80InstructionLDD_Imm(gb);
-            DISPATCH();
-    RL_REG_A_NONE:
-    		_Z80InstructionRLA(gb);
-            DISPATCH();
-    JR_NONE_IMM8:
-    		_Z80InstructionJR(gb);
-            DISPATCH();
-    ADD16_REG_HL_REG_DE:
-    		_Z80InstructionADDHL_DE(gb);
-            DISPATCH();
-    LD_REG_A_MEM_DE:
-    		_Z80InstructionLDA_DE(gb);
-            DISPATCH();
-    DEC16_REG_DE_NONE:
-    		_Z80InstructionDEC_DE(gb);
-            DISPATCH();
-    INC_REG_E_NONE:
-    		_Z80InstructionINCE(gb);
-            DISPATCH();
-    DEC_REG_E_NONE:
-    		_Z80InstructionDECE(gb);
-            DISPATCH();
-    LD_REG_E_IMM8:
-    		_Z80InstructionLDE_Imm(gb);
-            DISPATCH();
-    RR_REG_A_NONE:
-    		_Z80InstructionRRA(gb);
-            DISPATCH();
-    JR_CC_NZ_IMM8:
-    		_Z80InstructionJRNZ(gb, &inst_cycles);
-            DISPATCH();
-    LD16_REG_HL_IMM16:
-    		_Z80InstructionLDHL_Imm16(gb);
-            DISPATCH();
-    LD_MEM_INC_HL_REG_A:
-    		_Z80InstructionLDINC_A(gb);
-            DISPATCH();
-    INC16_REG_HL_NONE:
-    		_Z80InstructionINC_HL(gb);
-            DISPATCH();
-    INC_REG_H_NONE:
-    		_Z80InstructionINCH(gb);
-            DISPATCH();
-    DEC_REG_H_NONE:
-    		_Z80InstructionDECH(gb);
-            DISPATCH();
-    LD_REG_H_IMM8:
-    		_Z80InstructionLDH_Imm(gb);
-            DISPATCH();
-    DAA_NONE_NONE:
-    		_Z80InstructionDAA(gb);
-            DISPATCH();
-    JR_CC_Z_IMM8:
-    		_Z80InstructionJRZ(gb, &inst_cycles);
-            DISPATCH();
-    ADD16_REG_HL_REG_HL:
-    		_Z80InstructionADDHL_HL(gb);
-            DISPATCH();
-    LD_REG_A_MEM_INC_HL:
-    		_Z80InstructionLDA_INC(gb);
-            DISPATCH();
-    DEC16_REG_HL_NONE:
-    		_Z80InstructionDEC_HL(gb);
-            DISPATCH();
-    INC_REG_L_NONE:
-    		_Z80InstructionINCL(gb);
-            DISPATCH();
-    DEC_REG_L_NONE:
-    		_Z80InstructionDECL(gb);
-            DISPATCH();
-    LD_REG_L_IMM8:
-    		_Z80InstructionLDL_Imm(gb);
-            DISPATCH();
-    CPL_REG_A_NONE:
-    		_Z80InstructionCPL_(gb);
-            DISPATCH();
-    JR_CC_NC_IMM8:
-    		_Z80InstructionJRNC(gb, &inst_cycles);
-            DISPATCH();
-    LD16_REG_SP_IMM16:
-    		_Z80InstructionLDSP_Imm16(gb);
-            DISPATCH();
-    LD_MEM_DEC_HL_REG_A:
-    		_Z80InstructionLDDEC_A(gb);
-            DISPATCH();
-    INC16_REG_SP_NONE:
-    		_Z80InstructionINC_SP(gb);
-            DISPATCH();
-    INC_MEM_HL_NONE:
-    		_Z80InstructionINC_Mem(gb);
-            DISPATCH();
-    DEC_MEM_HL_NONE:
-    		_Z80InstructionDEC_Mem(gb);
-            DISPATCH();
-    LD_MEM_HL_IMM8:
-    		_Z80InstructionLDHL_Imm(gb);
-            DISPATCH();
-    SCF_NONE_NONE:
-    		_Z80InstructionSCF(gb);
-            DISPATCH();
-    JR_CC_C_IMM8:
-    		_Z80InstructionJRC(gb, &inst_cycles);
-            DISPATCH();
-    ADD16_REG_HL_REG_SP:
-    		_Z80InstructionADDHL_SP(gb);
-            DISPATCH();
-    LD_REG_A_MEM_DEC_HL:
-    		_Z80InstructionLDA_DEC(gb);
-            DISPATCH();
-    DEC16_REG_SP_NONE:
-    		_Z80InstructionDEC_SP(gb);
-            DISPATCH();
-    INC_REG_A_NONE:
-    		_Z80InstructionINCA(gb);
-            DISPATCH();
-    DEC_REG_A_NONE:
-    		_Z80InstructionDECA(gb);
-            DISPATCH();
-    LD_REG_A_IMM8:
-    		_Z80InstructionLDA_Imm(gb);
-            DISPATCH();
-    CCF_NONE_NONE:
-    		_Z80InstructionCCF(gb);
-            DISPATCH();
-    LD_REG_B_REG_C:
-    		_Z80InstructionLDB_C(gb);
-            DISPATCH();
-    LD_REG_B_REG_D:
-    		_Z80InstructionLDB_D(gb);
-            DISPATCH();
-    LD_REG_B_REG_E:
-    		_Z80InstructionLDB_E(gb);
-            DISPATCH();
-    LD_REG_B_REG_H:
-    		_Z80InstructionLDB_H(gb);
-            DISPATCH();
-    LD_REG_B_REG_L:
-    		_Z80InstructionLDB_L(gb);
-            DISPATCH();
-    LD_REG_B_MEM_HL:
-    		_Z80InstructionLDB_HL(gb);
-            DISPATCH();
-    LD_REG_B_REG_A:
-    		_Z80InstructionLDB_A(gb);
-            DISPATCH();
-    LD_REG_C_REG_B:
-    		_Z80InstructionLDC_B(gb);
-            DISPATCH();
-    LD_REG_C_REG_D:
-    		_Z80InstructionLDC_D(gb);
-            DISPATCH();
-    LD_REG_C_REG_E:
-    		_Z80InstructionLDC_E(gb);
-            DISPATCH();
-    LD_REG_C_REG_H:
-    		_Z80InstructionLDC_H(gb);
-            DISPATCH();
-    LD_REG_C_REG_L:
-    		_Z80InstructionLDC_L(gb);
-            DISPATCH();
-    LD_REG_C_MEM_HL:
-    		_Z80InstructionLDC_HL(gb);
-            DISPATCH();
-    LD_REG_C_REG_A:
-    		_Z80InstructionLDC_A(gb);
-            DISPATCH();
-    LD_REG_D_REG_B:
-    		_Z80InstructionLDD_B(gb);
-            DISPATCH();
-    LD_REG_D_REG_C:
-    		_Z80InstructionLDD_C(gb);
-            DISPATCH();
-    LD_REG_D_REG_E:
-    		_Z80InstructionLDD_E(gb);
-            DISPATCH();
-    LD_REG_D_REG_H:
-    		_Z80InstructionLDD_H(gb);
-            DISPATCH();
-    LD_REG_D_REG_L:
-    		_Z80InstructionLDD_L(gb);
-            DISPATCH();
-    LD_REG_D_MEM_HL:
-    		_Z80InstructionLDD_HL(gb);
-            DISPATCH();
-    LD_REG_D_REG_A:
-    		_Z80InstructionLDD_A(gb);
-            DISPATCH();
-    LD_REG_E_REG_B:
-    		_Z80InstructionLDE_B(gb);
-            DISPATCH();
-    LD_REG_E_REG_C:
-    		_Z80InstructionLDE_C(gb);
-            DISPATCH();
-    LD_REG_E_REG_D:
-    		_Z80InstructionLDE_D(gb);
-            DISPATCH();
-    LD_REG_E_REG_H:
-    		_Z80InstructionLDE_H(gb);
-            DISPATCH();
-    LD_REG_E_REG_L:
-    		_Z80InstructionLDE_L(gb);
-            DISPATCH();
-    LD_REG_E_MEM_HL:
-    		_Z80InstructionLDE_HL(gb);
-            DISPATCH();
-    LD_REG_E_REG_A:
-    		_Z80InstructionLDE_A(gb);
-            DISPATCH();
-    LD_REG_H_REG_B:
-    		_Z80InstructionLDH_B(gb);
-            DISPATCH();
-    LD_REG_H_REG_C:
-    		_Z80InstructionLDH_C(gb);
-            DISPATCH();
-    LD_REG_H_REG_D:
-    		_Z80InstructionLDH_D(gb);
-            DISPATCH();
-    LD_REG_H_REG_E:
-    		_Z80InstructionLDH_E(gb);
-            DISPATCH();
-    LD_REG_H_REG_L:
-    		_Z80InstructionLDH_L(gb);
-            DISPATCH();
-    LD_REG_H_MEM_HL:
-    		_Z80InstructionLDH_HL(gb);
-            DISPATCH();
-    LD_REG_H_REG_A:
-    		_Z80InstructionLDH_A(gb);
-            DISPATCH();
-    LD_REG_L_REG_B:
-    		_Z80InstructionLDL_B(gb);
-            DISPATCH();
-    LD_REG_L_REG_C:
-    		_Z80InstructionLDL_C(gb);
-            DISPATCH();
-    LD_REG_L_REG_D:
-    		_Z80InstructionLDL_D(gb);
-            DISPATCH();
-    LD_REG_L_REG_E:
-    		_Z80InstructionLDL_E(gb);
-            DISPATCH();
-    LD_REG_L_REG_H:
-    		_Z80InstructionLDL_H(gb);
-            DISPATCH();
-    LD_REG_L_MEM_HL:
-    		_Z80InstructionLDL_HL(gb);
-            DISPATCH();
-    D_REG_L_REG_A:
-            DISPATCH();
-    LD_MEM_HL_REG_B:
-    		_Z80InstructionLDHL_B(gb);
-            DISPATCH();
-    LD_MEM_HL_REG_C:
-    		_Z80InstructionLDHL_C(gb);
-            DISPATCH();
-    LD_MEM_HL_REG_D:
-    		_Z80InstructionLDHL_D(gb);
-            DISPATCH();
-    LD_MEM_HL_REG_E:
-    		_Z80InstructionLDHL_E(gb);
-            DISPATCH();
-    LD_MEM_HL_REG_H:
-    		_Z80InstructionLDHL_H(gb);
-            DISPATCH();
-    LD_MEM_HL_REG_L:
-    		_Z80InstructionLDHL_L(gb);
-            DISPATCH();
-    HALT_NONE_NONE:
-    		_Z80InstructionHALT(gb);
-            DISPATCH();
-    LD_MEM_HL_REG_A:
-    		_Z80InstructionLDHL_A(gb);
-            DISPATCH();
-    LD_REG_A_REG_B:
-    		_Z80InstructionLDA_B(gb);
-            DISPATCH();
-    LD_REG_A_REG_C:
-    		_Z80InstructionLDA_C(gb);
-            DISPATCH();
-    LD_REG_A_REG_D:
-    		_Z80InstructionLDA_D(gb);
-            DISPATCH();
-    LD_REG_A_REG_E:
-    		_Z80InstructionLDA_E(gb);
-            DISPATCH();
-    LD_REG_A_REG_H:
-    		_Z80InstructionLDA_H(gb);
-            DISPATCH();
-    LD_REG_A_REG_L:
-    		_Z80InstructionLDA_L(gb);
-            DISPATCH();
-    LD_REG_A_MEM_HL:
-    		_Z80InstructionLDA_HL(gb);
-            DISPATCH();
-    ADD_REG_A_REG_B:
-    		_Z80InstructionADDB(gb);
-            DISPATCH();
-    ADD_REG_A_REG_C:
-    		_Z80InstructionADDC(gb);
-            DISPATCH();
-    ADD_REG_A_REG_D:
-    		_Z80InstructionADDD(gb);
-            DISPATCH();
-    ADD_REG_A_REG_E:
-    		_Z80InstructionADDE(gb);
-            DISPATCH();
-    ADD_REG_A_REG_H:
-    		_Z80InstructionADDH(gb);
-            DISPATCH();
-    ADD_REG_A_REG_L:
-    		_Z80InstructionADDL(gb);
-            DISPATCH();
-    ADD_REG_A_MEM_HL:
-    		_Z80InstructionADDHL(gb);
-            DISPATCH();
-    ADD_REG_A_REG_A:
-    		_Z80InstructionADDA(gb);
-            DISPATCH();
-    ADC_REG_A_REG_B:
-    		_Z80InstructionADCB(gb);
-            DISPATCH();
-    ADC_REG_A_REG_C:
-    		_Z80InstructionADCC(gb);
-            DISPATCH();
-    ADC_REG_A_REG_D:
-    		_Z80InstructionADCD(gb);
-            DISPATCH();
-    ADC_REG_A_REG_E:
-    		_Z80InstructionADCE(gb);
-            DISPATCH();
-    ADC_REG_A_REG_H:
-    		_Z80InstructionADCH(gb);
-            DISPATCH();
-    ADC_REG_A_REG_L:
-    		_Z80InstructionADCL(gb);
-            DISPATCH();
-    ADC_REG_A_MEM_HL:
-    		_Z80InstructionADCHL(gb);
-            DISPATCH();
-    ADC_REG_A_REG_A:
-    		_Z80InstructionADCA(gb);
-            DISPATCH();
-    SUB_REG_A_REG_B:
-    		_Z80InstructionSUBB(gb);
-            DISPATCH();
-    SUB_REG_A_REG_C:
-    		_Z80InstructionSUBC(gb);
-            DISPATCH();
-    SUB_REG_A_REG_D:
-    		_Z80InstructionSUBD(gb);
-            DISPATCH();
-    SUB_REG_A_REG_E:
-    		_Z80InstructionSUBE(gb);
-            DISPATCH();
-    SUB_REG_A_REG_H:
-    		_Z80InstructionSUBH(gb);
-            DISPATCH();
-    SUB_REG_A_REG_L:
-    		_Z80InstructionSUBL(gb);
-            DISPATCH();
-    SUB_REG_A_MEM_HL:
-    		_Z80InstructionSUBHL(gb);
-            DISPATCH();
-    SUB_REG_A_REG_A:
-    		_Z80InstructionSUBA(gb);
-            DISPATCH();
-    SBC_REG_A_REG_B:
-    		_Z80InstructionSBCB(gb);
-            DISPATCH();
-    SBC_REG_A_REG_C:
-    		_Z80InstructionSBCC(gb);
-            DISPATCH();
-    SBC_REG_A_REG_D:
-    		_Z80InstructionSBCD(gb);
-            DISPATCH();
-    SBC_REG_A_REG_E:
-    		_Z80InstructionSBCE(gb);
-            DISPATCH();
-    SBC_REG_A_REG_H:
-    		_Z80InstructionSBCH(gb);
-            DISPATCH();
-    SBC_REG_A_REG_L:
-    		_Z80InstructionSBCL(gb);
-            DISPATCH();
-    SBC_REG_A_MEM_HL:
-    		_Z80InstructionSBCHL(gb);
-            DISPATCH();
-    SBC_REG_A_REG_A:
-    		_Z80InstructionSBCA(gb);
-            DISPATCH();
-    AND_REG_A_REG_B:
-    		_Z80InstructionANDB(gb);
-            DISPATCH();
-    AND_REG_A_REG_C:
-    		_Z80InstructionANDC(gb);
-            DISPATCH();
-    AND_REG_A_REG_D:
-    		_Z80InstructionANDD(gb);
-            DISPATCH();
-    AND_REG_A_REG_E:
-    		_Z80InstructionANDE(gb);
-            DISPATCH();
-    AND_REG_A_REG_H:
-    		_Z80InstructionANDH(gb);
-            DISPATCH();
-    AND_REG_A_REG_L:
-    		_Z80InstructionANDL(gb);
-            DISPATCH();
-    AND_REG_A_MEM_HL:
-    		_Z80InstructionANDHL(gb);
-            DISPATCH();
-    AND_REG_A_REG_A:
-    		_Z80InstructionANDA(gb);
-            DISPATCH();
-    XOR_REG_A_REG_B:
-    		_Z80InstructionXORB(gb);
-            DISPATCH();
-    XOR_REG_A_REG_C:
-    		_Z80InstructionXORC(gb);
-            DISPATCH();
-    XOR_REG_A_REG_D:
-    		_Z80InstructionXORD(gb);
-            DISPATCH();
-    XOR_REG_A_REG_E:
-    		_Z80InstructionXORE(gb);
-            DISPATCH();
-    XOR_REG_A_REG_H:
-    		_Z80InstructionXORH(gb);
-            DISPATCH();
-    XOR_REG_A_REG_L:
-    		_Z80InstructionXORL(gb);
-            DISPATCH();
-    XOR_REG_A_MEM_HL:
-    		_Z80InstructionXORHL(gb);
-            DISPATCH();
-    XOR_REG_A_REG_A:
-    		_Z80InstructionXORA(gb);
-            DISPATCH();
-    OR_REG_A_REG_B:
-    		_Z80InstructionORB(gb);
-            DISPATCH();
-    OR_REG_A_REG_C:
-    		_Z80InstructionORC(gb);
-            DISPATCH();
-    OR_REG_A_REG_D:
-    		_Z80InstructionORD(gb);
-            DISPATCH();
-    OR_REG_A_REG_E:
-    		_Z80InstructionORE(gb);
-            DISPATCH();
-    OR_REG_A_REG_H:
-    		_Z80InstructionORH(gb);
-            DISPATCH();
-    OR_REG_A_REG_L:
-    		_Z80InstructionORL(gb);
-            DISPATCH();
-    OR_REG_A_MEM_HL:
-    		_Z80InstructionORHL(gb);
-            DISPATCH();
-    OR_REG_A_REG_A:
-    		_Z80InstructionORA(gb);
-            DISPATCH();
-    CP_REG_A_REG_B:
-    		_Z80InstructionCPB(gb);
-            DISPATCH();
-    CP_REG_A_REG_C:
-    		_Z80InstructionCPC(gb);
-            DISPATCH();
-    CP_REG_A_REG_D:
-    		_Z80InstructionCPD(gb);
-            DISPATCH();
-    CP_REG_A_REG_E:
-    		_Z80InstructionCPE(gb);
-            DISPATCH();
-    CP_REG_A_REG_H:
-    		_Z80InstructionCPH(gb);
-            DISPATCH();
-    CP_REG_A_REG_L:
-    		_Z80InstructionCPL(gb);
-            DISPATCH();
-    CP_REG_A_MEM_HL:
-    		_Z80InstructionCPHL(gb);
-            DISPATCH();
-    CP_REG_A_REG_A:
-    		_Z80InstructionCPA(gb);
-            DISPATCH();
-    RET_CC_NZ_NONE:
-    		_Z80InstructionRETNZ(gb, &inst_cycles);
-            DISPATCH();
-    POP_REG_BC_NONE:
-    		_Z80InstructionPOPBC(gb);
-            DISPATCH();
-    JP_CC_NZ_IMM16:
-    		_Z80InstructionJPNZ(gb, &inst_cycles);
-            DISPATCH();
-    JP_NONE_IMM16:
-    		_Z80InstructionJP(gb);
-            DISPATCH();
-    CALL_CC_NZ_IMM16:
-    		_Z80InstructionCALLNZ(gb, &inst_cycles);
-            DISPATCH();
-    PUSH_REG_BC_NONE:
-    		_Z80InstructionPUSHBC(gb);
-            DISPATCH();
-    ADD_REG_A_IMM8:
-    		_Z80InstructionADDImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x00:
-    		_Z80InstructionRST00(gb);
-            DISPATCH();
-    RET_CC_Z_NONE:
-    		_Z80InstructionRETZ(gb, &inst_cycles);
-            DISPATCH();
-    RET_NONE_NONE:
-    		_Z80InstructionRET(gb);
-            DISPATCH();
-    JP_CC_Z_IMM16:
-    		_Z80InstructionJPZ(gb, &inst_cycles);
-            DISPATCH();
-    ERROR_NONE_NONE:
-            DISPATCH();
-    CALL_CC_Z_IMM16:
-    		_Z80InstructionCALLZ(gb, &inst_cycles);
-            DISPATCH();
-    CALL_NONE_IMM16:
-    		_Z80InstructionCALL(gb);
-            DISPATCH();
-    ADC_REG_A_IMM8:
-    		_Z80InstructionADCImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x08:
-    		_Z80InstructionRST08(gb);
-            DISPATCH();
-    RET_CC_NC_NONE:
-    		_Z80InstructionRETNC(gb, &inst_cycles);
-            DISPATCH();
-    POP_REG_DE_NONE:
-    		_Z80InstructionPOPDE(gb);
-            DISPATCH();
-    JP_CC_NC_IMM16:
-    		_Z80InstructionJPNC(gb, &inst_cycles);
-            DISPATCH();
-    CALL_CC_NC_IMM16:
-    		_Z80InstructionCALLNC(gb, &inst_cycles);
-            DISPATCH();
-    PUSH_REG_DE_NONE:
-    		_Z80InstructionPUSHDE(gb);
-            DISPATCH();
-    SUB_REG_A_IMM8:
-    		_Z80InstructionSUBImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x10:
-    		_Z80InstructionRST10(gb);
-            DISPATCH();
-    RET_CC_C_NONE:
-    		_Z80InstructionRETC(gb, &inst_cycles);
-            DISPATCH();
-    RETI_NONE_NONE:
-    		_Z80InstructionRETI(gb);
-            DISPATCH();
-    JP_CC_C_IMM16:
-    		_Z80InstructionJPC(gb, &inst_cycles);
-            DISPATCH();
-    CALL_CC_C_IMM16:
-    		_Z80InstructionCALLC(gb, &inst_cycles);
-            DISPATCH();
-    SBC_REG_A_IMM8:
-    		_Z80InstructionSBCImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x18:
-    		_Z80InstructionRST18(gb);
-            DISPATCH();
-    LD_MEM_8_REG_A:
-    		_Z80InstructionLDImm_A(gb);
-            DISPATCH();
-    POP_REG_HL_NONE:
-    		_Z80InstructionPOPHL(gb);
-            DISPATCH();
-    LD_MEM_C_REG_A:
-    		_Z80InstructionLDImmC_A(gb);
-            DISPATCH();
-    PUSH_REG_HL_NONE:
-    		_Z80InstructionPUSHHL(gb);
-            DISPATCH();
-    AND_REG_A_IMM8:
-    		_Z80InstructionANDImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x20:
-    		_Z80InstructionRST20(gb);
-            DISPATCH();
-    ADD16_REG_SP_IMM8:
-    		_Z80InstructionADDSP_Imm(gb);
-            DISPATCH();
-    JP_NONE_MEM_HL:
-    		_Z80InstructionJPHL(gb);
-            DISPATCH();
-    LD_MEM_16_REG_A:
-    		_Z80InstructionLDImm16_A(gb);
-            DISPATCH();
-    XOR_REG_A_IMM8:
-    		_Z80InstructionXORImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x28:
-    		_Z80InstructionRST28(gb);
-            DISPATCH();
-    LD_REG_A_MEM_8:
-    		_Z80InstructionLDA_Mem(gb);
-            DISPATCH();
-    POP_REG_AF_NONE:
-    		_Z80InstructionPOPAF(gb);
-            DISPATCH();
-    LD_REG_A_MEM_C:
-    		_Z80InstructionLDA_ImmC(gb);
-            DISPATCH();
-    DI_NONE_NONE:
-    		_Z80InstructionDI(gb);
-            DISPATCH();
-    PUSH_REG_AF_NONE:
-    		_Z80InstructionPUSHAF(gb);
-            DISPATCH();
-    OR_REG_A_IMM8:
-    		_Z80InstructionORImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x30:
-    		_Z80InstructionRST30(gb);
-            DISPATCH();
-    LD16_REG_HL_MEM_8:
-    		_Z80InstructionLDHL_SPImm(gb);
-            DISPATCH();
-    LD16_REG_SP_REG_HL:
-    		_Z80InstructionLDSP_HL(gb);
-            DISPATCH();
-    LD_REG_A_MEM_16:
-    		_Z80InstructionLDA_Imm16(gb);
-            DISPATCH();
-    EI_NONE_NONE:
-    		_Z80InstructionEI(gb);
-            DISPATCH();
-    CP_REG_A_IMM8:
-    		_Z80InstructionCPImm(gb);
-            DISPATCH();
-    RST_NONE_MEM_0x38:
-    		_Z80InstructionRST38(gb);
-            DISPATCH();
-    /* Execute opcode */
-    switch (opcode) {
-    case 0x00: /* NOP */
-        break;
-
-    case 0x01: /* LD BC, imm */
-        gb->cpu_reg.c = __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.b = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x02: /* LD (BC), A */
-        __gb_write(gb, gb->cpu_reg.bc, gb->cpu_reg.a);
-        break;
-
-    case 0x03: /* INC BC */
-        gb->cpu_reg.bc++;
-        break;
-
-    case 0x04: /* INC B */
-        gb->cpu_reg.b++;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.b == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.b & 0x0F) == 0x00);
-        break;
-
-    case 0x05: /* DEC B */
-        gb->cpu_reg.b--;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.b == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.b & 0x0F) == 0x0F);
-        break;
-
-    case 0x06: /* LD B, imm */
-        gb->cpu_reg.b = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x07: /* RLCA */
-        gb->cpu_reg.a = (gb->cpu_reg.a << 1) | (gb->cpu_reg.a >> 7);
-        gb->cpu_reg.f_bits.z = 0;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = (gb->cpu_reg.a & 0x01);
-        break;
-
-    case 0x08: { /* LD (imm), SP */
-        uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-        temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-        __gb_write(gb, temp++, gb->cpu_reg.sp & 0xFF);
-        __gb_write(gb, temp, gb->cpu_reg.sp >> 8);
-        break;
-    }
-
-    case 0x09: { /* ADD HL, BC */
-        uint_fast32_t temp = gb->cpu_reg.hl + gb->cpu_reg.bc;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (temp ^ gb->cpu_reg.hl ^ gb->cpu_reg.bc) & 0x1000 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFFFF0000) ? 1 : 0;
-        gb->cpu_reg.hl = (temp & 0x0000FFFF);
-        break;
-    }
-
-    case 0x0A: /* LD A, (BC) */
-        gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.bc);
-        break;
-
-    case 0x0B: /* DEC BC */
-        gb->cpu_reg.bc--;
-        break;
-
-    case 0x0C: /* INC C */
-        gb->cpu_reg.c++;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.c == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.c & 0x0F) == 0x00);
-        break;
-
-    case 0x0D: /* DEC C */
-        gb->cpu_reg.c--;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.c == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.c & 0x0F) == 0x0F);
-        break;
-
-    case 0x0E: /* LD C, imm */
-        gb->cpu_reg.c = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x0F: /* RRCA */
-        gb->cpu_reg.f_bits.c = gb->cpu_reg.a & 0x01;
-        gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (gb->cpu_reg.a << 7);
-        gb->cpu_reg.f_bits.z = 0;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        break;
-
-    case 0x10: /* STOP */
-        // gb->gb_halt = 1;
-        break;
-
-    case 0x11: /* LD DE, imm */
-        gb->cpu_reg.e = __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.d = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x12: /* LD (DE), A */
-        __gb_write(gb, gb->cpu_reg.de, gb->cpu_reg.a);
-        break;
-
-    case 0x13: /* INC DE */
-        gb->cpu_reg.de++;
-        break;
-
-    case 0x14: /* INC D */
-        gb->cpu_reg.d++;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.d == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.d & 0x0F) == 0x00);
-        break;
-
-    case 0x15: /* DEC D */
-        gb->cpu_reg.d--;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.d == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.d & 0x0F) == 0x0F);
-        break;
-
-    case 0x16: /* LD D, imm */
-        gb->cpu_reg.d = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x17: { /* RLA */
-        uint8_t temp = gb->cpu_reg.a;
-        gb->cpu_reg.a = (gb->cpu_reg.a << 1) | gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = 0;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = (temp >> 7) & 0x01;
-        break;
-    }
-
-    case 0x18: { /* JR imm */
-        int8_t temp = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.pc += temp;
-        break;
-    }
-
-    case 0x19: { /* ADD HL, DE */
-        uint_fast32_t temp = gb->cpu_reg.hl + gb->cpu_reg.de;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (temp ^ gb->cpu_reg.hl ^ gb->cpu_reg.de) & 0x1000 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFFFF0000) ? 1 : 0;
-        gb->cpu_reg.hl = (temp & 0x0000FFFF);
-        break;
-    }
-
-    case 0x1A: /* LD A, (DE) */
-        gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.de);
-        break;
-
-    case 0x1B: /* DEC DE */
-        gb->cpu_reg.de--;
-        break;
-
-    case 0x1C: /* INC E */
-        gb->cpu_reg.e++;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.e == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.e & 0x0F) == 0x00);
-        break;
-
-    case 0x1D: /* DEC E */
-        gb->cpu_reg.e--;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.e == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.e & 0x0F) == 0x0F);
-        break;
-
-    case 0x1E: /* LD E, imm */
-        gb->cpu_reg.e = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x1F: { /* RRA */
-        uint8_t temp = gb->cpu_reg.a;
-        gb->cpu_reg.a = gb->cpu_reg.a >> 1 | (gb->cpu_reg.f_bits.c << 7);
-        gb->cpu_reg.f_bits.z = 0;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = temp & 0x1;
-        break;
-    }
-
-    case 0x20: /* JP NZ, imm */
-        if (!gb->cpu_reg.f_bits.z) {
-            int8_t temp = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-            gb->cpu_reg.pc += temp;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc++;
-
-        break;
-
-    case 0x21: /* LD HL, imm */
-        gb->cpu_reg.l = __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.h = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x22: /* LDI (HL), A */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.a);
-        gb->cpu_reg.hl++;
-        break;
-
-    case 0x23: /* INC HL */
-        gb->cpu_reg.hl++;
-        break;
-
-    case 0x24: /* INC H */
-        gb->cpu_reg.h++;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.h == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.h & 0x0F) == 0x00);
-        break;
-
-    case 0x25: /* DEC H */
-        gb->cpu_reg.h--;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.h == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.h & 0x0F) == 0x0F);
-        break;
-
-    case 0x26: /* LD H, imm */
-        gb->cpu_reg.h = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x27: { /* DAA */
-        uint16_t a = gb->cpu_reg.a;
-
-        if (gb->cpu_reg.f_bits.n) {
-            if (gb->cpu_reg.f_bits.h)
-                a = (a - 0x06) & 0xFF;
-
-            if (gb->cpu_reg.f_bits.c)
-                a -= 0x60;
-        } else {
-            if (gb->cpu_reg.f_bits.h || (a & 0x0F) > 9)
-                a += 0x06;
-
-            if (gb->cpu_reg.f_bits.c || a > 0x9F)
-                a += 0x60;
-        }
-
-        if ((a & 0x100) == 0x100)
-            gb->cpu_reg.f_bits.c = 1;
-
-        gb->cpu_reg.a = a;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0);
-        gb->cpu_reg.f_bits.h = 0;
-
-        break;
-    }
-
-    case 0x28: /* JP Z, imm */
-        if (gb->cpu_reg.f_bits.z) {
-            int8_t temp = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-            gb->cpu_reg.pc += temp;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc++;
-
-        break;
-
-    case 0x29: { /* ADD HL, HL */
-        uint_fast32_t temp = gb->cpu_reg.hl + gb->cpu_reg.hl;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = (temp & 0x1000) ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFFFF0000) ? 1 : 0;
-        gb->cpu_reg.hl = (temp & 0x0000FFFF);
-        break;
-    }
-
-    case 0x2A: /* LD A, (HL+) */
-        gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.hl++);
-        break;
-
-    case 0x2B: /* DEC HL */
-        gb->cpu_reg.hl--;
-        break;
-
-    case 0x2C: /* INC L */
-        gb->cpu_reg.l++;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.l == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.l & 0x0F) == 0x00);
-        break;
-
-    case 0x2D: /* DEC L */
-        gb->cpu_reg.l--;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.l == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.l & 0x0F) == 0x0F);
-        break;
-
-    case 0x2E: /* LD L, imm */
-        gb->cpu_reg.l = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x2F: /* CPL */
-        gb->cpu_reg.a = ~gb->cpu_reg.a;
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = 1;
-        break;
-
-    case 0x30: /* JP NC, imm */
-        if (!gb->cpu_reg.f_bits.c) {
-            int8_t temp = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-            gb->cpu_reg.pc += temp;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc++;
-
-        break;
-
-    case 0x31: /* LD SP, imm */
-        gb->cpu_reg.sp = __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.sp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-        break;
-
-    case 0x32: /* LD (HL), A */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.a);
-        gb->cpu_reg.hl--;
-        break;
-
-    case 0x33: /* INC SP */
-        gb->cpu_reg.sp++;
-        break;
-
-    case 0x34: { /* INC (HL) */
-        uint8_t temp = __gb_read(gb, gb->cpu_reg.hl) + 1;
-        gb->cpu_reg.f_bits.z = (temp == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((temp & 0x0F) == 0x00);
-        __gb_write(gb, gb->cpu_reg.hl, temp);
-        break;
-    }
-
-    case 0x35: { /* DEC (HL) */
-        uint8_t temp = __gb_read(gb, gb->cpu_reg.hl) - 1;
-        gb->cpu_reg.f_bits.z = (temp == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((temp & 0x0F) == 0x0F);
-        __gb_write(gb, gb->cpu_reg.hl, temp);
-        break;
-    }
-
-    case 0x36: /* LD (HL), imm */
-        __gb_write(gb, gb->cpu_reg.hl, __gb_read(gb, gb->cpu_reg.pc++));
-        break;
-
-    case 0x37: /* SCF */
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 1;
-        break;
-
-    case 0x38: /* JP C, imm */
-        if (gb->cpu_reg.f_bits.c) {
-            int8_t temp = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-            gb->cpu_reg.pc += temp;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc++;
-
-        break;
-
-    case 0x39: { /* ADD HL, SP */
-        uint_fast32_t temp = gb->cpu_reg.hl + gb->cpu_reg.sp;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            ((gb->cpu_reg.hl & 0xFFF) + (gb->cpu_reg.sp & 0xFFF)) & 0x1000 ? 1
-                                                                           : 0;
-        gb->cpu_reg.f_bits.c = temp & 0x10000 ? 1 : 0;
-        gb->cpu_reg.hl = (uint16_t) temp;
-        break;
-    }
-
-    case 0x3A: /* LD A, (HL) */
-        gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.hl--);
-        break;
-
-    case 0x3B: /* DEC SP */
-        gb->cpu_reg.sp--;
-        break;
-
-    case 0x3C: /* INC A */
-        gb->cpu_reg.a++;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.a & 0x0F) == 0x00);
-        break;
-
-    case 0x3D: /* DEC A */
-        gb->cpu_reg.a--;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.a & 0x0F) == 0x0F);
-        break;
-
-    case 0x3E: /* LD A, imm */
-        gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.pc++);
-        break;
-
-    case 0x3F: /* CCF */
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = ~gb->cpu_reg.f_bits.c;
-        break;
-
-    case 0x40: /* LD B, B */
-        break;
-
-    case 0x41: /* LD B, C */
-        gb->cpu_reg.b = gb->cpu_reg.c;
-        break;
-
-    case 0x42: /* LD B, D */
-        gb->cpu_reg.b = gb->cpu_reg.d;
-        break;
-
-    case 0x43: /* LD B, E */
-        gb->cpu_reg.b = gb->cpu_reg.e;
-        break;
-
-    case 0x44: /* LD B, H */
-        gb->cpu_reg.b = gb->cpu_reg.h;
-        break;
-
-    case 0x45: /* LD B, L */
-        gb->cpu_reg.b = gb->cpu_reg.l;
-        break;
-
-    case 0x46: /* LD B, (HL) */
-        gb->cpu_reg.b = __gb_read(gb, gb->cpu_reg.hl);
-        break;
-
-    case 0x47: /* LD B, A */
-        gb->cpu_reg.b = gb->cpu_reg.a;
-        break;
-
-    case 0x48: /* LD C, B */
-        gb->cpu_reg.c = gb->cpu_reg.b;
-        break;
-
-    case 0x49: /* LD C, C */
-        break;
-
-    case 0x4A: /* LD C, D */
-        gb->cpu_reg.c = gb->cpu_reg.d;
-        break;
-
-    case 0x4B: /* LD C, E */
-        gb->cpu_reg.c = gb->cpu_reg.e;
-        break;
-
-    case 0x4C: /* LD C, H */
-        gb->cpu_reg.c = gb->cpu_reg.h;
-        break;
-
-    case 0x4D: /* LD C, L */
-        gb->cpu_reg.c = gb->cpu_reg.l;
-        break;
-
-    case 0x4E: /* LD C, (HL) */
-        gb->cpu_reg.c = __gb_read(gb, gb->cpu_reg.hl);
-        break;
-
-    case 0x4F: /* LD C, A */
-        gb->cpu_reg.c = gb->cpu_reg.a;
-        break;
-
-    case 0x50: /* LD D, B */
-        gb->cpu_reg.d = gb->cpu_reg.b;
-        break;
-
-    case 0x51: /* LD D, C */
-        gb->cpu_reg.d = gb->cpu_reg.c;
-        break;
-
-    case 0x52: /* LD D, D */
-        break;
-
-    case 0x53: /* LD D, E */
-        gb->cpu_reg.d = gb->cpu_reg.e;
-        break;
-
-    case 0x54: /* LD D, H */
-        gb->cpu_reg.d = gb->cpu_reg.h;
-        break;
-
-    case 0x55: /* LD D, L */
-        gb->cpu_reg.d = gb->cpu_reg.l;
-        break;
-
-    case 0x56: /* LD D, (HL) */
-        gb->cpu_reg.d = __gb_read(gb, gb->cpu_reg.hl);
-        break;
-
-    case 0x57: /* LD D, A */
-        gb->cpu_reg.d = gb->cpu_reg.a;
-        break;
-
-    case 0x58: /* LD E, B */
-        gb->cpu_reg.e = gb->cpu_reg.b;
-        break;
-
-    case 0x59: /* LD E, C */
-        gb->cpu_reg.e = gb->cpu_reg.c;
-        break;
-
-    case 0x5A: /* LD E, D */
-        gb->cpu_reg.e = gb->cpu_reg.d;
-        break;
-
-    case 0x5B: /* LD E, E */
-        break;
-
-    case 0x5C: /* LD E, H */
-        gb->cpu_reg.e = gb->cpu_reg.h;
-        break;
-
-    case 0x5D: /* LD E, L */
-        gb->cpu_reg.e = gb->cpu_reg.l;
-        break;
-
-    case 0x5E: /* LD E, (HL) */
-        gb->cpu_reg.e = __gb_read(gb, gb->cpu_reg.hl);
-        break;
-
-    case 0x5F: /* LD E, A */
-        gb->cpu_reg.e = gb->cpu_reg.a;
-        break;
-
-    case 0x60: /* LD H, B */
-        gb->cpu_reg.h = gb->cpu_reg.b;
-        break;
-
-    case 0x61: /* LD H, C */
-        gb->cpu_reg.h = gb->cpu_reg.c;
-        break;
-
-    case 0x62: /* LD H, D */
-        gb->cpu_reg.h = gb->cpu_reg.d;
-        break;
-
-    case 0x63: /* LD H, E */
-        gb->cpu_reg.h = gb->cpu_reg.e;
-        break;
-
-    case 0x64: /* LD H, H */
-        break;
-
-    case 0x65: /* LD H, L */
-        gb->cpu_reg.h = gb->cpu_reg.l;
-        break;
-
-    case 0x66: /* LD H, (HL) */
-        gb->cpu_reg.h = __gb_read(gb, gb->cpu_reg.hl);
-        break;
-
-    case 0x67: /* LD H, A */
-        gb->cpu_reg.h = gb->cpu_reg.a;
-        break;
-
-    case 0x68: /* LD L, B */
-        gb->cpu_reg.l = gb->cpu_reg.b;
-        break;
-
-    case 0x69: /* LD L, C */
-        gb->cpu_reg.l = gb->cpu_reg.c;
-        break;
-
-    case 0x6A: /* LD L, D */
-        gb->cpu_reg.l = gb->cpu_reg.d;
-        break;
-
-    case 0x6B: /* LD L, E */
-        gb->cpu_reg.l = gb->cpu_reg.e;
-        break;
-
-    case 0x6C: /* LD L, H */
-        gb->cpu_reg.l = gb->cpu_reg.h;
-        break;
-
-    case 0x6D: /* LD L, L */
-        break;
-
-    case 0x6E: /* LD L, (HL) */
-        gb->cpu_reg.l = __gb_read(gb, gb->cpu_reg.hl);
-        break;
-
-    case 0x6F: /* LD L, A */
-        gb->cpu_reg.l = gb->cpu_reg.a;
-        break;
-
-    case 0x70: /* LD (HL), B */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.b);
-        break;
-
-    case 0x71: /* LD (HL), C */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.c);
-        break;
-
-    case 0x72: /* LD (HL), D */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.d);
-        break;
-
-    case 0x73: /* LD (HL), E */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.e);
-        break;
-
-    case 0x74: /* LD (HL), H */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.h);
-        break;
-
-    case 0x75: /* LD (HL), L */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.l);
-        break;
-
-    case 0x76: /* HALT */
-        /* TODO: Emulate HALT bug? */
-        gb->gb_halt = 1;
-        break;
-
-    case 0x77: /* LD (HL), A */
-        __gb_write(gb, gb->cpu_reg.hl, gb->cpu_reg.a);
-        break;
-
-    case 0x78: /* LD A, B */
-        gb->cpu_reg.a = gb->cpu_reg.b;
-        break;
-
-    case 0x79: /* LD A, C */
-        gb->cpu_reg.a = gb->cpu_reg.c;
-        break;
-
-    case 0x7A: /* LD A, D */
-        gb->cpu_reg.a = gb->cpu_reg.d;
-        break;
-
-    case 0x7B: /* LD A, E */
-        gb->cpu_reg.a = gb->cpu_reg.e;
-        break;
-
-    case 0x7C: /* LD A, H */
-        gb->cpu_reg.a = gb->cpu_reg.h;
-        break;
-
-    case 0x7D: /* LD A, L */
-        gb->cpu_reg.a = gb->cpu_reg.l;
-        break;
-
-    case 0x7E: /* LD A, (HL) */
-        gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.hl);
-        break;
-
-    case 0x7F: /* LD A, A */
-        break;
-
-    case 0x80: { /* ADD A, B */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.b;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.b ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x81: { /* ADD A, C */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.c ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x82: { /* ADD A, D */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.d;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.d ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x83: { /* ADD A, E */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.e;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.e ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x84: { /* ADD A, H */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.h;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.h ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x85: { /* ADD A, L */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.l;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.l ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x86: { /* ADD A, (HL) */
-        uint8_t hl = __gb_read(gb, gb->cpu_reg.hl);
-        uint16_t temp = gb->cpu_reg.a + hl;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ hl ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x87: { /* ADD A, A */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.a;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = temp & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x88: { /* ADC A, B */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.b + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.b ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x89: { /* ADC A, C */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.c + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.c ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x8A: { /* ADC A, D */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.d + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.d ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x8B: { /* ADC A, E */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.e + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.e ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x8C: { /* ADC A, H */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.h + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.h ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x8D: { /* ADC A, L */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.l + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.l ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x8E: { /* ADC A, (HL) */
-        uint8_t val = __gb_read(gb, gb->cpu_reg.hl);
-        uint16_t temp = gb->cpu_reg.a + val + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ val ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x8F: { /* ADC A, A */
-        uint16_t temp = gb->cpu_reg.a + gb->cpu_reg.a + gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        /* TODO: Optimization here? */
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.a ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x90: { /* SUB B */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.b;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.b ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x91: { /* SUB C */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.c ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x92: { /* SUB D */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.d;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.d ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x93: { /* SUB E */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.e;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.e ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x94: { /* SUB H */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.h;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.h ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x95: { /* SUB L */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.l;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.l ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x96: { /* SUB (HL) */
-        uint8_t val = __gb_read(gb, gb->cpu_reg.hl);
-        uint16_t temp = gb->cpu_reg.a - val;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ val ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x97: /* SUB A */
-        gb->cpu_reg.a = 0;
-        gb->cpu_reg.f_bits.z = 1;
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0x98: { /* SBC A, B */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.b - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.b ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x99: { /* SBC A, C */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.c - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.c ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x9A: { /* SBC A, D */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.d - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.d ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x9B: { /* SBC A, E */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.e - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.e ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x9C: { /* SBC A, H */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.h - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.h ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x9D: { /* SBC A, L */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.l - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.l ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x9E: { /* SBC A, (HL) */
-        uint8_t val = __gb_read(gb, gb->cpu_reg.hl);
-        uint16_t temp = gb->cpu_reg.a - val - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ val ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0x9F: /* SBC A, A */
-        gb->cpu_reg.a = gb->cpu_reg.f_bits.c ? 0xFF : 0x00;
-        gb->cpu_reg.f_bits.z = gb->cpu_reg.f_bits.c ? 0x00 : 0x01;
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = gb->cpu_reg.f_bits.c;
-        break;
-
-    case 0xA0: /* AND B */
-        gb->cpu_reg.a = gb->cpu_reg.a & gb->cpu_reg.b;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA1: /* AND C */
-        gb->cpu_reg.a = gb->cpu_reg.a & gb->cpu_reg.c;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA2: /* AND D */
-        gb->cpu_reg.a = gb->cpu_reg.a & gb->cpu_reg.d;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA3: /* AND E */
-        gb->cpu_reg.a = gb->cpu_reg.a & gb->cpu_reg.e;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA4: /* AND H */
-        gb->cpu_reg.a = gb->cpu_reg.a & gb->cpu_reg.h;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA5: /* AND L */
-        gb->cpu_reg.a = gb->cpu_reg.a & gb->cpu_reg.l;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA6: /* AND B */
-        gb->cpu_reg.a = gb->cpu_reg.a & __gb_read(gb, gb->cpu_reg.hl);
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA7: /* AND A */
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA8: /* XOR B */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ gb->cpu_reg.b;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xA9: /* XOR C */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ gb->cpu_reg.c;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xAA: /* XOR D */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ gb->cpu_reg.d;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xAB: /* XOR E */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ gb->cpu_reg.e;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xAC: /* XOR H */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ gb->cpu_reg.h;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xAD: /* XOR L */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ gb->cpu_reg.l;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xAE: /* XOR (HL) */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ __gb_read(gb, gb->cpu_reg.hl);
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xAF: /* XOR A */
-        gb->cpu_reg.a = 0x00;
-        gb->cpu_reg.f_bits.z = 1;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB0: /* OR B */
-        gb->cpu_reg.a = gb->cpu_reg.a | gb->cpu_reg.b;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB1: /* OR C */
-        gb->cpu_reg.a = gb->cpu_reg.a | gb->cpu_reg.c;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB2: /* OR D */
-        gb->cpu_reg.a = gb->cpu_reg.a | gb->cpu_reg.d;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB3: /* OR E */
-        gb->cpu_reg.a = gb->cpu_reg.a | gb->cpu_reg.e;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB4: /* OR H */
-        gb->cpu_reg.a = gb->cpu_reg.a | gb->cpu_reg.h;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB5: /* OR L */
-        gb->cpu_reg.a = gb->cpu_reg.a | gb->cpu_reg.l;
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB6: /* OR (HL) */
-        gb->cpu_reg.a = gb->cpu_reg.a | __gb_read(gb, gb->cpu_reg.hl);
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB7: /* OR A */
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xB8: { /* CP B */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.b;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.b ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    case 0xB9: { /* CP C */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.c;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.c ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    case 0xBA: { /* CP D */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.d;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.d ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    case 0xBB: { /* CP E */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.e;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.e ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    case 0xBC: { /* CP H */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.h;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.h ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    case 0xBD: { /* CP L */
-        uint16_t temp = gb->cpu_reg.a - gb->cpu_reg.l;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ gb->cpu_reg.l ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    /* TODO: Optimization by combining similar opcode routines. */
-    case 0xBE: { /* CP B */
-        uint8_t val = __gb_read(gb, gb->cpu_reg.hl);
-        uint16_t temp = gb->cpu_reg.a - val;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ val ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    case 0xBF: /* CP A */
-        gb->cpu_reg.f_bits.z = 1;
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xC0: /* RET NZ */
-        if (!gb->cpu_reg.f_bits.z) {
-            gb->cpu_reg.pc = __gb_read(gb, gb->cpu_reg.sp++);
-            gb->cpu_reg.pc |= __gb_read(gb, gb->cpu_reg.sp++) << 8;
-            inst_cycles += 12;
-        }
-
-        break;
-
-    case 0xC1: /* POP BC */
-        gb->cpu_reg.c = __gb_read(gb, gb->cpu_reg.sp++);
-        gb->cpu_reg.b = __gb_read(gb, gb->cpu_reg.sp++);
-        break;
-
-    case 0xC2: /* JP NZ, imm */
-        if (!gb->cpu_reg.f_bits.z) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-            temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xC3: { /* JP imm */
-        uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-        temp |= __gb_read(gb, gb->cpu_reg.pc) << 8;
-        gb->cpu_reg.pc = temp;
-        break;
-    }
-
-    case 0xC4: /* CALL NZ imm */
-        if (!gb->cpu_reg.f_bits.z) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-            temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 12;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xC5: /* PUSH BC */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.b);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.c);
-        break;
-
-    case 0xC6: { /* ADD A, imm */
-        uint8_t value = __gb_read(gb, gb->cpu_reg.pc++);
-        uint16_t calc = gb->cpu_reg.a + value;
-        gb->cpu_reg.f_bits.z = ((uint8_t) calc == 0) ? 1 : 0;
-        gb->cpu_reg.f_bits.h =
-            ((gb->cpu_reg.a & 0xF) + (value & 0xF) > 0x0F) ? 1 : 0;
-        gb->cpu_reg.f_bits.c = calc > 0xFF ? 1 : 0;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.a = (uint8_t) calc;
-        break;
-    }
-
-    case 0xC7: /* RST 0x0000 */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0000;
-        break;
-
-    case 0xC8: /* RET Z */
-        if (gb->cpu_reg.f_bits.z) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.sp++);
-            temp |= __gb_read(gb, gb->cpu_reg.sp++) << 8;
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 12;
-        }
-
-        break;
-
-    case 0xC9: { /* RET */
-        uint16_t temp = __gb_read(gb, gb->cpu_reg.sp++);
-        temp |= __gb_read(gb, gb->cpu_reg.sp++) << 8;
-        gb->cpu_reg.pc = temp;
-        break;
-    }
-
-    case 0xCA: /* JP Z, imm */
-        if (gb->cpu_reg.f_bits.z) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-            temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xCB: /* CB INST */
-        inst_cycles = __gb_execute_cb(gb);
-        break;
-
-    case 0xCC: /* CALL Z, imm */
-        if (gb->cpu_reg.f_bits.z) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-            temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 12;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xCD: { /* CALL imm */
-        uint16_t addr = __gb_read(gb, gb->cpu_reg.pc++);
-        addr |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = addr;
-    } break;
-
-    case 0xCE: { /* ADC A, imm */
-        uint8_t value, a, carry;
-        value = __gb_read(gb, gb->cpu_reg.pc++);
-        a = gb->cpu_reg.a;
-        carry = gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.a = a + value + carry;
-
-        gb->cpu_reg.f_bits.z = gb->cpu_reg.a == 0 ? 1 : 0;
-        gb->cpu_reg.f_bits.h =
-            ((a & 0xF) + (value & 0xF) + carry > 0x0F) ? 1 : 0;
-        gb->cpu_reg.f_bits.c =
-            (((uint16_t) a) + ((uint16_t) value) + carry > 0xFF) ? 1 : 0;
-        gb->cpu_reg.f_bits.n = 0;
-        break;
-    }
-
-    case 0xCF: /* RST 0x0008 */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0008;
-        break;
-
-    case 0xD0: /* RET NC */
-        if (!gb->cpu_reg.f_bits.c) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.sp++);
-            temp |= __gb_read(gb, gb->cpu_reg.sp++) << 8;
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 12;
-        }
-
-        break;
-
-    case 0xD1: /* POP DE */
-        gb->cpu_reg.e = __gb_read(gb, gb->cpu_reg.sp++);
-        gb->cpu_reg.d = __gb_read(gb, gb->cpu_reg.sp++);
-        break;
-
-    case 0xD2: /* JP NC, imm */
-        if (!gb->cpu_reg.f_bits.c) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-            temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xD4: /* CALL NC, imm */
-        if (!gb->cpu_reg.f_bits.c) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-            temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 12;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xD5: /* PUSH DE */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.d);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.e);
-        break;
-
-    case 0xD6: { /* SUB imm */
-        uint8_t val = __gb_read(gb, gb->cpu_reg.pc++);
-        uint16_t temp = gb->cpu_reg.a - val;
-        gb->cpu_reg.f_bits.z = ((temp & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ val ^ temp) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp & 0xFF);
-        break;
-    }
-
-    case 0xD7: /* RST 0x0010 */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0010;
-        break;
-
-    case 0xD8: /* RET C */
-        if (gb->cpu_reg.f_bits.c) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.sp++);
-            temp |= __gb_read(gb, gb->cpu_reg.sp++) << 8;
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 12;
-        }
-
-        break;
-
-    case 0xD9: { /* RETI */
-        uint16_t temp = __gb_read(gb, gb->cpu_reg.sp++);
-        temp |= __gb_read(gb, gb->cpu_reg.sp++) << 8;
-        gb->cpu_reg.pc = temp;
-        gb->gb_ime = 1;
-    } break;
-
-    case 0xDA: /* JP C, imm */
-        if (gb->cpu_reg.f_bits.c) {
-            uint16_t addr = __gb_read(gb, gb->cpu_reg.pc++);
-            addr |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            gb->cpu_reg.pc = addr;
-            inst_cycles += 4;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xDC: /* CALL C, imm */
-        if (gb->cpu_reg.f_bits.c) {
-            uint16_t temp = __gb_read(gb, gb->cpu_reg.pc++);
-            temp |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-            gb->cpu_reg.pc = temp;
-            inst_cycles += 12;
-        } else
-            gb->cpu_reg.pc += 2;
-
-        break;
-
-    case 0xDE: { /* SBC A, imm */
-        uint8_t temp_8 = __gb_read(gb, gb->cpu_reg.pc++);
-        uint16_t temp_16 = gb->cpu_reg.a - temp_8 - gb->cpu_reg.f_bits.c;
-        gb->cpu_reg.f_bits.z = ((temp_16 & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            (gb->cpu_reg.a ^ temp_8 ^ temp_16) & 0x10 ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp_16 & 0xFF00) ? 1 : 0;
-        gb->cpu_reg.a = (temp_16 & 0xFF);
-        break;
-    }
-
-    case 0xDF: /* RST 0x0018 */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0018;
-        break;
-
-    case 0xE0: /* LD (0xFF00+imm), A */
-        __gb_write(gb, 0xFF00 | __gb_read(gb, gb->cpu_reg.pc++), gb->cpu_reg.a);
-        break;
-
-    case 0xE1: /* POP HL */
-        gb->cpu_reg.l = __gb_read(gb, gb->cpu_reg.sp++);
-        gb->cpu_reg.h = __gb_read(gb, gb->cpu_reg.sp++);
-        break;
-
-    case 0xE2: /* LD (C), A */
-        __gb_write(gb, 0xFF00 | gb->cpu_reg.c, gb->cpu_reg.a);
-        break;
-
-    case 0xE5: /* PUSH HL */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.h);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.l);
-        break;
-
-    case 0xE6: /* AND imm */
-        /* TODO: Optimization? */
-        gb->cpu_reg.a = gb->cpu_reg.a & __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 1;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xE7: /* RST 0x0020 */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0020;
-        break;
-
-    case 0xE8: { /* ADD SP, imm */
-        int8_t offset = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-        /* TODO: Move flag assignments for optimization */
-        gb->cpu_reg.f_bits.z = 0;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            ((gb->cpu_reg.sp & 0xF) + (offset & 0xF) > 0xF) ? 1 : 0;
-        gb->cpu_reg.f_bits.c =
-            ((gb->cpu_reg.sp & 0xFF) + (offset & 0xFF) > 0xFF);
-        gb->cpu_reg.sp += offset;
-        break;
-    }
-
-    case 0xE9: /* JP (HL) */
-        gb->cpu_reg.pc = gb->cpu_reg.hl;
-        break;
-
-    case 0xEA: { /* LD (imm), A */
-        uint16_t addr = __gb_read(gb, gb->cpu_reg.pc++);
-        addr |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-        __gb_write(gb, addr, gb->cpu_reg.a);
-        break;
-    }
-
-    case 0xEE: /* XOR imm */
-        gb->cpu_reg.a = gb->cpu_reg.a ^ __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xEF: /* RST 0x0028 */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0028;
-        break;
-
-    case 0xF0: /* LD A, (0xFF00+imm) */
-        gb->cpu_reg.a = __gb_read(gb, 0xFF00 | __gb_read(gb, gb->cpu_reg.pc++));
-        break;
-
-    case 0xF1: { /* POP AF */
-        uint8_t temp_8 = __gb_read(gb, gb->cpu_reg.sp++);
-        gb->cpu_reg.f_bits.z = (temp_8 >> 7) & 1;
-        gb->cpu_reg.f_bits.n = (temp_8 >> 6) & 1;
-        gb->cpu_reg.f_bits.h = (temp_8 >> 5) & 1;
-        gb->cpu_reg.f_bits.c = (temp_8 >> 4) & 1;
-        gb->cpu_reg.a = __gb_read(gb, gb->cpu_reg.sp++);
-        break;
-    }
-
-    case 0xF2: /* LD A, (C) */
-        gb->cpu_reg.a = __gb_read(gb, 0xFF00 | gb->cpu_reg.c);
-        break;
-
-    case 0xF3: /* DI */
-        gb->gb_ime = 0;
-        break;
-
-    case 0xF5: /* PUSH AF */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.a);
-        __gb_write(gb, --gb->cpu_reg.sp,
-                   gb->cpu_reg.f_bits.z << 7 | gb->cpu_reg.f_bits.n << 6 |
-                       gb->cpu_reg.f_bits.h << 5 | gb->cpu_reg.f_bits.c << 4);
-        break;
-
-    case 0xF6: /* OR imm */
-        gb->cpu_reg.a = gb->cpu_reg.a | __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.f_bits.z = (gb->cpu_reg.a == 0x00);
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h = 0;
-        gb->cpu_reg.f_bits.c = 0;
-        break;
-
-    case 0xF7: /* PUSH AF */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0030;
-        break;
-
-    case 0xF8: { /* LD HL, SP+/-imm */
-        int8_t offset = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
-        gb->cpu_reg.hl = gb->cpu_reg.sp + offset;
-        gb->cpu_reg.f_bits.z = 0;
-        gb->cpu_reg.f_bits.n = 0;
-        gb->cpu_reg.f_bits.h =
-            ((gb->cpu_reg.sp & 0xF) + (offset & 0xF) > 0xF) ? 1 : 0;
-        gb->cpu_reg.f_bits.c =
-            ((gb->cpu_reg.sp & 0xFF) + (offset & 0xFF) > 0xFF) ? 1 : 0;
-        break;
-    }
-
-    case 0xF9: /* LD SP, HL */
-        gb->cpu_reg.sp = gb->cpu_reg.hl;
-        break;
-
-    case 0xFA: { /* LD A, (imm) */
-        uint16_t addr = __gb_read(gb, gb->cpu_reg.pc++);
-        addr |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-        gb->cpu_reg.a = __gb_read(gb, addr);
-        break;
-    }
-
-    case 0xFB: /* EI */
-        gb->gb_ime = 1;
-        break;
-
-    case 0xFE: { /* CP imm */
-        uint8_t temp_8 = __gb_read(gb, gb->cpu_reg.pc++);
-        uint16_t temp_16 = gb->cpu_reg.a - temp_8;
-        gb->cpu_reg.f_bits.z = ((temp_16 & 0xFF) == 0x00);
-        gb->cpu_reg.f_bits.n = 1;
-        gb->cpu_reg.f_bits.h =
-            ((gb->cpu_reg.a ^ temp_8 ^ temp_16) & 0x10) ? 1 : 0;
-        gb->cpu_reg.f_bits.c = (temp_16 & 0xFF00) ? 1 : 0;
-        break;
-    }
-
-    case 0xFF: /* RST 0x0038 */
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
-        gb->cpu_reg.pc = 0x0038;
-        break;
-
-    default:
-        (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
-    }
+/* Obtain opcode */
+// opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
+// inst_cycles = op_cycles[opcode];
+
+/* cpu_instr */
+// cpu_instr table;
+// void (*opcode_function)() = table.execute;
+// if (opcode == 0xcb)
+//    table = cb_table[READ8(REG(pc)++)];
+// else
+//    table = instr_table[opcode];
+
+// inst_cycles = table.alt_cycles * 4;
+// if (table.flags == INST_FLAG_USES_CC)
+//    opcode_function(gb, opcode, &inst_cycles);
+// else
+//    opcode_function(gb, opcode);
+NOP_NONE_NONE:
+    _Z80InstructionNOP(gb);
+    DISPATCH();
+LD16_REG_BC_IMM16:
+    _Z80InstructionLDBC_Imm16(gb);
+    DISPATCH();
+LD_MEM_BC_REG_A:
+    _Z80InstructionLDBC_A(gb);
+    DISPATCH();
+INC16_REG_BC_NONE:
+    _Z80InstructionINC_BC(gb);
+    DISPATCH();
+INC_REG_B_NONE:
+    _Z80InstructionINCB(gb);
+    DISPATCH();
+DEC_REG_B_NONE:
+    _Z80InstructionDECB(gb);
+    DISPATCH();
+LD_REG_B_IMM8:
+    _Z80InstructionLDB_Imm(gb);
+    DISPATCH();
+RLC_REG_A_NONE:
+    _Z80InstructionRLCA(gb);
+    DISPATCH();
+LD16_MEM_16_REG_SP:
+    _Z80InstructionLDImm16_SP(gb);
+    DISPATCH();
+ADD16_REG_HL_REG_BC:
+    _Z80InstructionADDHL_BC(gb);
+    DISPATCH();
+LD_REG_A_MEM_BC:
+    _Z80InstructionLDA_BC(gb);
+    DISPATCH();
+DEC16_REG_BC_NONE:
+    _Z80InstructionDEC_BC(gb);
+    DISPATCH();
+INC_REG_C_NONE:
+    _Z80InstructionINCC(gb);
+    DISPATCH();
+DEC_REG_C_NONE:
+    _Z80InstructionDECC(gb);
+    DISPATCH();
+LD_REG_C_IMM8:
+    _Z80InstructionLDC_Imm(gb);
+    DISPATCH();
+RRC_REG_A_NONE:
+    _Z80InstructionRRCA(gb);
+    DISPATCH();
+STOP_NONE_NONE:
+    _Z80InstructionSTOP(gb);
+    DISPATCH();
+LD16_REG_DE_IMM16:
+    _Z80InstructionLDDE_Imm16(gb);
+    DISPATCH();
+LD_MEM_DE_REG_A:
+    _Z80InstructionLDDE_A(gb);
+    DISPATCH();
+INC16_REG_DE_NONE:
+    _Z80InstructionINC_DE(gb);
+    DISPATCH();
+INC_REG_D_NONE:
+    _Z80InstructionINCD(gb);
+    DISPATCH();
+DEC_REG_D_NONE:
+    _Z80InstructionDECD(gb);
+    DISPATCH();
+LD_REG_D_IMM8:
+    _Z80InstructionLDD_Imm(gb);
+    DISPATCH();
+RL_REG_A_NONE:
+    _Z80InstructionRLA(gb);
+    DISPATCH();
+JR_NONE_IMM8:
+    _Z80InstructionJR(gb);
+    DISPATCH();
+ADD16_REG_HL_REG_DE:
+    _Z80InstructionADDHL_DE(gb);
+    DISPATCH();
+LD_REG_A_MEM_DE:
+    _Z80InstructionLDA_DE(gb);
+    DISPATCH();
+DEC16_REG_DE_NONE:
+    _Z80InstructionDEC_DE(gb);
+    DISPATCH();
+INC_REG_E_NONE:
+    _Z80InstructionINCE(gb);
+    DISPATCH();
+DEC_REG_E_NONE:
+    _Z80InstructionDECE(gb);
+    DISPATCH();
+LD_REG_E_IMM8:
+    _Z80InstructionLDE_Imm(gb);
+    DISPATCH();
+RR_REG_A_NONE:
+    _Z80InstructionRRA(gb);
+    DISPATCH();
+JR_CC_NZ_IMM8:
+    _Z80InstructionJRNZ(gb, &inst_cycles);
+    DISPATCH();
+LD16_REG_HL_IMM16:
+    _Z80InstructionLDHL_Imm16(gb);
+    DISPATCH();
+LD_MEM_INC_HL_REG_A:
+    _Z80InstructionLDINC_A(gb);
+    DISPATCH();
+INC16_REG_HL_NONE:
+    _Z80InstructionINC_HL(gb);
+    DISPATCH();
+INC_REG_H_NONE:
+    _Z80InstructionINCH(gb);
+    DISPATCH();
+DEC_REG_H_NONE:
+    _Z80InstructionDECH(gb);
+    DISPATCH();
+LD_REG_H_IMM8:
+    _Z80InstructionLDH_Imm(gb);
+    DISPATCH();
+DAA_NONE_NONE:
+    _Z80InstructionDAA(gb);
+    DISPATCH();
+JR_CC_Z_IMM8:
+    _Z80InstructionJRZ(gb, &inst_cycles);
+    DISPATCH();
+ADD16_REG_HL_REG_HL:
+    _Z80InstructionADDHL_HL(gb);
+    DISPATCH();
+LD_REG_A_MEM_INC_HL:
+    _Z80InstructionLDA_INC(gb);
+    DISPATCH();
+DEC16_REG_HL_NONE:
+    _Z80InstructionDEC_HL(gb);
+    DISPATCH();
+INC_REG_L_NONE:
+    _Z80InstructionINCL(gb);
+    DISPATCH();
+DEC_REG_L_NONE:
+    _Z80InstructionDECL(gb);
+    DISPATCH();
+LD_REG_L_IMM8:
+    _Z80InstructionLDL_Imm(gb);
+    DISPATCH();
+CPL_REG_A_NONE:
+    _Z80InstructionCPL_(gb);
+    DISPATCH();
+JR_CC_NC_IMM8:
+    _Z80InstructionJRNC(gb, &inst_cycles);
+    DISPATCH();
+LD16_REG_SP_IMM16:
+    _Z80InstructionLDSP_Imm16(gb);
+    DISPATCH();
+LD_MEM_DEC_HL_REG_A:
+    _Z80InstructionLDDEC_A(gb);
+    DISPATCH();
+INC16_REG_SP_NONE:
+    _Z80InstructionINC_SP(gb);
+    DISPATCH();
+INC_MEM_HL_NONE:
+    _Z80InstructionINC_Mem(gb);
+    DISPATCH();
+DEC_MEM_HL_NONE:
+    _Z80InstructionDEC_Mem(gb);
+    DISPATCH();
+LD_MEM_HL_IMM8:
+    _Z80InstructionLDHL_Imm(gb);
+    DISPATCH();
+SCF_NONE_NONE:
+    _Z80InstructionSCF(gb);
+    DISPATCH();
+JR_CC_C_IMM8:
+    _Z80InstructionJRC(gb, &inst_cycles);
+    DISPATCH();
+ADD16_REG_HL_REG_SP:
+    _Z80InstructionADDHL_SP(gb);
+    DISPATCH();
+LD_REG_A_MEM_DEC_HL:
+    _Z80InstructionLDA_DEC(gb);
+    DISPATCH();
+DEC16_REG_SP_NONE:
+    _Z80InstructionDEC_SP(gb);
+    DISPATCH();
+INC_REG_A_NONE:
+    _Z80InstructionINCA(gb);
+    DISPATCH();
+DEC_REG_A_NONE:
+    _Z80InstructionDECA(gb);
+    DISPATCH();
+LD_REG_A_IMM8:
+    _Z80InstructionLDA_Imm(gb);
+    DISPATCH();
+CCF_NONE_NONE:
+    _Z80InstructionCCF(gb);
+    DISPATCH();
+LD_REG_B_REG_C:
+    _Z80InstructionLDB_C(gb);
+    DISPATCH();
+LD_REG_B_REG_D:
+    _Z80InstructionLDB_D(gb);
+    DISPATCH();
+LD_REG_B_REG_E:
+    _Z80InstructionLDB_E(gb);
+    DISPATCH();
+LD_REG_B_REG_H:
+    _Z80InstructionLDB_H(gb);
+    DISPATCH();
+LD_REG_B_REG_L:
+    _Z80InstructionLDB_L(gb);
+    DISPATCH();
+LD_REG_B_MEM_HL:
+    _Z80InstructionLDB_HL(gb);
+    DISPATCH();
+LD_REG_B_REG_A:
+    _Z80InstructionLDB_A(gb);
+    DISPATCH();
+LD_REG_C_REG_B:
+    _Z80InstructionLDC_B(gb);
+    DISPATCH();
+LD_REG_C_REG_D:
+    _Z80InstructionLDC_D(gb);
+    DISPATCH();
+LD_REG_C_REG_E:
+    _Z80InstructionLDC_E(gb);
+    DISPATCH();
+LD_REG_C_REG_H:
+    _Z80InstructionLDC_H(gb);
+    DISPATCH();
+LD_REG_C_REG_L:
+    _Z80InstructionLDC_L(gb);
+    DISPATCH();
+LD_REG_C_MEM_HL:
+    _Z80InstructionLDC_HL(gb);
+    DISPATCH();
+LD_REG_C_REG_A:
+    _Z80InstructionLDC_A(gb);
+    DISPATCH();
+LD_REG_D_REG_B:
+    _Z80InstructionLDD_B(gb);
+    DISPATCH();
+LD_REG_D_REG_C:
+    _Z80InstructionLDD_C(gb);
+    DISPATCH();
+LD_REG_D_REG_E:
+    _Z80InstructionLDD_E(gb);
+    DISPATCH();
+LD_REG_D_REG_H:
+    _Z80InstructionLDD_H(gb);
+    DISPATCH();
+LD_REG_D_REG_L:
+    _Z80InstructionLDD_L(gb);
+    DISPATCH();
+LD_REG_D_MEM_HL:
+    _Z80InstructionLDD_HL(gb);
+    DISPATCH();
+LD_REG_D_REG_A:
+    _Z80InstructionLDD_A(gb);
+    DISPATCH();
+LD_REG_E_REG_B:
+    _Z80InstructionLDE_B(gb);
+    DISPATCH();
+LD_REG_E_REG_C:
+    _Z80InstructionLDE_C(gb);
+    DISPATCH();
+LD_REG_E_REG_D:
+    _Z80InstructionLDE_D(gb);
+    DISPATCH();
+LD_REG_E_REG_H:
+    _Z80InstructionLDE_H(gb);
+    DISPATCH();
+LD_REG_E_REG_L:
+    _Z80InstructionLDE_L(gb);
+    DISPATCH();
+LD_REG_E_MEM_HL:
+    _Z80InstructionLDE_HL(gb);
+    DISPATCH();
+LD_REG_E_REG_A:
+    _Z80InstructionLDE_A(gb);
+    DISPATCH();
+LD_REG_H_REG_B:
+    _Z80InstructionLDH_B(gb);
+    DISPATCH();
+LD_REG_H_REG_C:
+    _Z80InstructionLDH_C(gb);
+    DISPATCH();
+LD_REG_H_REG_D:
+    _Z80InstructionLDH_D(gb);
+    DISPATCH();
+LD_REG_H_REG_E:
+    _Z80InstructionLDH_E(gb);
+    DISPATCH();
+LD_REG_H_REG_L:
+    _Z80InstructionLDH_L(gb);
+    DISPATCH();
+LD_REG_H_MEM_HL:
+    _Z80InstructionLDH_HL(gb);
+    DISPATCH();
+LD_REG_H_REG_A:
+    _Z80InstructionLDH_A(gb);
+    DISPATCH();
+LD_REG_L_REG_B:
+    _Z80InstructionLDL_B(gb);
+    DISPATCH();
+LD_REG_L_REG_C:
+    _Z80InstructionLDL_C(gb);
+    DISPATCH();
+LD_REG_L_REG_D:
+    _Z80InstructionLDL_D(gb);
+    DISPATCH();
+LD_REG_L_REG_E:
+    _Z80InstructionLDL_E(gb);
+    DISPATCH();
+LD_REG_L_REG_H:
+    _Z80InstructionLDL_H(gb);
+    DISPATCH();
+LD_REG_L_MEM_HL:
+    _Z80InstructionLDL_HL(gb);
+    DISPATCH();
+D_REG_L_REG_A:
+    DISPATCH();
+LD_MEM_HL_REG_B:
+    _Z80InstructionLDHL_B(gb);
+    DISPATCH();
+LD_MEM_HL_REG_C:
+    _Z80InstructionLDHL_C(gb);
+    DISPATCH();
+LD_MEM_HL_REG_D:
+    _Z80InstructionLDHL_D(gb);
+    DISPATCH();
+LD_MEM_HL_REG_E:
+    _Z80InstructionLDHL_E(gb);
+    DISPATCH();
+LD_MEM_HL_REG_H:
+    _Z80InstructionLDHL_H(gb);
+    DISPATCH();
+LD_MEM_HL_REG_L:
+    _Z80InstructionLDHL_L(gb);
+    DISPATCH();
+HALT_NONE_NONE:
+    _Z80InstructionHALT(gb);
+    DISPATCH();
+LD_MEM_HL_REG_A:
+    _Z80InstructionLDHL_A(gb);
+    DISPATCH();
+LD_REG_A_REG_B:
+    _Z80InstructionLDA_B(gb);
+    DISPATCH();
+LD_REG_A_REG_C:
+    _Z80InstructionLDA_C(gb);
+    DISPATCH();
+LD_REG_A_REG_D:
+    _Z80InstructionLDA_D(gb);
+    DISPATCH();
+LD_REG_A_REG_E:
+    _Z80InstructionLDA_E(gb);
+    DISPATCH();
+LD_REG_A_REG_H:
+    _Z80InstructionLDA_H(gb);
+    DISPATCH();
+LD_REG_A_REG_L:
+    _Z80InstructionLDA_L(gb);
+    DISPATCH();
+LD_REG_A_MEM_HL:
+    _Z80InstructionLDA_HL(gb);
+    DISPATCH();
+ADD_REG_A_REG_B:
+    _Z80InstructionADDB(gb);
+    DISPATCH();
+ADD_REG_A_REG_C:
+    _Z80InstructionADDC(gb);
+    DISPATCH();
+ADD_REG_A_REG_D:
+    _Z80InstructionADDD(gb);
+    DISPATCH();
+ADD_REG_A_REG_E:
+    _Z80InstructionADDE(gb);
+    DISPATCH();
+ADD_REG_A_REG_H:
+    _Z80InstructionADDH(gb);
+    DISPATCH();
+ADD_REG_A_REG_L:
+    _Z80InstructionADDL(gb);
+    DISPATCH();
+ADD_REG_A_MEM_HL:
+    _Z80InstructionADDHL(gb);
+    DISPATCH();
+ADD_REG_A_REG_A:
+    _Z80InstructionADDA(gb);
+    DISPATCH();
+ADC_REG_A_REG_B:
+    _Z80InstructionADCB(gb);
+    DISPATCH();
+ADC_REG_A_REG_C:
+    _Z80InstructionADCC(gb);
+    DISPATCH();
+ADC_REG_A_REG_D:
+    _Z80InstructionADCD(gb);
+    DISPATCH();
+ADC_REG_A_REG_E:
+    _Z80InstructionADCE(gb);
+    DISPATCH();
+ADC_REG_A_REG_H:
+    _Z80InstructionADCH(gb);
+    DISPATCH();
+ADC_REG_A_REG_L:
+    _Z80InstructionADCL(gb);
+    DISPATCH();
+ADC_REG_A_MEM_HL:
+    _Z80InstructionADCHL(gb);
+    DISPATCH();
+ADC_REG_A_REG_A:
+    _Z80InstructionADCA(gb);
+    DISPATCH();
+SUB_REG_A_REG_B:
+    _Z80InstructionSUBB(gb);
+    DISPATCH();
+SUB_REG_A_REG_C:
+    _Z80InstructionSUBC(gb);
+    DISPATCH();
+SUB_REG_A_REG_D:
+    _Z80InstructionSUBD(gb);
+    DISPATCH();
+SUB_REG_A_REG_E:
+    _Z80InstructionSUBE(gb);
+    DISPATCH();
+SUB_REG_A_REG_H:
+    _Z80InstructionSUBH(gb);
+    DISPATCH();
+SUB_REG_A_REG_L:
+    _Z80InstructionSUBL(gb);
+    DISPATCH();
+SUB_REG_A_MEM_HL:
+    _Z80InstructionSUBHL(gb);
+    DISPATCH();
+SUB_REG_A_REG_A:
+    _Z80InstructionSUBA(gb);
+    DISPATCH();
+SBC_REG_A_REG_B:
+    _Z80InstructionSBCB(gb);
+    DISPATCH();
+SBC_REG_A_REG_C:
+    _Z80InstructionSBCC(gb);
+    DISPATCH();
+SBC_REG_A_REG_D:
+    _Z80InstructionSBCD(gb);
+    DISPATCH();
+SBC_REG_A_REG_E:
+    _Z80InstructionSBCE(gb);
+    DISPATCH();
+SBC_REG_A_REG_H:
+    _Z80InstructionSBCH(gb);
+    DISPATCH();
+SBC_REG_A_REG_L:
+    _Z80InstructionSBCL(gb);
+    DISPATCH();
+SBC_REG_A_MEM_HL:
+    _Z80InstructionSBCHL(gb);
+    DISPATCH();
+SBC_REG_A_REG_A:
+    _Z80InstructionSBCA(gb);
+    DISPATCH();
+AND_REG_A_REG_B:
+    _Z80InstructionANDB(gb);
+    DISPATCH();
+AND_REG_A_REG_C:
+    _Z80InstructionANDC(gb);
+    DISPATCH();
+AND_REG_A_REG_D:
+    _Z80InstructionANDD(gb);
+    DISPATCH();
+AND_REG_A_REG_E:
+    _Z80InstructionANDE(gb);
+    DISPATCH();
+AND_REG_A_REG_H:
+    _Z80InstructionANDH(gb);
+    DISPATCH();
+AND_REG_A_REG_L:
+    _Z80InstructionANDL(gb);
+    DISPATCH();
+AND_REG_A_MEM_HL:
+    _Z80InstructionANDHL(gb);
+    DISPATCH();
+AND_REG_A_REG_A:
+    _Z80InstructionANDA(gb);
+    DISPATCH();
+XOR_REG_A_REG_B:
+    _Z80InstructionXORB(gb);
+    DISPATCH();
+XOR_REG_A_REG_C:
+    _Z80InstructionXORC(gb);
+    DISPATCH();
+XOR_REG_A_REG_D:
+    _Z80InstructionXORD(gb);
+    DISPATCH();
+XOR_REG_A_REG_E:
+    _Z80InstructionXORE(gb);
+    DISPATCH();
+XOR_REG_A_REG_H:
+    _Z80InstructionXORH(gb);
+    DISPATCH();
+XOR_REG_A_REG_L:
+    _Z80InstructionXORL(gb);
+    DISPATCH();
+XOR_REG_A_MEM_HL:
+    _Z80InstructionXORHL(gb);
+    DISPATCH();
+XOR_REG_A_REG_A:
+    _Z80InstructionXORA(gb);
+    DISPATCH();
+OR_REG_A_REG_B:
+    _Z80InstructionORB(gb);
+    DISPATCH();
+OR_REG_A_REG_C:
+    _Z80InstructionORC(gb);
+    DISPATCH();
+OR_REG_A_REG_D:
+    _Z80InstructionORD(gb);
+    DISPATCH();
+OR_REG_A_REG_E:
+    _Z80InstructionORE(gb);
+    DISPATCH();
+OR_REG_A_REG_H:
+    _Z80InstructionORH(gb);
+    DISPATCH();
+OR_REG_A_REG_L:
+    _Z80InstructionORL(gb);
+    DISPATCH();
+OR_REG_A_MEM_HL:
+    _Z80InstructionORHL(gb);
+    DISPATCH();
+OR_REG_A_REG_A:
+    _Z80InstructionORA(gb);
+    DISPATCH();
+CP_REG_A_REG_B:
+    _Z80InstructionCPB(gb);
+    DISPATCH();
+CP_REG_A_REG_C:
+    _Z80InstructionCPC(gb);
+    DISPATCH();
+CP_REG_A_REG_D:
+    _Z80InstructionCPD(gb);
+    DISPATCH();
+CP_REG_A_REG_E:
+    _Z80InstructionCPE(gb);
+    DISPATCH();
+CP_REG_A_REG_H:
+    _Z80InstructionCPH(gb);
+    DISPATCH();
+CP_REG_A_REG_L:
+    _Z80InstructionCPL(gb);
+    DISPATCH();
+CP_REG_A_MEM_HL:
+    _Z80InstructionCPHL(gb);
+    DISPATCH();
+CP_REG_A_REG_A:
+    _Z80InstructionCPA(gb);
+    DISPATCH();
+RET_CC_NZ_NONE:
+    _Z80InstructionRETNZ(gb, &inst_cycles);
+    DISPATCH();
+POP_REG_BC_NONE:
+    _Z80InstructionPOPBC(gb);
+    DISPATCH();
+JP_CC_NZ_IMM16:
+    _Z80InstructionJPNZ(gb, &inst_cycles);
+    DISPATCH();
+JP_NONE_IMM16:
+    _Z80InstructionJP(gb);
+    DISPATCH();
+CALL_CC_NZ_IMM16:
+    _Z80InstructionCALLNZ(gb, &inst_cycles);
+    DISPATCH();
+PUSH_REG_BC_NONE:
+    _Z80InstructionPUSHBC(gb);
+    DISPATCH();
+ADD_REG_A_IMM8:
+    _Z80InstructionADDImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x00:
+    _Z80InstructionRST00(gb);
+    DISPATCH();
+RET_CC_Z_NONE:
+    _Z80InstructionRETZ(gb, &inst_cycles);
+    DISPATCH();
+RET_NONE_NONE:
+    _Z80InstructionRET(gb);
+    DISPATCH();
+JP_CC_Z_IMM16:
+    _Z80InstructionJPZ(gb, &inst_cycles);
+    DISPATCH();
+CB:
+    inst_cycles = __gb_execute_cb(gb);
+ERROR_NONE_NONE:
+    (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
+    DISPATCH();
+CALL_CC_Z_IMM16:
+    _Z80InstructionCALLZ(gb, &inst_cycles);
+    DISPATCH();
+CALL_NONE_IMM16:
+    _Z80InstructionCALL(gb);
+    DISPATCH();
+ADC_REG_A_IMM8:
+    _Z80InstructionADCImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x08:
+    _Z80InstructionRST08(gb);
+    DISPATCH();
+RET_CC_NC_NONE:
+    _Z80InstructionRETNC(gb, &inst_cycles);
+    DISPATCH();
+POP_REG_DE_NONE:
+    _Z80InstructionPOPDE(gb);
+    DISPATCH();
+JP_CC_NC_IMM16:
+    _Z80InstructionJPNC(gb, &inst_cycles);
+    DISPATCH();
+CALL_CC_NC_IMM16:
+    _Z80InstructionCALLNC(gb, &inst_cycles);
+    DISPATCH();
+PUSH_REG_DE_NONE:
+    _Z80InstructionPUSHDE(gb);
+    DISPATCH();
+SUB_REG_A_IMM8:
+    _Z80InstructionSUBImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x10:
+    _Z80InstructionRST10(gb);
+    DISPATCH();
+RET_CC_C_NONE:
+    _Z80InstructionRETC(gb, &inst_cycles);
+    DISPATCH();
+RETI_NONE_NONE:
+    _Z80InstructionRETI(gb);
+    DISPATCH();
+JP_CC_C_IMM16:
+    _Z80InstructionJPC(gb, &inst_cycles);
+    DISPATCH();
+CALL_CC_C_IMM16:
+    _Z80InstructionCALLC(gb, &inst_cycles);
+    DISPATCH();
+SBC_REG_A_IMM8:
+    _Z80InstructionSBCImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x18:
+    _Z80InstructionRST18(gb);
+    DISPATCH();
+LD_MEM_8_REG_A:
+    _Z80InstructionLDImm_A(gb);
+    DISPATCH();
+POP_REG_HL_NONE:
+    _Z80InstructionPOPHL(gb);
+    DISPATCH();
+LD_MEM_C_REG_A:
+    _Z80InstructionLDImmC_A(gb);
+    DISPATCH();
+PUSH_REG_HL_NONE:
+    _Z80InstructionPUSHHL(gb);
+    DISPATCH();
+AND_REG_A_IMM8:
+    _Z80InstructionANDImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x20:
+    _Z80InstructionRST20(gb);
+    DISPATCH();
+ADD16_REG_SP_IMM8:
+    _Z80InstructionADDSP_Imm(gb);
+    DISPATCH();
+JP_NONE_MEM_HL:
+    _Z80InstructionJPHL(gb);
+    DISPATCH();
+LD_MEM_16_REG_A:
+    _Z80InstructionLDImm16_A(gb);
+    DISPATCH();
+XOR_REG_A_IMM8:
+    _Z80InstructionXORImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x28:
+    _Z80InstructionRST28(gb);
+    DISPATCH();
+LD_REG_A_MEM_8:
+    _Z80InstructionLDA_Mem(gb);
+    DISPATCH();
+POP_REG_AF_NONE:
+    _Z80InstructionPOPAF(gb);
+    DISPATCH();
+LD_REG_A_MEM_C:
+    _Z80InstructionLDA_ImmC(gb);
+    DISPATCH();
+DI_NONE_NONE:
+    _Z80InstructionDI(gb);
+    DISPATCH();
+PUSH_REG_AF_NONE:
+    _Z80InstructionPUSHAF(gb);
+    DISPATCH();
+OR_REG_A_IMM8:
+    _Z80InstructionORImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x30:
+    _Z80InstructionRST30(gb);
+    DISPATCH();
+LD16_REG_HL_MEM_8:
+    _Z80InstructionLDHL_SPImm(gb);
+    DISPATCH();
+LD16_REG_SP_REG_HL:
+    _Z80InstructionLDSP_HL(gb);
+    DISPATCH();
+LD_REG_A_MEM_16:
+    _Z80InstructionLDA_Imm16(gb);
+    DISPATCH();
+EI_NONE_NONE:
+    _Z80InstructionEI(gb);
+    DISPATCH();
+CP_REG_A_IMM8:
+    _Z80InstructionCPImm(gb);
+    DISPATCH();
+RST_NONE_MEM_0x38:
+    _Z80InstructionRST38(gb);
+    DISPATCH();
+Tail_Handler:
 
     /* DIV register timing */
     gb->counter.div_count += inst_cycles;
