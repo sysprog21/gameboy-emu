@@ -46,8 +46,9 @@ DEFINE_INSTRUCTION_Z80(NOP,);
 #define DEFINE_JP_INSTRUCTION_Z80(CONDITION_NAME, CONDITION) \
 	DEFINE_CONDITION_INSTRUCTION_Z80(JP ## CONDITION_NAME, \
 	if (CONDITION) { \
-		gb->cpu_reg.pc = __gb_read(gb, gb->cpu_reg.pc++); \
-		gb->cpu_reg.pc |= __gb_read(gb, gb->cpu_reg.pc++) << 8; \
+		uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++); \
+		diff |= __gb_read(gb, gb->cpu_reg.pc++) << 8; \
+    gb->cpu_reg.pc = diff; \
 		*inst_cycles += 4; \
 	} else \
 		gb->cpu_reg.pc += 2;)
@@ -61,8 +62,9 @@ DEFINE_INSTRUCTION_Z80(NOP,);
 DEFINE_CONDITIONAL_INSTRUCTION_Z80(JP);
 
 DEFINE_INSTRUCTION_Z80(JP, // JP imm
-    gb->cpu_reg.pc = __gb_read(gb, gb->cpu_reg.pc++);
-    gb->cpu_reg.pc |= __gb_read(gb, gb->cpu_reg.pc) << 8;)
+    uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++);
+    diff |= __gb_read(gb, gb->cpu_reg.pc) << 8;
+    gb->cpu_reg.pc = diff;)
 
 DEFINE_INSTRUCTION_Z80(JPHL, // JP HL
 	gb->cpu_reg.pc = gb->cpu_reg.hl;)
@@ -70,7 +72,8 @@ DEFINE_INSTRUCTION_Z80(JPHL, // JP HL
 #define DEFINE_JR_INSTRUCTION_Z80(CONDITION_NAME, CONDITION) \
 	DEFINE_CONDITION_INSTRUCTION_Z80(JR ## CONDITION_NAME, \
 	if (CONDITION) { \
-		gb->cpu_reg.pc += (int8_t) __gb_read(gb, gb->cpu_reg.pc++); \
+    int8_t diff = (int8_t) __gb_read(gb, gb->cpu_reg.pc++); \
+    gb->cpu_reg.pc += diff; \
 		*inst_cycles += 4; \
 	} else \
 		gb->cpu_reg.pc++;)
@@ -146,11 +149,12 @@ DEFINE_INSTRUCTION_Z80(RETI,
 
 #define DEFINE_CP_INSTRUCTION_Z80(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_Z80(CP ## NAME, \
-		int diff = gb->cpu_reg.a - OPERAND; \
+		uint16_t diff = gb->cpu_reg.a - OPERAND; \
 		gb->cpu_reg.f_bits.n = 1; \
 		gb->cpu_reg.f_bits.z = !(diff & 0xFF); \
-		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) - (OPERAND & 0xF) < 0; \
-		gb->cpu_reg.f_bits.c = diff < 0;)
+		gb->cpu_reg.f_bits.h = \
+      (gb->cpu_reg.a ^ OPERAND ^ diff) & 0x10 ? 1 : 0; \
+		gb->cpu_reg.f_bits.c = (diff & 0xFF00) ? 1 : 0;)
 
 #define DEFINE_LDB__INSTRUCTION_Z80(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_Z80(LDB_ ## NAME, \
@@ -204,7 +208,23 @@ DEFINE_INSTRUCTION_Z80(RETI,
 DEFINE_ALU_INSTRUCTION_Z80(AND);
 DEFINE_ALU_INSTRUCTION_Z80(XOR);
 DEFINE_ALU_INSTRUCTION_Z80(OR);
-DEFINE_ALU_INSTRUCTION_Z80(CP);
+DEFINE_ALU_INSTRUCTION_Z80_NOHL(CP);
+DEFINE_INSTRUCTION_Z80(CPHL,
+    uint8_t val = Z80ReadHL(gb);
+		uint16_t diff = gb->cpu_reg.a - val;
+		gb->cpu_reg.f_bits.n = 1;
+		gb->cpu_reg.f_bits.z = !(diff & 0xFF);
+		gb->cpu_reg.f_bits.h =
+      (gb->cpu_reg.a ^ val ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = (diff & 0xFF00) ? 1 : 0;)
+DEFINE_INSTRUCTION_Z80(CPImm,
+    uint8_t val = __gb_read(gb, gb->cpu_reg.pc++);
+		uint16_t diff = gb->cpu_reg.a - val;
+		gb->cpu_reg.f_bits.n = 1;
+		gb->cpu_reg.f_bits.z = !(diff & 0xFF);
+		gb->cpu_reg.f_bits.h =
+      (gb->cpu_reg.a ^ val ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = (diff & 0xFF00) ? 1 : 0;)
 
 #define DEFINE_ADD_INSTRUCTION_Z80(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_Z80(ADD ## NAME, \

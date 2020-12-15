@@ -7,6 +7,9 @@ CFLAGS += -D ENABLE_SOUND
 CFLAGS += `sdl2-config --cflags`
 LDFLAGS += `sdl2-config --libs`
 
+# Computed-goto
+CFLAGS += -fno-gcse -fno-crossjumping
+
 # Control the build verbosity
 ifeq ("$(VERBOSE)","1")
     Q :=
@@ -50,8 +53,6 @@ $(OUT)/cpu_instrs.h: tests/cpu_instrs.gb tests/rom2h.c
 	$(VECHO) "  Generating C header from Blargg's Gameboy test ROM...\n"
 	$(Q)$(CC) -o $(OUT)/rom2h tests/rom2h.c
 	@$(OUT)/rom2h
-
-# gcc -o test bench.c gameboy.c cpu.c
 
 $(OUT)/bench: $(OUT)/cpu_instrs.h prof.h bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"

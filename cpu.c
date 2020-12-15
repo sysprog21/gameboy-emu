@@ -2,8 +2,20 @@
 #include "apu.h"
 #include "instr.h"
 
+#define OPCODE() \
+    opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++)); \
+    table = instr_table[opcode]; \
+    inst_cycles = table.alt_cycles * 4;
+#define IRQ() \
+    OPCODE() \
+    goto OUTPUT
 #define DISPATCH() \
-    goto *dispatch_table[(gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++))]
+    OPCODE() \
+    goto OUTPUT
+
+#define DISPATCH_2() \
+    OPCODE() \
+    goto *dispatch_table[opcode]
 
 /* Internal function used to read bytes. */
 uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
@@ -853,7 +865,7 @@ void __gb_draw_line(struct gb_s *gb)
 void __gb_step_cpu(struct gb_s *gb)
 {
     uint8_t opcode, inst_cycles;
-
+    cpu_instr table; 
     static const void *dispatch_table[] = {
         &&NOP_NONE_NONE,       &&LD16_REG_BC_IMM16,   &&LD_MEM_BC_REG_A,
         &&INC16_REG_BC_NONE,   &&INC_REG_B_NONE,      &&DEC_REG_B_NONE,
@@ -892,7 +904,7 @@ void __gb_step_cpu(struct gb_s *gb)
         &&LD_REG_H_MEM_HL,     &&LD_REG_H_REG_A,      &&LD_REG_L_REG_B,
         &&LD_REG_L_REG_C,      &&LD_REG_L_REG_D,      &&LD_REG_L_REG_E,
         &&LD_REG_L_REG_H,      &&NOP_NONE_NONE,       &&LD_REG_L_MEM_HL,
-        &&D_REG_L_REG_A,       &&LD_MEM_HL_REG_B,     &&LD_MEM_HL_REG_C,
+        &&LD_REG_L_REG_A,      &&LD_MEM_HL_REG_B,     &&LD_MEM_HL_REG_C,
         &&LD_MEM_HL_REG_D,     &&LD_MEM_HL_REG_E,     &&LD_MEM_HL_REG_H,
         &&LD_MEM_HL_REG_L,     &&HALT_NONE_NONE,      &&LD_MEM_HL_REG_A,
         &&LD_REG_A_REG_B,      &&LD_REG_A_REG_C,      &&LD_REG_A_REG_D,
@@ -941,8 +953,8 @@ void __gb_step_cpu(struct gb_s *gb)
         &&LD16_REG_SP_REG_HL,  &&LD_REG_A_MEM_16,     &&EI_NONE_NONE,
         &&ERROR_NONE_NONE,     &&ERROR_NONE_NONE,     &&CP_REG_A_IMM8,
         &&RST_NONE_MEM_0x38};
-
     /* Internal function used to read bytes. */
+
     static const uint8_t op_cycles[0x100] = {
         /* clang-format off */
         /*          0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F */
@@ -965,6 +977,7 @@ void __gb_step_cpu(struct gb_s *gb)
         /* clang-format on */
     };
 
+//IRQ_Handler:
     /* Handle interrupts */
     if ((gb->gb_ime || gb->gb_halt) &&
         (gb->gb_reg.IF & gb->gb_reg.IE & ANY_INTR)) {
@@ -1004,17 +1017,13 @@ void __gb_step_cpu(struct gb_s *gb)
 
 /* cpu_instr */
 // cpu_instr table;
-// void (*opcode_function)() = table.execute;
-// if (opcode == 0xcb)
-//    table = cb_table[READ8(REG(pc)++)];
+// if (opcode == 0xCB)
+//    table = cb_table[__gb_read()];
 // else
 //    table = instr_table[opcode];
-
 // inst_cycles = table.alt_cycles * 4;
-// if (table.flags == INST_FLAG_USES_CC)
-//    opcode_function(gb, opcode, &inst_cycles);
-// else
-//    opcode_function(gb, opcode);
+
+DISPATCH_2();
 NOP_NONE_NONE:
     _Z80InstructionNOP(gb);
     DISPATCH();
@@ -1023,7 +1032,7 @@ LD16_REG_BC_IMM16:
     DISPATCH();
 LD_MEM_BC_REG_A:
     _Z80InstructionLDBC_A(gb);
-    DISPATCH();
+    IRQ();
 INC16_REG_BC_NONE:
     _Z80InstructionINC_BC(gb);
     DISPATCH();
@@ -1041,7 +1050,7 @@ RLC_REG_A_NONE:
     DISPATCH();
 LD16_MEM_16_REG_SP:
     _Z80InstructionLDImm16_SP(gb);
-    DISPATCH();
+    IRQ();
 ADD16_REG_HL_REG_BC:
     _Z80InstructionADDHL_BC(gb);
     DISPATCH();
@@ -1065,13 +1074,13 @@ RRC_REG_A_NONE:
     DISPATCH();
 STOP_NONE_NONE:
     _Z80InstructionSTOP(gb);
-    DISPATCH();
+    IRQ();
 LD16_REG_DE_IMM16:
     _Z80InstructionLDDE_Imm16(gb);
     DISPATCH();
 LD_MEM_DE_REG_A:
     _Z80InstructionLDDE_A(gb);
-    DISPATCH();
+    IRQ();
 INC16_REG_DE_NONE:
     _Z80InstructionINC_DE(gb);
     DISPATCH();
@@ -1119,7 +1128,7 @@ LD16_REG_HL_IMM16:
     DISPATCH();
 LD_MEM_INC_HL_REG_A:
     _Z80InstructionLDINC_A(gb);
-    DISPATCH();
+    IRQ();
 INC16_REG_HL_NONE:
     _Z80InstructionINC_HL(gb);
     DISPATCH();
@@ -1167,19 +1176,19 @@ LD16_REG_SP_IMM16:
     DISPATCH();
 LD_MEM_DEC_HL_REG_A:
     _Z80InstructionLDDEC_A(gb);
-    DISPATCH();
+    IRQ();
 INC16_REG_SP_NONE:
     _Z80InstructionINC_SP(gb);
     DISPATCH();
 INC_MEM_HL_NONE:
     _Z80InstructionINC_Mem(gb);
-    DISPATCH();
+    IRQ();
 DEC_MEM_HL_NONE:
     _Z80InstructionDEC_Mem(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_HL_IMM8:
     _Z80InstructionLDHL_Imm(gb);
-    DISPATCH();
+    IRQ();
 SCF_NONE_NONE:
     _Z80InstructionSCF(gb);
     DISPATCH();
@@ -1330,32 +1339,33 @@ LD_REG_L_REG_H:
 LD_REG_L_MEM_HL:
     _Z80InstructionLDL_HL(gb);
     DISPATCH();
-D_REG_L_REG_A:
+LD_REG_L_REG_A:
+    _Z80InstructionLDL_A(gb);
     DISPATCH();
 LD_MEM_HL_REG_B:
     _Z80InstructionLDHL_B(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_HL_REG_C:
     _Z80InstructionLDHL_C(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_HL_REG_D:
     _Z80InstructionLDHL_D(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_HL_REG_E:
     _Z80InstructionLDHL_E(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_HL_REG_H:
     _Z80InstructionLDHL_H(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_HL_REG_L:
     _Z80InstructionLDHL_L(gb);
-    DISPATCH();
+    IRQ();
 HALT_NONE_NONE:
     _Z80InstructionHALT(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_HL_REG_A:
     _Z80InstructionLDHL_A(gb);
-    DISPATCH();
+    IRQ();
 LD_REG_A_REG_B:
     _Z80InstructionLDA_B(gb);
     DISPATCH();
@@ -1583,16 +1593,16 @@ JP_NONE_IMM16:
     DISPATCH();
 CALL_CC_NZ_IMM16:
     _Z80InstructionCALLNZ(gb, &inst_cycles);
-    DISPATCH();
+    IRQ();
 PUSH_REG_BC_NONE:
     _Z80InstructionPUSHBC(gb);
-    DISPATCH();
+    IRQ();
 ADD_REG_A_IMM8:
     _Z80InstructionADDImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x00:
     _Z80InstructionRST00(gb);
-    DISPATCH();
+    IRQ();
 RET_CC_Z_NONE:
     _Z80InstructionRETZ(gb, &inst_cycles);
     DISPATCH();
@@ -1603,22 +1613,23 @@ JP_CC_Z_IMM16:
     _Z80InstructionJPZ(gb, &inst_cycles);
     DISPATCH();
 CB:
-    inst_cycles = __gb_execute_cb(gb);
+    inst_cycles += __gb_execute_cb(gb);
+    DISPATCH();
 ERROR_NONE_NONE:
-    (gb->gb_error)(gb, GB_INVALID_OPCODE, 0x00);
+    (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
     DISPATCH();
 CALL_CC_Z_IMM16:
     _Z80InstructionCALLZ(gb, &inst_cycles);
-    DISPATCH();
+    IRQ();
 CALL_NONE_IMM16:
     _Z80InstructionCALL(gb);
-    DISPATCH();
+    IRQ();
 ADC_REG_A_IMM8:
     _Z80InstructionADCImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x08:
     _Z80InstructionRST08(gb);
-    DISPATCH();
+    IRQ();
 RET_CC_NC_NONE:
     _Z80InstructionRETNC(gb, &inst_cycles);
     DISPATCH();
@@ -1630,52 +1641,52 @@ JP_CC_NC_IMM16:
     DISPATCH();
 CALL_CC_NC_IMM16:
     _Z80InstructionCALLNC(gb, &inst_cycles);
-    DISPATCH();
+    IRQ();
 PUSH_REG_DE_NONE:
     _Z80InstructionPUSHDE(gb);
-    DISPATCH();
+    IRQ();
 SUB_REG_A_IMM8:
     _Z80InstructionSUBImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x10:
     _Z80InstructionRST10(gb);
-    DISPATCH();
+    IRQ();
 RET_CC_C_NONE:
     _Z80InstructionRETC(gb, &inst_cycles);
     DISPATCH();
 RETI_NONE_NONE:
     _Z80InstructionRETI(gb);
-    DISPATCH();
+    IRQ();
 JP_CC_C_IMM16:
     _Z80InstructionJPC(gb, &inst_cycles);
     DISPATCH();
 CALL_CC_C_IMM16:
     _Z80InstructionCALLC(gb, &inst_cycles);
-    DISPATCH();
+    IRQ();
 SBC_REG_A_IMM8:
     _Z80InstructionSBCImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x18:
     _Z80InstructionRST18(gb);
-    DISPATCH();
+    IRQ();
 LD_MEM_8_REG_A:
     _Z80InstructionLDImm_A(gb);
-    DISPATCH();
+    IRQ();
 POP_REG_HL_NONE:
     _Z80InstructionPOPHL(gb);
     DISPATCH();
 LD_MEM_C_REG_A:
     _Z80InstructionLDImmC_A(gb);
-    DISPATCH();
+    IRQ();
 PUSH_REG_HL_NONE:
     _Z80InstructionPUSHHL(gb);
-    DISPATCH();
+    IRQ();
 AND_REG_A_IMM8:
     _Z80InstructionANDImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x20:
     _Z80InstructionRST20(gb);
-    DISPATCH();
+    IRQ();
 ADD16_REG_SP_IMM8:
     _Z80InstructionADDSP_Imm(gb);
     DISPATCH();
@@ -1684,13 +1695,13 @@ JP_NONE_MEM_HL:
     DISPATCH();
 LD_MEM_16_REG_A:
     _Z80InstructionLDImm16_A(gb);
-    DISPATCH();
+    IRQ();
 XOR_REG_A_IMM8:
     _Z80InstructionXORImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x28:
     _Z80InstructionRST28(gb);
-    DISPATCH();
+    IRQ();
 LD_REG_A_MEM_8:
     _Z80InstructionLDA_Mem(gb);
     DISPATCH();
@@ -1705,13 +1716,13 @@ DI_NONE_NONE:
     DISPATCH();
 PUSH_REG_AF_NONE:
     _Z80InstructionPUSHAF(gb);
-    DISPATCH();
+    IRQ();
 OR_REG_A_IMM8:
     _Z80InstructionORImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x30:
     _Z80InstructionRST30(gb);
-    DISPATCH();
+    IRQ();
 LD16_REG_HL_MEM_8:
     _Z80InstructionLDHL_SPImm(gb);
     DISPATCH();
@@ -1723,16 +1734,20 @@ LD_REG_A_MEM_16:
     DISPATCH();
 EI_NONE_NONE:
     _Z80InstructionEI(gb);
-    DISPATCH();
+    IRQ();
 CP_REG_A_IMM8:
     _Z80InstructionCPImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x38:
     _Z80InstructionRST38(gb);
-    DISPATCH();
-Tail_Handler:
+    IRQ();
+OUTPUT:
+    __gb_irqh(gb, inst_cycles);
+}
 
-    /* DIV register timing */
+
+void __gb_irqh(struct gb_s *gb, uint8_t inst_cycles)
+{
     gb->counter.div_count += inst_cycles;
 
     if (gb->counter.div_count >= DIV_CYCLES) {
