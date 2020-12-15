@@ -2,19 +2,11 @@
 #include "apu.h"
 #include "instr.h"
 
-#define OPCODE() \
-    opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++)); \
-    table = instr_table[opcode]; \
-    inst_cycles = table.alt_cycles * 4;
 #define IRQ() \
-    OPCODE() \
     goto OUTPUT
 #define DISPATCH() \
-    OPCODE() \
     goto OUTPUT
-
 #define DISPATCH_2() \
-    OPCODE() \
     goto *dispatch_table[opcode]
 
 /* Internal function used to read bytes. */
@@ -865,7 +857,7 @@ void __gb_draw_line(struct gb_s *gb)
 void __gb_step_cpu(struct gb_s *gb)
 {
     uint8_t opcode, inst_cycles;
-    cpu_instr table; 
+    cpu_instr table;
     static const void *dispatch_table[] = {
         &&NOP_NONE_NONE,       &&LD16_REG_BC_IMM16,   &&LD_MEM_BC_REG_A,
         &&INC16_REG_BC_NONE,   &&INC_REG_B_NONE,      &&DEC_REG_B_NONE,
@@ -953,31 +945,7 @@ void __gb_step_cpu(struct gb_s *gb)
         &&LD16_REG_SP_REG_HL,  &&LD_REG_A_MEM_16,     &&EI_NONE_NONE,
         &&ERROR_NONE_NONE,     &&ERROR_NONE_NONE,     &&CP_REG_A_IMM8,
         &&RST_NONE_MEM_0x38};
-    /* Internal function used to read bytes. */
 
-    static const uint8_t op_cycles[0x100] = {
-        /* clang-format off */
-        /*          0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F */
-        /* 0x00 */  4, 12,  8,  8,  4,  4,  8,  4, 20,  8,  8,  8,  4,  4,  8,  4,
-        /* 0x10 */  4, 12,  8,  8,  4,  4,  8,  4, 12,  8,  8,  8,  4,  4,  8,  4,
-        /* 0x20 */  8, 12,  8,  8,  4,  4,  8,  4,  8,  8,  8,  8,  4,  4,  8,  4,
-        /* 0x30 */  8, 12,  8,  8, 12, 12, 12,  4,  8,  8,  8,  8,  4,  4,  8,  4,
-        /* 0x40 */  4,  4,  4,  4,  4,  4,  8,  4,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0x50 */  4,  4,  4,  4,  4,  4,  8,  4,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0x60 */  4,  4,  4,  4,  4,  4,  8,  4,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0x70 */  8,  8,  8,  8,  8,  8,  4,  8,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0x80 */  4,  4,  4,  4,  4,  4,  8,  4,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0x90 */  4,  4,  4,  4,  4,  4,  8,  4,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0xA0 */  4,  4,  4,  4,  4,  4,  8,  4,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0xB0 */  4,  4,  4,  4,  4,  4,  8,  4,  4,  4,  4,  4,  4,  4,  8,  4,
-        /* 0xC0 */  8, 12, 12, 16, 12, 16,  8, 16,  8, 16, 12,  8, 12, 24,  8, 16,
-        /* 0xD0 */  8, 12, 12,  0, 12, 16,  8, 16,  8, 16, 12,  0, 12,  0,  8, 16,
-        /* 0xE0 */ 12, 12,  8,  0,  0, 16,  8, 16, 16,  4, 16,  0,  0,  0,  8, 16,
-        /* 0xF0 */ 12, 12,  8,  4,  0, 16,  8, 16, 12,  8, 16,  4,  0,  0,  8, 16,
-        /* clang-format on */
-    };
-
-//IRQ_Handler:
     /* Handle interrupts */
     if ((gb->gb_ime || gb->gb_halt) &&
         (gb->gb_reg.IF & gb->gb_reg.IE & ANY_INTR)) {
@@ -1011,19 +979,13 @@ void __gb_step_cpu(struct gb_s *gb)
         }
     }
 
-/* Obtain opcode */
-// opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
-// inst_cycles = op_cycles[opcode];
-
-/* cpu_instr */
-// cpu_instr table;
-// if (opcode == 0xCB)
-//    table = cb_table[__gb_read()];
-// else
-//    table = instr_table[opcode];
-// inst_cycles = table.alt_cycles * 4;
+    /* Obtain opcode */
+    opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
+    table = instr_table[opcode];
+    inst_cycles = table.alt_cycles * 4;
 
 DISPATCH_2();
+
 NOP_NONE_NONE:
     _Z80InstructionNOP(gb);
     DISPATCH();
@@ -1613,7 +1575,7 @@ JP_CC_Z_IMM16:
     _Z80InstructionJPZ(gb, &inst_cycles);
     DISPATCH();
 CB:
-    inst_cycles += __gb_execute_cb(gb);
+    inst_cycles = __gb_execute_cb(gb);
     DISPATCH();
 ERROR_NONE_NONE:
     (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
@@ -1742,12 +1704,8 @@ RST_NONE_MEM_0x38:
     _Z80InstructionRST38(gb);
     IRQ();
 OUTPUT:
-    __gb_irqh(gb, inst_cycles);
-}
 
-
-void __gb_irqh(struct gb_s *gb, uint8_t inst_cycles)
-{
+    /* DIV register timing */
     gb->counter.div_count += inst_cycles;
 
     if (gb->counter.div_count >= DIV_CYCLES) {

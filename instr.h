@@ -2,7 +2,6 @@
 #include "cpu.h"
 
 /* clang-format off */
-
 #define UNUSED(x) (void)(x)
 
 #define DEFINE_INSTRUCTION_Z80(NAME, BODY) \
@@ -110,7 +109,7 @@ DEFINE_INSTRUCTION_Z80(CALL,
 	if (CONDITION) { \
 		gb->cpu_reg.pc = __gb_read(gb, gb->cpu_reg.sp++); \
 		gb->cpu_reg.pc |= __gb_read(gb, gb->cpu_reg.sp++) << 8; \
-        *inst_cycles += 12;})
+    *inst_cycles += 12;})
 
 DEFINE_CONDITIONAL_INSTRUCTION_Z80(RET);
 
@@ -226,42 +225,6 @@ DEFINE_INSTRUCTION_Z80(CPImm,
       (gb->cpu_reg.a ^ val ^ diff) & 0x10 ? 1 : 0;
 		gb->cpu_reg.f_bits.c = (diff & 0xFF00) ? 1 : 0;)
 
-#define DEFINE_ADD_INSTRUCTION_Z80(NAME, OPERAND) \
-	DEFINE_INSTRUCTION_Z80(ADD ## NAME, \
-		int diff = gb->cpu_reg.a + OPERAND; \
-		gb->cpu_reg.f_bits.n = 0; \
-		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) + (OPERAND & 0xF) >= 0x10; \
-		gb->cpu_reg.f_bits.c = diff >= 0x100; \
-		gb->cpu_reg.a = diff; \
-		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
-
-#define DEFINE_ADC_INSTRUCTION_Z80(NAME, OPERAND) \
-	DEFINE_INSTRUCTION_Z80(ADC ## NAME, \
-		int diff = gb->cpu_reg.a + OPERAND + gb->cpu_reg.f_bits.c; \
-		gb->cpu_reg.f_bits.n = 0; \
-		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) + (OPERAND & 0xF) + gb->cpu_reg.f_bits.c >= 0x10; \
-		gb->cpu_reg.f_bits.c = diff >= 0x100; \
-		gb->cpu_reg.a = diff; \
-		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
-
-#define DEFINE_SUB_INSTRUCTION_Z80(NAME, OPERAND) \
-	DEFINE_INSTRUCTION_Z80(SUB ## NAME, \
-		int diff = gb->cpu_reg.a - OPERAND; \
-		gb->cpu_reg.f_bits.n = 1; \
-		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) - (OPERAND & 0xF) < 0; \
-		gb->cpu_reg.f_bits.c = diff < 0; \
-		gb->cpu_reg.a = diff; \
-		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
-
-#define DEFINE_SBC_INSTRUCTION_Z80(NAME, OPERAND) \
-	DEFINE_INSTRUCTION_Z80(SBC ## NAME, \
-		int diff = gb->cpu_reg.a - OPERAND - gb->cpu_reg.f_bits.c; \
-		gb->cpu_reg.f_bits.n = 1; \
-		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) - (OPERAND & 0xF) - gb->cpu_reg.f_bits.c < 0; \
-		gb->cpu_reg.f_bits.c = diff < 0; \
-		gb->cpu_reg.a = diff; \
-		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
-
 DEFINE_ALU_INSTRUCTION_Z80(LDB_);
 DEFINE_ALU_INSTRUCTION_Z80(LDC_);
 DEFINE_ALU_INSTRUCTION_Z80(LDD_);
@@ -287,8 +250,8 @@ DEFINE_INSTRUCTION_Z80(LDImmC_A, // LD_MEM_C_REG_A
 
 DEFINE_INSTRUCTION_Z80(LDImm16_A, // LD_MEM_16_REG_A
 	uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++);
-    	diff |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
-    	__gb_write(gb, diff, gb->cpu_reg.a);)
+  diff |= __gb_read(gb, gb->cpu_reg.pc++) << 8;
+  __gb_write(gb, diff, gb->cpu_reg.a);)
 
 DEFINE_INSTRUCTION_Z80(LDA_Imm16, // LD_REG_A_MEM_16
 	uint16_t diff = __gb_read(gb, gb->cpu_reg.pc++);
@@ -311,7 +274,7 @@ DEFINE_INSTRUCTION_Z80(LDHL_Imm,
 	Z80WriteHL(gb, __gb_read(gb, gb->cpu_reg.pc++));)
 
 DEFINE_INSTRUCTION_Z80(LDHL_SPImm, // LD16_REG_HL_MEM_8
-	int diff = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
+	int8_t diff = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
 	gb->cpu_reg.hl = gb->cpu_reg.sp + diff;
 	gb->cpu_reg.f_bits.z = 0;
 	gb->cpu_reg.f_bits.n = 0;
@@ -351,13 +314,122 @@ DEFINE_INSTRUCTION_Z80(LDImm16_SP, // LD16_MEM_16_REG_SP
 	__gb_write(gb, diff++, gb->cpu_reg.sp & 0xFF);
 	__gb_write(gb, diff, gb->cpu_reg.sp >> 8);)
 
-DEFINE_ALU_INSTRUCTION_Z80(ADD);
-DEFINE_ALU_INSTRUCTION_Z80(ADC);
-DEFINE_ALU_INSTRUCTION_Z80(SUB);
-DEFINE_ALU_INSTRUCTION_Z80(SBC);
+#define DEFINE_ADD_INSTRUCTION_Z80(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_Z80(ADD ## NAME, \
+		uint16_t diff = gb->cpu_reg.a + OPERAND; \
+		gb->cpu_reg.f_bits.n = 0; \
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ OPERAND ^ diff) & 0x10 ? 1 : 0; \
+		gb->cpu_reg.f_bits.c = diff >= 0x100; \
+		gb->cpu_reg.a = diff & 0xFF; \
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+#define DEFINE_ADC_INSTRUCTION_Z80(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_Z80(ADC ## NAME, \
+		uint16_t diff = gb->cpu_reg.a + OPERAND + gb->cpu_reg.f_bits.c; \
+		gb->cpu_reg.f_bits.n = 0; \
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ OPERAND ^ diff) & 0x10 ? 1 : 0; \
+		gb->cpu_reg.f_bits.c = diff >= 0x100; \
+		gb->cpu_reg.a = diff & 0xFF; \
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+#define DEFINE_SUB_INSTRUCTION_Z80(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_Z80(SUB ## NAME, \
+		uint16_t diff = gb->cpu_reg.a - OPERAND; \
+		gb->cpu_reg.f_bits.n = 1; \
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ OPERAND ^ diff) & 0x10 ? 1 : 0; \
+		gb->cpu_reg.f_bits.c = diff >= 0x100; \
+		gb->cpu_reg.a = diff & 0xFF; \
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+#define DEFINE_SBC_INSTRUCTION_Z80(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_Z80(SBC ## NAME, \
+		uint16_t diff = gb->cpu_reg.a - OPERAND - gb->cpu_reg.f_bits.c; \
+		gb->cpu_reg.f_bits.n = 1; \
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ OPERAND ^ diff) & 0x10 ? 1 : 0; \
+		gb->cpu_reg.f_bits.c = diff >= 0x100; \
+		gb->cpu_reg.a = diff & 0xFF; \
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+DEFINE_ALU_INSTRUCTION_Z80_NOHL(ADD);
+DEFINE_ALU_INSTRUCTION_Z80_NOHL(ADC);
+DEFINE_ALU_INSTRUCTION_Z80_NOHL(SUB);
+DEFINE_ALU_INSTRUCTION_Z80_NOHL(SBC);
+
+DEFINE_INSTRUCTION_Z80(ADDHL,
+    uint8_t hl = Z80ReadHL(gb);
+		uint16_t diff = gb->cpu_reg.a + hl;
+		gb->cpu_reg.f_bits.n = 0;
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ hl ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = diff >= 0x100;
+		gb->cpu_reg.a = diff & 0xFF;
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+DEFINE_INSTRUCTION_Z80(ADDImm,
+		uint8_t diff = __gb_read(gb, gb->cpu_reg.pc++);
+    uint16_t calc = gb->cpu_reg.a + diff;
+		gb->cpu_reg.f_bits.n = 0;
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) + (diff & 0xF) >= 0x10;
+		gb->cpu_reg.f_bits.c = calc >= 0x100;
+		gb->cpu_reg.f_bits.z = ((uint8_t) calc == 0) ? 1 : 0;
+    gb->cpu_reg.a = (uint8_t) calc;)
+
+DEFINE_INSTRUCTION_Z80(ADCHL,
+    uint8_t hl = Z80ReadHL(gb);
+		uint16_t diff = gb->cpu_reg.a + hl + gb->cpu_reg.f_bits.c;
+		gb->cpu_reg.f_bits.n = 0;
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ hl ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = diff >= 0x100;
+		gb->cpu_reg.a = diff & 0xFF;
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+DEFINE_INSTRUCTION_Z80(ADCImm,
+    uint8_t val = __gb_read(gb, gb->cpu_reg.pc++);
+    uint8_t a = gb->cpu_reg.a;
+    uint8_t carry = gb->cpu_reg.f_bits.c;
+    gb->cpu_reg.a = a + val + carry;
+    gb->cpu_reg.f_bits.z = gb->cpu_reg.a == 0 ? 1 : 0;
+    gb->cpu_reg.f_bits.h = ((a & 0xF) + (val & 0xF) + carry > 0x0F) ? 1 : 0;
+    gb->cpu_reg.f_bits.c = (((uint16_t) a) + ((uint16_t) val) + carry > 0xFF) ? 1 : 0;
+    gb->cpu_reg.f_bits.n = 0;)
+    
+DEFINE_INSTRUCTION_Z80(SUBHL,
+    uint8_t hl = Z80ReadHL(gb);
+		uint16_t diff = gb->cpu_reg.a - hl;
+		gb->cpu_reg.f_bits.n = 1;
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ hl ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = diff >= 0x100;
+		gb->cpu_reg.a = diff & 0xFF;
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+DEFINE_INSTRUCTION_Z80(SUBImm,
+    uint8_t val = __gb_read(gb, gb->cpu_reg.pc++);
+		uint16_t diff = gb->cpu_reg.a - val;
+		gb->cpu_reg.f_bits.n = 1;
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ val ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = diff >= 0x100;
+		gb->cpu_reg.a = diff & 0xFF;
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+DEFINE_INSTRUCTION_Z80(SBCHL,
+    uint8_t hl = Z80ReadHL(gb);
+		uint16_t diff = gb->cpu_reg.a - hl - gb->cpu_reg.f_bits.c;
+		gb->cpu_reg.f_bits.n = 1;
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ hl ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = diff >= 0x100;
+		gb->cpu_reg.a = diff & 0xFF;
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
+
+DEFINE_INSTRUCTION_Z80(SBCImm,
+    uint8_t val = __gb_read(gb, gb->cpu_reg.pc++);
+		uint16_t diff = gb->cpu_reg.a - val - gb->cpu_reg.f_bits.c;
+		gb->cpu_reg.f_bits.n = 1;
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a ^ val ^ diff) & 0x10 ? 1 : 0;
+		gb->cpu_reg.f_bits.c = diff >= 0x100;
+		gb->cpu_reg.a = diff & 0xFF;
+		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
 
 DEFINE_INSTRUCTION_Z80(ADDSP_Imm,
-	int diff = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
+	  int8_t diff = (int8_t) __gb_read(gb, gb->cpu_reg.pc++);
     gb->cpu_reg.f_bits.z = 0;
     gb->cpu_reg.f_bits.n = 0;
     gb->cpu_reg.f_bits.c = (diff & 0xFF) + (gb->cpu_reg.sp & 0xFF) >= 0x100;
@@ -369,18 +441,18 @@ DEFINE_INSTRUCTION_Z80(ADDSP_Imm,
 		uint_fast32_t diff = gb->cpu_reg.hl + OPERAND; \
 		gb->cpu_reg.f_bits.n = 0; \
 		gb->cpu_reg.f_bits.h = (diff ^ gb->cpu_reg.hl ^ OPERAND) & 0x1000 ? 1 : 0; \
-        gb->cpu_reg.f_bits.c = (diff & 0xFFFF0000) ? 1 : 0; \
-        gb->cpu_reg.hl = (diff & 0x0000FFFF);)
+    gb->cpu_reg.f_bits.c = (diff & 0xFFFF0000) ? 1 : 0; \
+    gb->cpu_reg.hl = (diff & 0x0000FFFF);)
 
 DEFINE_ADD_HL_INSTRUCTION_Z80(BC, gb->cpu_reg.bc);
 DEFINE_ADD_HL_INSTRUCTION_Z80(DE, gb->cpu_reg.de);
 DEFINE_ADD_HL_INSTRUCTION_Z80(HL, gb->cpu_reg.hl);
 DEFINE_INSTRUCTION_Z80(ADDHL_SP, \
 		uint_fast32_t diff = gb->cpu_reg.hl + gb->cpu_reg.sp; \
-        gb->cpu_reg.f_bits.n = 0; \
-        gb->cpu_reg.f_bits.h = ((gb->cpu_reg.hl & 0xFFF) + (gb->cpu_reg.sp & 0xFFF)) & 0x1000 ? 1 : 0; \
-        gb->cpu_reg.f_bits.c = diff & 0x10000 ? 1 : 0; \
-        gb->cpu_reg.hl = (uint16_t) diff;)
+    gb->cpu_reg.f_bits.n = 0; \
+    gb->cpu_reg.f_bits.h = ((gb->cpu_reg.hl & 0xFFF) + (gb->cpu_reg.sp & 0xFFF)) & 0x1000 ? 1 : 0; \
+    gb->cpu_reg.f_bits.c = diff & 0x10000 ? 1 : 0; \
+    gb->cpu_reg.hl = (uint16_t) diff;)
 
 #define DEFINE_INC_INSTRUCTION_Z80(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_Z80(INC ## NAME, \
@@ -527,13 +599,13 @@ DEFINE_INSTRUCTION_Z80(RRA,
 
 DEFINE_INSTRUCTION_Z80(DI, gb->gb_ime = 0;);
 DEFINE_INSTRUCTION_Z80(EI, gb->gb_ime = 1;);
-DEFINE_INSTRUCTION_Z80(HALT, /* gb->gb_halt = 1; */);
+DEFINE_INSTRUCTION_Z80(HALT, gb->gb_halt = 1;);
 
-#define DEFINE_RST_INSTRUCTION_Z80(VEC)                          \
-    DEFINE_INSTRUCTION_Z80(RST ## VEC,                           \
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);   \
-        __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF); \
-        gb->cpu_reg.pc = 0x00 ## VEC;)
+#define DEFINE_RST_INSTRUCTION_Z80(VEC) \
+  DEFINE_INSTRUCTION_Z80(RST ## VEC, \
+    __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8); \
+    __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF); \
+    gb->cpu_reg.pc = 0x ## VEC;)
 
 DEFINE_RST_INSTRUCTION_Z80(00);
 DEFINE_RST_INSTRUCTION_Z80(08);
@@ -1065,5 +1137,4 @@ static const cpu_instr cb_table[] = {
   [0xfe] = {SET,   MEM_HL, BIT_7,  0, 0,   2,     4, 4,   0},
   [0xff] = {SET,   REG_A,  BIT_7,  0, 0,   2,     2, 2,   0},
 };
-
 /* clang-format on */
