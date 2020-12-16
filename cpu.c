@@ -942,7 +942,7 @@ void cpu_step(struct gb_s *gb)
         &&LD16_REG_SP_REG_HL,  &&LD_REG_A_MEM_16,     &&EI_NONE_NONE,
         &&ERROR_NONE_NONE,     &&ERROR_NONE_NONE,     &&CP_REG_A_IMM8,
         &&RST_NONE_MEM_0x38};
-    
+
     /* Handle interrupts */
     if ((gb->gb_ime || gb->gb_halt) &&
         (gb->gb_reg.IF & gb->gb_reg.IE & ANY_INTR)) {
