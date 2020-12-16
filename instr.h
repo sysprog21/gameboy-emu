@@ -410,7 +410,7 @@ DEFINE_INSTRUCTION_Z80(LDDEC_A, // LD_MEM_DEC_HL_REG_A
 	gb->cpu_reg.hl--;)
 
 DEFINE_INSTRUCTION_Z80(LDSP_HL, // LD16_REG_SP_REG_HL
-	gb->cpu_reg.sp = Z80ReadHL(gb);)
+	gb->cpu_reg.sp = gb->cpu_reg.hl;)
 
 DEFINE_INSTRUCTION_Z80(LDSP_Imm16, // LD16_REG_SP_IMM16
 	gb->cpu_reg.sp = __gb_read(gb, gb->cpu_reg.pc++);
