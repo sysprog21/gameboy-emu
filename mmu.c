@@ -439,4 +439,3 @@ void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
     (gb->gb_error)(gb, GB_INVALID_WRITE, addr);
 #endif
 }
-

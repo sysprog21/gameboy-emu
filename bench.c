@@ -1,7 +1,7 @@
 #define ENABLE_SOUND 0
 #define ENABLE_LCD 0
-#include "gameboy.h"
 #include "cpu.h"
+#include "gameboy.h"
 
 #if defined(__linux__)
 #include "prof.h"
@@ -24,8 +24,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 #include "lib/tester.h"
 
 struct gb_s gb;
@@ -62,7 +62,6 @@ void gb_cart_ram_write(struct gb_s *gb,
 /* Ignore cart RAM reads */
 uint8_t gb_cart_ram_read(struct gb_s *gb, const uint_fast32_t addr)
 {
-
     (void) gb;
     if (addr < instruction_mem_size)
         return instruction_mem[addr];
@@ -87,13 +86,13 @@ static struct tester_flags flags = {
 };
 
 static void mycpu_init(size_t tester_instruction_mem_size,
-                           uint8_t *tester_instruction_mem)
+                       uint8_t *tester_instruction_mem)
 {
     instruction_mem_size = tester_instruction_mem_size;
     instruction_mem = tester_instruction_mem;
     /* ... Initialize your CPU here ... */
-    gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write,
-            &gb_error, NULL);
+    gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error,
+            NULL);
 }
 
 /*
@@ -122,11 +121,11 @@ static void mycpu_get_state(struct state *state)
     memcpy(state->mem_accesses, mem_accesses, sizeof(mem_accesses));
     state->reg8.A = gb.cpu_reg.a;
     state->reg8.F = gb.cpu_reg.f;
-    state->reg16.BC = gb.cpu_reg.bc;   
-    state->reg16.DE = gb.cpu_reg.de;   
-    state->reg16.HL = gb.cpu_reg.hl;   
-    state->SP = gb.cpu_reg.sp;   
-    state->PC = gb.cpu_reg.pc;   
+    state->reg16.BC = gb.cpu_reg.bc;
+    state->reg16.DE = gb.cpu_reg.de;
+    state->reg16.HL = gb.cpu_reg.hl;
+    state->SP = gb.cpu_reg.sp;
+    state->PC = gb.cpu_reg.pc;
     state->halted = gb.gb_halt;
     state->interrupts_master_enabled = gb.gb_ime;
     num_mem_accesses = 0;
@@ -134,7 +133,8 @@ static void mycpu_get_state(struct state *state)
 }
 
 /*
- *  * Step a single instruction of the CPU. Returns the amount of cycles this took
+ *  * Step a single instruction of the CPU. Returns the amount of cycles this
+ * took
  *   * (e.g., NOP should return 4).
  *    */
 static int mycpu_step(void)
