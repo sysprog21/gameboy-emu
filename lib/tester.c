@@ -1,48 +1,48 @@
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "common.h"
-#include "tester.h"
 #include "disassembler.h"
-#include "ref_cpu.h"
 #include "inputstate.h"
 #include "instructions.h"
+#include "ref_cpu.h"
+#include "tester.h"
 
 #define INSTRUCTION_MEM_SIZE 4
 static u8 instruction_mem[INSTRUCTION_MEM_SIZE];
 
 static unsigned long num_tests = 0;
-static bool tested_op[256] = { 0 };
-static bool tested_op_cb[256] = { 0 };
+static bool tested_op[256] = {0};
+static bool tested_op_cb[256] = {0};
 
 static struct tester_operations *tcpu_ops;
 static struct tester_flags *flags;
 
 static void dump_state(struct state *state)
 {
-    printf(" PC   SP   AF   BC   DE   HL  ZNHC hlt IME\n"
-            "%04x %04x %04x %04x %04x %04x %d%d%d%d  %d   %d\n",
-            state->PC, state->SP, state->reg16.AF, state->reg16.BC,
-            state->reg16.DE, state->reg16.HL,
-            BIT(state->reg16.AF, 7), BIT(state->reg16.AF, 6),
-            BIT(state->reg16.AF, 5), BIT(state->reg16.AF, 4), state->halted,
-            state->interrupts_master_enabled);
+    printf(
+        " PC   SP   AF   BC   DE   HL  ZNHC hlt IME\n"
+        "%04x %04x %04x %04x %04x %04x %d%d%d%d  %d   %d\n",
+        state->PC, state->SP, state->reg16.AF, state->reg16.BC, state->reg16.DE,
+        state->reg16.HL, BIT(state->reg16.AF, 7), BIT(state->reg16.AF, 6),
+        BIT(state->reg16.AF, 5), BIT(state->reg16.AF, 4), state->halted,
+        state->interrupts_master_enabled);
 
     for (int i = 0; i < state->num_mem_accesses; i++)
         printf("  Mem %s: addr=%04x val=%02x\n",
-                state->mem_accesses[i].type ? "write" : "read",
-                state->mem_accesses[i].addr, state->mem_accesses[i].val);
+               state->mem_accesses[i].type ? "write" : "read",
+               state->mem_accesses[i].addr, state->mem_accesses[i].val);
     printf("\n");
 }
 
 static void dump_op_state(struct test_inst *inst, struct op_state *op_state)
 {
-    const char *reg8_names[] = { "B", "C", "D", "E", "H", "L", "(HL)", "A" };
-    const char *reg16_names[] = { "BC", "DE", "HL", "SP/AF" };
-    const char *cond_names[] = { "NZ", "Z", "NC", "C" };
+    const char *reg8_names[] = {"B", "C", "D", "E", "H", "L", "(HL)", "A"};
+    const char *reg16_names[] = {"BC", "DE", "HL", "SP/AF"};
+    const char *cond_names[] = {"NZ", "Z", "NC", "C"};
 
     if (inst->imm_size == 1)
         printf("imm: %02x\n", op_state->imm);
@@ -67,10 +67,12 @@ static void dump_op_state(struct test_inst *inst, struct op_state *op_state)
 
 static int mem_access_cmp(const void *p1, const void *p2)
 {
-    u16 addr1 = ((struct mem_access*)p1)->addr;
-    u16 addr2 = ((struct mem_access*)p2)->addr;
-    if (addr1 < addr2) return -1;
-    if (addr1 > addr2) return 1;
+    u16 addr1 = ((struct mem_access *) p1)->addr;
+    u16 addr2 = ((struct mem_access *) p2)->addr;
+    if (addr1 < addr2)
+        return -1;
+    if (addr1 > addr2)
+        return 1;
     return 0;
 }
 
@@ -85,9 +87,9 @@ static int states_mem_accesses_eq(struct state *s1, struct state *s2)
      * of memory accesses do not matter (e.g., the order of bytes of a 16-bit
      * store), so this reduces false positives. */
     qsort(s1->mem_accesses, s1->num_mem_accesses, sizeof(struct mem_access),
-            mem_access_cmp);
+          mem_access_cmp);
     qsort(s2->mem_accesses, s2->num_mem_accesses, sizeof(struct mem_access),
-            mem_access_cmp);
+          mem_access_cmp);
 
     for (i = 0; i < s1->num_mem_accesses; i++)
         if (s1->mem_accesses[0].type != s2->mem_accesses[0].type ||
@@ -100,13 +102,9 @@ static int states_mem_accesses_eq(struct state *s1, struct state *s2)
 
 static int states_eq(struct state *s1, struct state *s2)
 {
-    return s1->reg16.AF == s2->reg16.AF &&
-           s1->reg16.BC == s2->reg16.BC &&
-           s1->reg16.DE == s2->reg16.DE &&
-           s1->reg16.HL == s2->reg16.HL &&
-           s1->PC == s2->PC &&
-           s1->SP == s2->SP &&
-           s1->halted == s2->halted &&
+    return s1->reg16.AF == s2->reg16.AF && s1->reg16.BC == s2->reg16.BC &&
+           s1->reg16.DE == s2->reg16.DE && s1->reg16.HL == s2->reg16.HL &&
+           s1->PC == s2->PC && s1->SP == s2->SP && s1->halted == s2->halted &&
            s1->interrupts_master_enabled == s2->interrupts_master_enabled &&
            states_mem_accesses_eq(s1, s2);
 }
@@ -265,10 +263,10 @@ static int test_instructions(size_t num_instructions,
         printf("\n");
 
     printf("Tested %zu/%zu %sinstructions", num_instructions_tested,
-            num_instructions, prefix);
+           num_instructions, prefix);
     if (num_instructions_passed != num_instructions_tested)
         printf(", %zu passed and %zu failed", num_instructions_passed,
-                num_instructions_tested - num_instructions_passed);
+               num_instructions_tested - num_instructions_passed);
     printf("\n");
     if (flags->print_tested_instruction)
         printf("\n");
@@ -278,10 +276,9 @@ static int test_instructions(size_t num_instructions,
 
 static bool is_valid_op(u8 op)
 {
-    u8 invalid_ops[] = { 0xcb,                          // Special case (prefix)
-                         0xd3, 0xdb, 0xdd,
-                         0xe3, 0xe4, 0xeb, 0xec, 0xed,
-                         0xf4, 0xfc, 0xfd };
+    u8 invalid_ops[] = {0xcb,  // Special case (prefix)
+                        0xd3, 0xdb, 0xdd, 0xe3, 0xe4, 0xeb,
+                        0xec, 0xed, 0xf4, 0xfc, 0xfd};
 
     for (size_t i = 0; i < sizeof(invalid_ops); i++)
         if (invalid_ops[i] == op)
@@ -292,12 +289,13 @@ static bool is_valid_op(u8 op)
 
 static bool is_valid_op_cb(u8 op)
 {
-    (void)op;
+    (void) op;
     return true;
 }
 
-static void print_coverage(bool *op_table, bool (*is_valid)(u8),
-        const char *prefix)
+static void print_coverage(bool *op_table,
+                           bool (*is_valid)(u8),
+                           const char *prefix)
 {
     unsigned num_tested_ops, total_valid_ops;
 
@@ -310,7 +308,7 @@ static void print_coverage(bool *op_table, bool (*is_valid)(u8),
     }
 
     printf("Successfully tested %d/%d %sopcodes\n", num_tested_ops,
-            total_valid_ops, prefix);
+           total_valid_ops, prefix);
 
     if (num_tested_ops < total_valid_ops) {
         printf("\nTable of untested/incorrect %sopcodes:\n", prefix);
@@ -329,7 +327,8 @@ static void print_coverage(bool *op_table, bool (*is_valid)(u8),
 static int test_all_instructions(void)
 {
     size_t num_instructions = sizeof(instructions) / sizeof(instructions[0]);
-    size_t num_cb_instructions = sizeof(cb_instructions) / sizeof(cb_instructions[0]);
+    size_t num_cb_instructions =
+        sizeof(cb_instructions) / sizeof(cb_instructions[0]);
 
     if (test_instructions(num_instructions, instructions, ""))
         return 1;

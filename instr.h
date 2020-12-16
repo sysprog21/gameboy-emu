@@ -1,5 +1,5 @@
 #pragma once
-
+#include "mmu.h"
 typedef struct cpu_instr_s {
     enum {
         NOP,
