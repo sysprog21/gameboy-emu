@@ -422,7 +422,12 @@ void __gb_draw_line(struct gb_s *gb)
 #endif
 
 /* Internal function used to step the CPU */
+
+#ifdef DEBUG
+int cpu_step(struct gb_s *gb)
+#else
 void cpu_step(struct gb_s *gb)
+#endif
 {
     uint8_t opcode, inst_cycles;
     cpu_instr table;
@@ -1272,6 +1277,9 @@ RST_NONE_MEM_0x38:
     _Z80InstructionRST38(gb);
     DISPATCH();
 OUTPUT:
+#ifdef DEBUG
+    return inst_cycles;
+#else
     __cpu_timer(gb, inst_cycles);
 
     /* Check serial transmission */
@@ -1413,6 +1421,7 @@ OUTPUT:
         __gb_draw_line(gb);
 #endif
     }
+#endif
 }
 
 void __cpu_timer(struct gb_s *gb, uint8_t inst_cycles)

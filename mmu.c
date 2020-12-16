@@ -4,6 +4,9 @@
 /* Internal function used to read bytes. */
 uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 {
+#ifdef DEBUG
+    return gb->gb_cart_ram_read(gb, addr);
+#else
     switch (addr >> 12) {
     case 0x0:
         // if (gb->gb_bios_enable)
@@ -158,11 +161,16 @@ uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 
     (gb->gb_error)(gb, GB_INVALID_READ, addr);
     return 0xFF;
+#endif
 }
 
 /* Internal function used to write bytes */
 void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
 {
+#ifdef DEBUG
+    gb->gb_cart_ram_write(gb, addr, val);
+    return;
+#else
     switch (addr >> 12) {
     case 0x0:
     case 0x1:
@@ -429,5 +437,6 @@ void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
     }
 
     (gb->gb_error)(gb, GB_INVALID_WRITE, addr);
+#endif
 }
 
