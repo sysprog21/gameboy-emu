@@ -2,19 +2,17 @@
 #include "apu.h"
 #include "instr.h"
 
-#define IRQ() \
-    goto OUTPUT
-#define DISPATCH() \
-    goto OUTPUT
-#define DISPATCH_2() \
-    goto *dispatch_table[opcode]
+#define IRQ() goto OUTPUT
+#define DISPATCH() goto OUTPUT
+#define DISPATCH_2() goto *dispatch_table[opcode]
 
 /* Internal function used to read bytes. */
 uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 {
     switch (addr >> 12) {
     case 0x0:
-
+        // if (gb->gb_bios_enable)
+        // return gb->gb_bios_read(gb, addr);
     /* TODO: BIOS support */
     case 0x1:
     case 0x2:
@@ -982,9 +980,9 @@ void __gb_step_cpu(struct gb_s *gb)
     /* Obtain opcode */
     opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
     table = instr_table[opcode];
-    inst_cycles = table.alt_cycles * 4;
+    inst_cycles = table.alt_cycles << 2;
 
-DISPATCH_2();
+    DISPATCH_2();
 
 NOP_NONE_NONE:
     _Z80InstructionNOP(gb);

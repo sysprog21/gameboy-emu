@@ -365,13 +365,13 @@ DEFINE_INSTRUCTION_Z80(ADDHL,
 		gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
 
 DEFINE_INSTRUCTION_Z80(ADDImm,
-		uint8_t diff = __gb_read(gb, gb->cpu_reg.pc++);
-    uint16_t calc = gb->cpu_reg.a + diff;
+		uint8_t val = __gb_read(gb, gb->cpu_reg.pc++);
+    uint16_t diff = gb->cpu_reg.a + val;
 		gb->cpu_reg.f_bits.n = 0;
-		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) + (diff & 0xF) >= 0x10;
-		gb->cpu_reg.f_bits.c = calc >= 0x100;
-		gb->cpu_reg.f_bits.z = ((uint8_t) calc == 0) ? 1 : 0;
-    gb->cpu_reg.a = (uint8_t) calc;)
+		gb->cpu_reg.f_bits.h = (gb->cpu_reg.a & 0xF) + (val & 0xF) >= 0x10;
+		gb->cpu_reg.f_bits.c = diff >= 0x100;
+		gb->cpu_reg.f_bits.z = ((uint8_t) diff == 0) ? 1 : 0;
+    gb->cpu_reg.a = (uint8_t) diff;)
 
 DEFINE_INSTRUCTION_Z80(ADCHL,
     uint8_t hl = Z80ReadHL(gb);
@@ -456,7 +456,7 @@ DEFINE_INSTRUCTION_Z80(ADDHL_SP, \
 
 #define DEFINE_INC_INSTRUCTION_Z80(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_Z80(INC ## NAME, \
-		int diff = OPERAND + 1; \
+		uint8_t diff = OPERAND + 1; \
 		gb->cpu_reg.f_bits.h = (OPERAND & 0xF) == 0xF; \
 		OPERAND = diff; \
 		gb->cpu_reg.f_bits.n = 0; \
@@ -464,7 +464,7 @@ DEFINE_INSTRUCTION_Z80(ADDHL_SP, \
 
 #define DEFINE_DEC_INSTRUCTION_Z80(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_Z80(DEC ## NAME, \
-		int diff = OPERAND - 1; \
+		uint8_t diff = OPERAND - 1; \
 		gb->cpu_reg.f_bits.h = (OPERAND & 0xF) == 0x0; \
 		OPERAND = diff; \
 		gb->cpu_reg.f_bits.n = 1; \
@@ -519,26 +519,25 @@ DEFINE_INSTRUCTION_Z80(CPL_,
 	gb->cpu_reg.f_bits.n = 1;)
 
 DEFINE_INSTRUCTION_Z80(DAA,
+  uint16_t a = gb->cpu_reg.a;
 	if (gb->cpu_reg.f_bits.n) {
 		if (gb->cpu_reg.f_bits.h) {
-			gb->cpu_reg.a += 0xFA;
+		  a = (a - 0x06) & 0xFF;
 		}
 		if (gb->cpu_reg.f_bits.c) {
-			gb->cpu_reg.a += 0xA0;
+			a -= 0x60;
 		}
 	} else {
-		int a = gb->cpu_reg.a;
-		if ((gb->cpu_reg.a & 0xF) > 0x9 || gb->cpu_reg.f_bits.h) {
-			a += 0x6;
+		if ((a & 0xF) > 9 || gb->cpu_reg.f_bits.h) {
+			a += 0x06;
 		}
-		if ((a & 0x1F0) > 0x90 || gb->cpu_reg.f_bits.c) {
+		if (a > 0x9F || gb->cpu_reg.f_bits.c) {
 			a += 0x60;
-			gb->cpu_reg.f_bits.c = 1;
-		} else {
-			gb->cpu_reg.f_bits.c = 0;
 		}
-		gb->cpu_reg.a = a;
 	}
+  if ((a & 0x100) == 0x100)
+    gb->cpu_reg.f_bits.c = 1;
+  gb->cpu_reg.a = a;
 	gb->cpu_reg.f_bits.h = 0;
 	gb->cpu_reg.f_bits.z = !gb->cpu_reg.a;)
 
@@ -571,31 +570,30 @@ DEFINE_INSTRUCTION_Z80(RLCA,
     gb->cpu_reg.f_bits.z = 0;
     gb->cpu_reg.f_bits.h = 0;
     gb->cpu_reg.f_bits.n = 0;
-    gb->cpu_reg.f_bits.c = gb->cpu_reg.a & 1;)
+    gb->cpu_reg.f_bits.c = gb->cpu_reg.a & 0x1;)
 
 DEFINE_INSTRUCTION_Z80(RLA,
-    int wide = (gb->cpu_reg.a << 1) | gb->cpu_reg.f_bits.c;
-    gb->cpu_reg.a = wide;
+    uint8_t wide = gb->cpu_reg.a;
+    gb->cpu_reg.a = (gb->cpu_reg.a << 1) | gb->cpu_reg.f_bits.c;
     gb->cpu_reg.f_bits.z = 0;
     gb->cpu_reg.f_bits.h = 0;
     gb->cpu_reg.f_bits.n = 0;
-    gb->cpu_reg.f_bits.c = wide >> 8;)
+    gb->cpu_reg.f_bits.c = (wide >> 7) & 1;)
 
 DEFINE_INSTRUCTION_Z80(RRCA, 
-    int low = gb->cpu_reg.a & 1;
-    gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (low << 7);
+    gb->cpu_reg.f_bits.c = gb->cpu_reg.a & 1;
+    gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (gb->cpu_reg.a << 7);
     gb->cpu_reg.f_bits.z = 0;
     gb->cpu_reg.f_bits.h = 0;
-    gb->cpu_reg.f_bits.n = 0;
-    gb->cpu_reg.f_bits.c = low;)
+    gb->cpu_reg.f_bits.n = 0;)
 
 DEFINE_INSTRUCTION_Z80(RRA,
-    int low = gb->cpu_reg.a & 1;
+    uint8_t low = gb->cpu_reg.a;
     gb->cpu_reg.a = (gb->cpu_reg.a >> 1) | (gb->cpu_reg.f_bits.c << 7);
     gb->cpu_reg.f_bits.z = 0;
     gb->cpu_reg.f_bits.h = 0;
     gb->cpu_reg.f_bits.n = 0;
-    gb->cpu_reg.f_bits.c = low;)
+    gb->cpu_reg.f_bits.c = low & 1;)
 
 DEFINE_INSTRUCTION_Z80(DI, gb->gb_ime = 0;);
 DEFINE_INSTRUCTION_Z80(EI, gb->gb_ime = 1;);
