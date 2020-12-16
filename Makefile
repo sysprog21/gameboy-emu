@@ -29,6 +29,7 @@ all: $(BIN)
 OBJS = \
 	apu.o \
 	cpu.o \
+	mmu.o \
 	gameboy.o \
 	main.o
 
@@ -56,7 +57,7 @@ $(OUT)/cpu_instrs.h: tests/cpu_instrs.gb tests/rom2h.c
 
 $(OUT)/bench: $(OUT)/cpu_instrs.h prof.h bench.c gameboy.h cpu.c
 	$(VECHO) "  CC+LD\t$@\n"
-	$(Q)$(CC) -o $@ bench.c build/gameboy.o build/cpu.o build/apu.o
+	$(Q)$(CC) -o $@ bench.c build/gameboy.o build/cpu.o build/apu.o build/mmu.o
 
 # Download Game Boy ROMs with full source
 download_rom:
