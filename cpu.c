@@ -1,7 +1,7 @@
 #include "cpu.h"
 #include "apu.h"
-#include "mmu.h"
 #include "instr.h"
+#include "mmu.h"
 
 #define DISPATCH() goto OUTPUT
 #define DISPATCH_2() goto *dispatch_table[opcode]
