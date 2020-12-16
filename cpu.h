@@ -32,7 +32,11 @@
 
 uint8_t __cpu_execute_cb(struct gb_s *gb);
 
+#ifdef DEBUG
+int cpu_step(struct gb_s *gb);
+#else
 void cpu_step(struct gb_s *gb);
+#endif
 
 #if ENABLE_LCD
 void __gb_draw_line(struct gb_s *gb);
