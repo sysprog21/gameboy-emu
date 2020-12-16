@@ -81,10 +81,8 @@ int main(void)
     }
 
     /* Step CPU until test is complete */
-    while (gb.cpu_reg.pc != pc_end) {
-        printf("%x\n",gb.cpu_reg.pc);
+    while (gb.cpu_reg.pc != pc_end)
         gb_run_frame(&gb);
-    }
 
     PROF_STDOUT();
 

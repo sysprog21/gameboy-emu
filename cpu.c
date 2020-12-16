@@ -2,7 +2,6 @@
 #include "apu.h"
 #include "instr.h"
 
-#define IRQ() goto OUTPUT
 #define DISPATCH() goto OUTPUT
 #define DISPATCH_2() goto *dispatch_table[opcode]
 
@@ -436,7 +435,7 @@ void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
     (gb->gb_error)(gb, GB_INVALID_WRITE, addr);
 }
 
-uint8_t __gb_execute_cb(struct gb_s *gb)
+uint8_t __cpu_execute_cb(struct gb_s *gb)
 {
     uint8_t inst_cycles;
     uint8_t cbop = __gb_read(gb, gb->cpu_reg.pc++);
@@ -852,7 +851,7 @@ void __gb_draw_line(struct gb_s *gb)
 #endif
 
 /* Internal function used to step the CPU */
-void __gb_step_cpu(struct gb_s *gb)
+void cpu_step(struct gb_s *gb)
 {
     uint8_t opcode, inst_cycles;
     cpu_instr table;
@@ -992,7 +991,7 @@ LD16_REG_BC_IMM16:
     DISPATCH();
 LD_MEM_BC_REG_A:
     _Z80InstructionLDBC_A(gb);
-    IRQ();
+    DISPATCH();
 INC16_REG_BC_NONE:
     _Z80InstructionINC_BC(gb);
     DISPATCH();
@@ -1010,7 +1009,7 @@ RLC_REG_A_NONE:
     DISPATCH();
 LD16_MEM_16_REG_SP:
     _Z80InstructionLDImm16_SP(gb);
-    IRQ();
+    DISPATCH();
 ADD16_REG_HL_REG_BC:
     _Z80InstructionADDHL_BC(gb);
     DISPATCH();
@@ -1034,13 +1033,13 @@ RRC_REG_A_NONE:
     DISPATCH();
 STOP_NONE_NONE:
     _Z80InstructionSTOP(gb);
-    IRQ();
+    DISPATCH();
 LD16_REG_DE_IMM16:
     _Z80InstructionLDDE_Imm16(gb);
     DISPATCH();
 LD_MEM_DE_REG_A:
     _Z80InstructionLDDE_A(gb);
-    IRQ();
+    DISPATCH();
 INC16_REG_DE_NONE:
     _Z80InstructionINC_DE(gb);
     DISPATCH();
@@ -1088,7 +1087,7 @@ LD16_REG_HL_IMM16:
     DISPATCH();
 LD_MEM_INC_HL_REG_A:
     _Z80InstructionLDINC_A(gb);
-    IRQ();
+    DISPATCH();
 INC16_REG_HL_NONE:
     _Z80InstructionINC_HL(gb);
     DISPATCH();
@@ -1136,19 +1135,19 @@ LD16_REG_SP_IMM16:
     DISPATCH();
 LD_MEM_DEC_HL_REG_A:
     _Z80InstructionLDDEC_A(gb);
-    IRQ();
+    DISPATCH();
 INC16_REG_SP_NONE:
     _Z80InstructionINC_SP(gb);
     DISPATCH();
 INC_MEM_HL_NONE:
     _Z80InstructionINC_Mem(gb);
-    IRQ();
+    DISPATCH();
 DEC_MEM_HL_NONE:
     _Z80InstructionDEC_Mem(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_HL_IMM8:
     _Z80InstructionLDHL_Imm(gb);
-    IRQ();
+    DISPATCH();
 SCF_NONE_NONE:
     _Z80InstructionSCF(gb);
     DISPATCH();
@@ -1304,28 +1303,28 @@ LD_REG_L_REG_A:
     DISPATCH();
 LD_MEM_HL_REG_B:
     _Z80InstructionLDHL_B(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_HL_REG_C:
     _Z80InstructionLDHL_C(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_HL_REG_D:
     _Z80InstructionLDHL_D(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_HL_REG_E:
     _Z80InstructionLDHL_E(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_HL_REG_H:
     _Z80InstructionLDHL_H(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_HL_REG_L:
     _Z80InstructionLDHL_L(gb);
-    IRQ();
+    DISPATCH();
 HALT_NONE_NONE:
     _Z80InstructionHALT(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_HL_REG_A:
     _Z80InstructionLDHL_A(gb);
-    IRQ();
+    DISPATCH();
 LD_REG_A_REG_B:
     _Z80InstructionLDA_B(gb);
     DISPATCH();
@@ -1553,16 +1552,16 @@ JP_NONE_IMM16:
     DISPATCH();
 CALL_CC_NZ_IMM16:
     _Z80InstructionCALLNZ(gb, &inst_cycles);
-    IRQ();
+    DISPATCH();
 PUSH_REG_BC_NONE:
     _Z80InstructionPUSHBC(gb);
-    IRQ();
+    DISPATCH();
 ADD_REG_A_IMM8:
     _Z80InstructionADDImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x00:
     _Z80InstructionRST00(gb);
-    IRQ();
+    DISPATCH();
 RET_CC_Z_NONE:
     _Z80InstructionRETZ(gb, &inst_cycles);
     DISPATCH();
@@ -1573,23 +1572,23 @@ JP_CC_Z_IMM16:
     _Z80InstructionJPZ(gb, &inst_cycles);
     DISPATCH();
 CB:
-    inst_cycles = __gb_execute_cb(gb);
+    inst_cycles = __cpu_execute_cb(gb);
     DISPATCH();
 ERROR_NONE_NONE:
     (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
     DISPATCH();
 CALL_CC_Z_IMM16:
     _Z80InstructionCALLZ(gb, &inst_cycles);
-    IRQ();
+    DISPATCH();
 CALL_NONE_IMM16:
     _Z80InstructionCALL(gb);
-    IRQ();
+    DISPATCH();
 ADC_REG_A_IMM8:
     _Z80InstructionADCImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x08:
     _Z80InstructionRST08(gb);
-    IRQ();
+    DISPATCH();
 RET_CC_NC_NONE:
     _Z80InstructionRETNC(gb, &inst_cycles);
     DISPATCH();
@@ -1601,52 +1600,52 @@ JP_CC_NC_IMM16:
     DISPATCH();
 CALL_CC_NC_IMM16:
     _Z80InstructionCALLNC(gb, &inst_cycles);
-    IRQ();
+    DISPATCH();
 PUSH_REG_DE_NONE:
     _Z80InstructionPUSHDE(gb);
-    IRQ();
+    DISPATCH();
 SUB_REG_A_IMM8:
     _Z80InstructionSUBImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x10:
     _Z80InstructionRST10(gb);
-    IRQ();
+    DISPATCH();
 RET_CC_C_NONE:
     _Z80InstructionRETC(gb, &inst_cycles);
     DISPATCH();
 RETI_NONE_NONE:
     _Z80InstructionRETI(gb);
-    IRQ();
+    DISPATCH();
 JP_CC_C_IMM16:
     _Z80InstructionJPC(gb, &inst_cycles);
     DISPATCH();
 CALL_CC_C_IMM16:
     _Z80InstructionCALLC(gb, &inst_cycles);
-    IRQ();
+    DISPATCH();
 SBC_REG_A_IMM8:
     _Z80InstructionSBCImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x18:
     _Z80InstructionRST18(gb);
-    IRQ();
+    DISPATCH();
 LD_MEM_8_REG_A:
     _Z80InstructionLDImm_A(gb);
-    IRQ();
+    DISPATCH();
 POP_REG_HL_NONE:
     _Z80InstructionPOPHL(gb);
     DISPATCH();
 LD_MEM_C_REG_A:
     _Z80InstructionLDImmC_A(gb);
-    IRQ();
+    DISPATCH();
 PUSH_REG_HL_NONE:
     _Z80InstructionPUSHHL(gb);
-    IRQ();
+    DISPATCH();
 AND_REG_A_IMM8:
     _Z80InstructionANDImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x20:
     _Z80InstructionRST20(gb);
-    IRQ();
+    DISPATCH();
 ADD16_REG_SP_IMM8:
     _Z80InstructionADDSP_Imm(gb);
     DISPATCH();
@@ -1655,13 +1654,13 @@ JP_NONE_MEM_HL:
     DISPATCH();
 LD_MEM_16_REG_A:
     _Z80InstructionLDImm16_A(gb);
-    IRQ();
+    DISPATCH();
 XOR_REG_A_IMM8:
     _Z80InstructionXORImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x28:
     _Z80InstructionRST28(gb);
-    IRQ();
+    DISPATCH();
 LD_REG_A_MEM_8:
     _Z80InstructionLDA_Mem(gb);
     DISPATCH();
@@ -1676,13 +1675,13 @@ DI_NONE_NONE:
     DISPATCH();
 PUSH_REG_AF_NONE:
     _Z80InstructionPUSHAF(gb);
-    IRQ();
+    DISPATCH();
 OR_REG_A_IMM8:
     _Z80InstructionORImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x30:
     _Z80InstructionRST30(gb);
-    IRQ();
+    DISPATCH();
 LD16_REG_HL_MEM_8:
     _Z80InstructionLDHL_SPImm(gb);
     DISPATCH();
@@ -1694,22 +1693,15 @@ LD_REG_A_MEM_16:
     DISPATCH();
 EI_NONE_NONE:
     _Z80InstructionEI(gb);
-    IRQ();
+    DISPATCH();
 CP_REG_A_IMM8:
     _Z80InstructionCPImm(gb);
     DISPATCH();
 RST_NONE_MEM_0x38:
     _Z80InstructionRST38(gb);
-    IRQ();
+    DISPATCH();
 OUTPUT:
-
-    /* DIV register timing */
-    gb->counter.div_count += inst_cycles;
-
-    if (gb->counter.div_count >= DIV_CYCLES) {
-        gb->gb_reg.DIV++;
-        gb->counter.div_count -= DIV_CYCLES;
-    }
+    __cpu_timer(gb, inst_cycles);
 
     /* Check serial transmission */
     if (gb->gb_reg.SC & SERIAL_SC_TX_START) {
@@ -1849,5 +1841,16 @@ OUTPUT:
 #if ENABLE_LCD
         __gb_draw_line(gb);
 #endif
+    }
+}
+
+void __cpu_timer(struct gb_s *gb, uint8_t inst_cycles)
+{
+    /* DIV register timing */
+    gb->counter.div_count += inst_cycles;
+
+    if (gb->counter.div_count >= DIV_CYCLES) {
+        gb->gb_reg.DIV++;
+        gb->counter.div_count -= DIV_CYCLES;
     }
 }
