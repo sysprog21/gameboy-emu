@@ -1,5 +1,7 @@
 #pragma once
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include "mmu.h"
+
 typedef struct cpu_instr_s {
     enum {
         NOP,
@@ -121,13 +123,13 @@ typedef struct cpu_instr_s {
 #define UNUSED(x) (void)(x)
 
 #define DEFINE_INSTRUCTION_Z80(NAME, BODY) \
-	void _Z80Instruction ## NAME (struct gb_s *gb) { \
+	static void _Z80Instruction ## NAME (struct gb_s *gb) { \
 		UNUSED(gb); \
 		BODY; \
 	}
 
 #define DEFINE_CONDITION_INSTRUCTION_Z80(NAME, BODY) \
-	void _Z80Instruction ## NAME (struct gb_s *gb, uint8_t *inst_cycles) { \
+	static void _Z80Instruction ## NAME (struct gb_s *gb, uint8_t *inst_cycles) { \
 		UNUSED(gb); \
 		BODY; \
 	}
