@@ -9,7 +9,7 @@
 uint8_t __cpu_execute_cb(struct gb_s *gb)
 {
     uint8_t inst_cycles;
-    uint8_t cbop = __gb_read(gb, gb->cpu_reg.pc++);
+    uint8_t cbop = mmu_read(gb, gb->cpu_reg.pc++);
     uint8_t r = (cbop & 0x7);
     uint8_t b = (cbop >> 3) & 0x7;
     uint8_t d = (cbop >> 3) & 0x1;
@@ -55,7 +55,7 @@ uint8_t __cpu_execute_cb(struct gb_s *gb)
         break;
 
     case 6:
-        val = __gb_read(gb, gb->cpu_reg.hl);
+        val = mmu_read(gb, gb->cpu_reg.hl);
         break;
 
     /* Only values 0-7 are possible here, so we make the final case
@@ -171,7 +171,7 @@ uint8_t __cpu_execute_cb(struct gb_s *gb)
             break;
 
         case 6:
-            __gb_write(gb, gb->cpu_reg.hl, val);
+            mmu_write(gb, gb->cpu_reg.hl, val);
             break;
 
         case 7:
@@ -529,8 +529,8 @@ void cpu_step(struct gb_s *gb)
             gb->gb_ime = 0;
 
             /* Push program counter */
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
-            __gb_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
+            mmu_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc >> 8);
+            mmu_write(gb, --gb->cpu_reg.sp, gb->cpu_reg.pc & 0xFF);
 
             /* Call interrupt handler if required. */
             if (gb->gb_reg.IF & gb->gb_reg.IE & VBLANK_INTR) {
@@ -553,7 +553,7 @@ void cpu_step(struct gb_s *gb)
     }
 
     /* Obtain opcode */
-    opcode = (gb->gb_halt ? 0x00 : __gb_read(gb, gb->cpu_reg.pc++));
+    opcode = (gb->gb_halt ? 0x00 : mmu_read(gb, gb->cpu_reg.pc++));
     table = instr_table[opcode];
     inst_cycles = table.alt_cycles << 2;
 

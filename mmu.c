@@ -2,7 +2,7 @@
 #include "apu.h"
 
 /* Internal function used to read bytes. */
-uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
+uint8_t mmu_read(struct gb_s *gb, const uint_fast16_t addr)
 {
 #ifdef DEBUG
     return gb->gb_cart_ram_read(gb, addr);
@@ -165,7 +165,7 @@ uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 }
 
 /* Internal function used to write bytes */
-void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
+void mmu_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
 {
 #ifdef DEBUG
     gb->gb_cart_ram_write(gb, addr, val);
@@ -386,7 +386,7 @@ void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
             gb->gb_reg.DMA = (val % 0xF1);
 
             for (uint8_t i = 0; i < OAM_SIZE; i++)
-                gb->oam[i] = __gb_read(gb, (gb->gb_reg.DMA << 8) + i);
+                gb->oam[i] = mmu_read(gb, (gb->gb_reg.DMA << 8) + i);
 
             return;
 

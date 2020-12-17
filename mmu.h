@@ -49,7 +49,7 @@
 #define VRAM_TILES_4 (0x8800 - VRAM_ADDR + VRAM_BANK_SIZE)
 
 /* Internal function used to read bytes. */
-uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr);
+uint8_t mmu_read(struct gb_s *gb, const uint_fast16_t addr);
 
 /* Internal function used to write bytes */
-void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val);
+void mmu_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val);
