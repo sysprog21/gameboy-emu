@@ -26,6 +26,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <time.h>
 
 /**
@@ -305,10 +306,10 @@ struct gb_s {
     struct count_s counter;
 
     /* TODO: Allow implementation to allocate WRAM, VRAM and Frame Buffer */
-    uint8_t wram[WRAM_SIZE];
-    uint8_t vram[VRAM_SIZE];
-    uint8_t hram[HRAM_SIZE];
-    uint8_t oam[OAM_SIZE];
+    uint8_t *wram;
+    uint8_t *vram;
+    uint8_t *hram;
+    uint8_t *oam;
 
     struct {
         /* Draw line on screen.
@@ -431,3 +432,5 @@ void gb_init_lcd(struct gb_s *gb,
                                        const uint8_t *pixels,
                                        const uint_fast8_t line));
 #endif
+
+void gb_mem_alloc(struct gb_s *gb);

@@ -221,6 +221,7 @@ gb_init_error_t gb_init(
 
     gb->display.lcd_draw_line = NULL;
 
+    gb_mem_alloc(gb);
     gb_reset(gb);
 
     return GB_INIT_NO_ERROR;
@@ -270,3 +271,11 @@ void gb_init_lcd(struct gb_s *gb,
     gb->display.WY = 0;
 }
 #endif
+
+void gb_mem_alloc(struct gb_s *gb)
+{
+    gb->wram = calloc(WRAM_SIZE, sizeof(uint8_t));
+    gb->vram = calloc(VRAM_SIZE, sizeof(uint8_t));
+    gb->hram = calloc(HRAM_SIZE, sizeof(uint8_t));
+    gb->oam = calloc(OAM_SIZE, sizeof(uint8_t));
+}
