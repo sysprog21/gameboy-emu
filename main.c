@@ -14,6 +14,7 @@
 #include "gameboy.h"
 
 struct priv_t {
+    uint8_t *bios;
     /* Pointer to allocated memory holding GB file */
     uint8_t *rom;
     /* Pointer to allocated memory holding save file */
@@ -28,6 +29,8 @@ struct priv_t {
 uint8_t gb_rom_read(struct gb_s *gb, const uint_fast32_t addr)
 {
     const struct priv_t *const p = gb->direct.priv;
+    if (gb->gb_bios_enable && addr < 256)
+        return p->bios[addr];
     return p->rom[addr];
 }
 
@@ -462,6 +465,7 @@ int main(int argc, char **argv)
     /* Record save file every 60 seconds */
     int save_timer = 60;
     /* Must be freed */
+    char *bios_file_name = "lib/BIOS.gb";
     char *rom_file_name = NULL;
     char *save_file_name = NULL;
     int ret = EXIT_SUCCESS;
@@ -497,6 +501,13 @@ int main(int argc, char **argv)
 
     if (!window) {
         printf("Could not create window: %s\n", SDL_GetError());
+        ret = EXIT_FAILURE;
+        goto out;
+    }
+
+    /* Copy input BIOS file to allocated memory. */
+    if ((priv.bios = read_rom_to_ram(bios_file_name)) == NULL) {
+        printf("Fail to read BIOS: %s\n", strerror(errno));
         ret = EXIT_FAILURE;
         goto out;
     }

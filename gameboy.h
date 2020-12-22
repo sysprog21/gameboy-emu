@@ -306,10 +306,10 @@ struct gb_s {
     struct count_s counter;
 
     /* TODO: Allow implementation to allocate WRAM, VRAM and Frame Buffer */
-    uint8_t *wram;
-    uint8_t *vram;
-    uint8_t *hram;
-    uint8_t *oam;
+    uint8_t *restrict wram;
+    uint8_t *restrict vram;
+    uint8_t *restrict hram;
+    uint8_t *restrict oam;
 
     struct {
         /* Draw line on screen.

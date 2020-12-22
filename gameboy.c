@@ -91,7 +91,7 @@ void gb_reset(struct gb_s *gb)
 {
     gb->gb_halt = 0;
     gb->gb_ime = 1;
-    gb->gb_bios_enable = 0;
+    gb->gb_bios_enable = 1;
     gb->lcd_mode = LCD_HBLANK;
 
     /* Initialize MBC values. */
@@ -108,6 +108,8 @@ void gb_reset(struct gb_s *gb)
     gb->cpu_reg.sp = 0xFFFE;
     /* TODO: Add BIOS support. */
     gb->cpu_reg.pc = 0x0100;
+    if (gb->gb_bios_enable)
+        gb->cpu_reg.pc = 0x0000;
 
     gb->counter.lcd_count = 0;
     gb->counter.div_count = 0;

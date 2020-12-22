@@ -9,8 +9,6 @@ uint8_t mmu_read(struct gb_s *gb, const uint_fast16_t addr)
 #else
     switch (addr >> 12) {
     case 0x0:
-        // if (gb->gb_bios_enable)
-        // return gb->gb_bios_read(gb, addr);
     /* TODO: BIOS support */
     case 0x1:
     case 0x2:
