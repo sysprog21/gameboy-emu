@@ -16,3 +16,17 @@ uint_fast32_t gb_get_save_size(struct gb_s *gb)
     uint8_t ram_size = gb->gb_rom_read(gb, ram_size_location);
     return ram_sizes[ram_size];
 }
+
+/* Set the function used to handle serial transfer in the front-end. This is
+ * optional.
+ * gb_serial_transfer takes a byte to transmit and returns the received byte. If
+ * no cable is connected to the console, return 0xFF.
+ */
+void gb_init_serial(struct gb_s *gb,
+                    void (*gb_serial_tx)(struct gb_s *, const uint8_t),
+                    gb_serial_rx_ret_t (*gb_serial_rx)(struct gb_s *,
+                                                       uint8_t *))
+{
+    gb->gb_serial_tx = gb_serial_tx;
+    gb->gb_serial_rx = gb_serial_rx;
+}
