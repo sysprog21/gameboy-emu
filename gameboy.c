@@ -30,3 +30,16 @@ void gb_init_serial(struct gb_s *gb,
     gb->gb_serial_tx = gb_serial_tx;
     gb->gb_serial_rx = gb_serial_rx;
 }
+
+uint8_t gb_color_hash(struct gb_s *gb)
+{
+#define ROM_TITLE_START_ADDR 0x0134
+#define ROM_TITLE_END_ADDR 0x0143
+
+    uint8_t x = 0;
+
+    for (uint16_t i = ROM_TITLE_START_ADDR; i <= ROM_TITLE_END_ADDR; i++)
+        x += gb->gb_rom_read(gb, i);
+
+    return x;
+}

@@ -3267,18 +3267,7 @@ void gb_init_serial(struct gb_s *gb,
                     gb_serial_rx_ret_t (*gb_serial_rx)(struct gb_s *,
                                                        uint8_t *));
 
-uint8_t gb_color_hash(struct gb_s *gb)
-{
-#define ROM_TITLE_START_ADDR 0x0134
-#define ROM_TITLE_END_ADDR 0x0143
-
-    uint8_t x = 0;
-
-    for (uint16_t i = ROM_TITLE_START_ADDR; i <= ROM_TITLE_END_ADDR; i++)
-        x += gb->gb_rom_read(gb, i);
-
-    return x;
-}
+uint8_t gb_color_hash(struct gb_s *gb);
 
 /* Resets the context, and initializes startup values. */
 void gb_reset(struct gb_s *gb)
