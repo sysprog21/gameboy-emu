@@ -451,30 +451,7 @@ struct gb_s {
 };
 
 /* Tick the internal RTC by one second */
-void gb_tick_rtc(struct gb_s *gb)
-{
-    /* is timer running? */
-    if ((gb->cart_rtc[4] & 0x40) == 0) {
-        if (++gb->rtc_bits.sec == 60) {
-            gb->rtc_bits.sec = 0;
-
-            if (++gb->rtc_bits.min == 60) {
-                gb->rtc_bits.min = 0;
-
-                if (++gb->rtc_bits.hour == 24) {
-                    gb->rtc_bits.hour = 0;
-
-                    if (++gb->rtc_bits.yday == 0) {
-                        if (gb->rtc_bits.high & 1)     /* Bit 8 of days */
-                            gb->rtc_bits.high |= 0x80; /* Overflow bit */
-
-                        gb->rtc_bits.high ^= 1;
-                    }
-                }
-            }
-        }
-    }
-}
+void gb_tick_rtc(struct gb_s *gb);
 
 /* Set initial values in RTC.
  * Should be called after gb_init().
