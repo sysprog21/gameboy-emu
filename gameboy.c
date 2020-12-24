@@ -209,3 +209,21 @@ const char *gb_get_rom_name(struct gb_s *gb, char *title_str)
     *title_str = '\0';
     return title_start;
 }
+
+#if ENABLE_LCD
+void gb_init_lcd(struct gb_s *gb,
+                 void (*lcd_draw_line)(struct gb_s *gb,
+                                       const uint8_t *pixels,
+                                       const uint_fast8_t line))
+{
+    gb->display.lcd_draw_line = lcd_draw_line;
+
+    gb->direct.interlace = 0;
+    gb->display.interlace_count = 0;
+    gb->direct.frame_skip = 0;
+    gb->display.frame_skip_count = 0;
+
+    gb->display.window_clear = 0;
+    gb->display.WY = 0;
+}
+#endif
