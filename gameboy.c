@@ -26,6 +26,18 @@ void gb_tick_rtc(struct gb_s *gb)
     }
 }
 
+/* Set initial values in RTC.
+ * Should be called after gb_init().
+ */
+void gb_set_rtc(struct gb_s *gb, const struct tm *const time)
+{
+    gb->cart_rtc[0] = time->tm_sec;
+    gb->cart_rtc[1] = time->tm_min;
+    gb->cart_rtc[2] = time->tm_hour;
+    gb->cart_rtc[3] = time->tm_yday & 0xFF; /* Low 8 bits of day counter */
+    gb->cart_rtc[4] = time->tm_yday >> 8;   /* High 1 bit of day counter */
+}
+
 void gb_run_frame(struct gb_s *gb)
 {
     gb->gb_frame = 0;
