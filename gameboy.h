@@ -3265,11 +3265,7 @@ uint_fast32_t gb_get_save_size(struct gb_s *gb);
 void gb_init_serial(struct gb_s *gb,
                     void (*gb_serial_tx)(struct gb_s *, const uint8_t),
                     gb_serial_rx_ret_t (*gb_serial_rx)(struct gb_s *,
-                                                       uint8_t *))
-{
-    gb->gb_serial_tx = gb_serial_tx;
-    gb->gb_serial_rx = gb_serial_rx;
-}
+                                                       uint8_t *));
 
 uint8_t gb_color_hash(struct gb_s *gb)
 {
