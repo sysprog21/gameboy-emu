@@ -99,3 +99,86 @@ void gb_reset(struct gb_s *gb)
     gb->direct.joypad = 0xFF;
     gb->gb_reg.P1 = 0xCF;
 }
+
+/* Initialize the emulator context. gb_reset() is also called to initialize
+ * the CPU.
+ */
+gb_init_error_t gb_init(
+    struct gb_s *gb,
+    uint8_t (*gb_rom_read)(struct gb_s *, const uint_fast32_t),
+    uint8_t (*gb_cart_ram_read)(struct gb_s *, const uint_fast32_t),
+    void (*gb_cart_ram_write)(struct gb_s *,
+                              const uint_fast32_t,
+                              const uint8_t),
+    void (*gb_error)(struct gb_s *, const gb_error_t, const uint16_t),
+    void *priv)
+{
+    const uint16_t mbc_location = 0x0147;
+    const uint16_t bank_count_location = 0x0148;
+    const uint16_t ram_size_location = 0x0149;
+
+    /* Table for cartridge type (MBC). -1 if invalid.
+     * TODO: MMM01 is untested.
+     * TODO: MBC6 is untested.
+     * TODO: MBC7 is unsupported.
+     * TODO: POCKET CAMERA is unsupported.
+     * TODO: BANDAI TAMA5 is unsupported.
+     * TODO: HuC3 is unsupported.
+     * TODO: HuC1 is unsupported.
+     **/
+    const uint8_t cart_mbc[] = {0,  1,  1,  1,  -1, 2, 2, -1, 0, 0,  -1,
+                                0,  0,  0,  -1, 3,  3, 3, 3,  3, -1, -1,
+                                -1, -1, -1, 5,  5,  5, 5, 5,  5, -1};
+    const uint8_t cart_ram[] = {0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,
+                                1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0};
+    const uint16_t num_rom_banks[] = {
+        2, 4, 8,  16, 32, 64, 128, 256, 512, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,  0,  0,  0,  0,   0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,  0,  0,  0,  0,   0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0,  0,  0,  0,  0,   0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 72, 80, 96, 0,  0,   0,   0,   0, 0, 0, 0, 0, 0, 0};
+    const uint8_t num_ram_banks[] = {0, 1, 1, 4, 16, 8};
+
+    gb->gb_rom_read = gb_rom_read;
+    gb->gb_cart_ram_read = gb_cart_ram_read;
+    gb->gb_cart_ram_write = gb_cart_ram_write;
+    gb->gb_error = gb_error;
+    gb->direct.priv = priv;
+
+    /* Initialize serial transfer function to NULL. If the front-end does
+     * not provide serial support, it will emulate no cable connected
+     * automatically.
+     */
+    gb->gb_serial_tx = NULL;
+    gb->gb_serial_rx = NULL;
+
+    /* Check valid ROM using checksum value. */
+    {
+        uint8_t x = 0;
+
+        for (uint16_t i = 0x0134; i <= 0x014C; i++)
+            x = x - gb->gb_rom_read(gb, i) - 1;
+
+        if (x != gb->gb_rom_read(gb, ROM_HEADER_CHECKSUM_LOC))
+            return GB_INIT_INVALID_CHECKSUM;
+    }
+
+    /* Check if cartridge type is supported, and set MBC type. */
+    {
+        const uint8_t mbc_value = gb->gb_rom_read(gb, mbc_location);
+
+        if (mbc_value > sizeof(cart_mbc) - 1 ||
+            (gb->mbc = cart_mbc[gb->gb_rom_read(gb, mbc_location)]) == 255u)
+            return GB_INIT_CARTRIDGE_UNSUPPORTED;
+    }
+
+    gb->cart_ram = cart_ram[gb->gb_rom_read(gb, mbc_location)];
+    gb->num_rom_banks = num_rom_banks[gb->gb_rom_read(gb, bank_count_location)];
+    gb->num_ram_banks = num_ram_banks[gb->gb_rom_read(gb, ram_size_location)];
+
+    gb->display.lcd_draw_line = NULL;
+
+    gb_reset(gb);
+
+    return GB_INIT_NO_ERROR;
+}
