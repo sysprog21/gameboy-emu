@@ -2,4 +2,5 @@
 
 #include "core.h"
 
-void gb_run_frame(struct gb_s *gb);
+uint8_t gb_run_frame(struct gb_s *gb);
+
