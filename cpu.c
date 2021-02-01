@@ -186,7 +186,7 @@ static uint8_t __gb_execute_cb(struct gb_s *gb)
 }
 
 /* Internal function used to step the CPU */
-static void __gb_step_cpu(struct gb_s *gb)
+static uint8_t __gb_step_cpu(struct gb_s *gb)
 {
     uint8_t opcode, inst_cycles;
     static const uint8_t op_cycles[0x100] = {
@@ -1954,6 +1954,9 @@ static void __gb_step_cpu(struct gb_s *gb)
         (gb->gb_error)(gb, GB_INVALID_OPCODE, opcode);
     }
 
+#ifdef GBIT
+    gb->gb_frame = 1;
+#else
     /* DIV register timing */
     gb->counter.div_count += inst_cycles;
 
@@ -2025,7 +2028,7 @@ static void __gb_step_cpu(struct gb_s *gb)
     /* If LCD is off, don't update LCD state.
      */
     if ((gb->gb_reg.LCDC & LCDC_ENABLE) == 0)
-        return;
+        return inst_cycles;
 
     /* LCD Timing */
     gb->counter.lcd_count += inst_cycles;
@@ -2101,12 +2104,17 @@ static void __gb_step_cpu(struct gb_s *gb)
         __gb_draw_line(gb);
 #endif
     }
+#endif
+    return inst_cycles;
 }
 
-void gb_run_frame(struct gb_s *gb)
+uint8_t gb_run_frame(struct gb_s *gb)
 {
+    uint8_t cycles = 0;
     gb->gb_frame = 0;
 
     while (!gb->gb_frame)
-        __gb_step_cpu(gb);
+        cycles = __gb_step_cpu(gb);
+    return cycles;
 }
+

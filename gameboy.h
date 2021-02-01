@@ -70,6 +70,9 @@ void gb_set_rtc(struct gb_s *gb, const struct tm *const time)
 /* Internal function used to read bytes. */
 uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 {
+#ifdef GBIT
+    return gb->gb_cart_ram_read(gb, addr);
+#else
     switch (addr >> 12) {
     case 0x0:
 
@@ -223,13 +226,15 @@ uint8_t __gb_read(struct gb_s *gb, const uint_fast16_t addr)
 
     (gb->gb_error)(gb, GB_INVALID_READ, addr);
     return 0xFF;
+#endif
 }
 
 /* Internal function used to write bytes */
-void __gb_write(struct gb_s *gb,
-                       const uint_fast16_t addr,
-                       const uint8_t val)
+void __gb_write(struct gb_s *gb, const uint_fast16_t addr, const uint8_t val)
 {
+#ifdef GBIT
+    gb->gb_cart_ram_write(gb, addr, val);
+#else
     switch (addr >> 12) {
     case 0x0:
     case 0x1:
@@ -496,6 +501,7 @@ void __gb_write(struct gb_s *gb,
     }
 
     (gb->gb_error)(gb, GB_INVALID_WRITE, addr);
+#endif
 }
 
 #if ENABLE_LCD
@@ -817,10 +823,14 @@ void gb_reset(struct gb_s *gb)
     gb->gb_reg.SC = 0x7E;
     gb->gb_reg.STAT = 0;
     gb->gb_reg.LY = 0;
-
+    /* Avoid using __gb_write when instruction tests, since __gb_write() is called to
+     * write data to shared memory with gbit functions.
+     */
+#ifndef GBIT
     __gb_write(gb, 0xFF47, 0xFC); /* BGP */
     __gb_write(gb, 0xFF48, 0xFF); /* OBJP0 */
     __gb_write(gb, 0xFF49, 0x0F); /* OBJP1 */
+#endif
     gb->gb_reg.WY = 0x00;
     gb->gb_reg.WX = 0x00;
     gb->gb_reg.IE = 0x00;

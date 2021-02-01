@@ -1,0 +1,3 @@
+[submodule "gbit"]
+	path = gbit
+	url = https://github.com/koenk/gbit
