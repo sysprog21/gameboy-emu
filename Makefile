@@ -1,3 +1,17 @@
+# Git Submodules
+GBIT_LIB_C := \
+	gbit/lib/tester.c \
+	gbit/lib/ref_cpu.c \
+	gbit/lib/inputstate.c \
+	gbit/lib/disassembler.c
+
+GBIT_OBJS = \
+	gbit/lib/tester.o \
+	gbit/lib/ref_cpu.o \
+	gbit/lib/inputstate.o \
+	gbit/lib/disassembler.o
+
+# Flags
 CFLAGS = -std=gnu99 -O2 -Wall -Wextra
 LDFLAGS = -lm
 
@@ -21,7 +35,7 @@ SHELL_HACK := $(shell mkdir -p $(OUT))
 
 BIN = $(OUT)/emu $(OUT)/bench
 
-all: $(BIN)
+all: $(GBIT_LIB_C) $(BIN)
 
 OBJS = \
 	apu.o \
@@ -50,9 +64,13 @@ $(OUT)/cpu_instrs.h: tests/cpu_instrs.gb tests/rom2h.c
 	$(Q)$(CC) -o $(OUT)/rom2h tests/rom2h.c
 	@$(OUT)/rom2h
 
-$(OUT)/bench: $(OUT)/cpu_instrs.h prof.h cpu.c bench.c gameboy.h
+$(GBIT_LIB_C):
+	git submodule update --init
+	touch $@
+
+$(OUT)/bench: $(GBIT_OBJS) $(OUT)/cpu_instrs.h prof.h cpu.c bench.c gameboy.h
 	$(VECHO) "  CC+LD\t$@\n"
-	$(Q)$(CC) -DENABLE_LCD=0 -o $@ cpu.c bench.c
+	$(Q)$(CC) -DENABLE_LCD=0 -DGBIT -o $@ cpu.c bench.c $(GBIT_OBJS)
 
 # Download Game Boy ROMs with full source
 download_rom:
@@ -64,7 +82,7 @@ download_rom:
 	wget -O roms/Frapball.gb https://github.com/1r3n33/frapball/releases/download/refs%2Fheads%2Fmaster/game.gb
 
 clean:
-	$(RM) $(BIN) $(OBJS) $(deps)
+	$(RM) $(BIN) $(OBJS) $(GBIT_OBJS) $(deps)
 distclean: clean
 	$(RM) prof.h
 	$(RM) -r roms
